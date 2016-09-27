@@ -1,0 +1,22 @@
+{
+  "name": "slim-web-components",
+  "version": "1.0.0",
+  "description": "Slim web components infrastructure",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eavichay/slim-web-components.git"
+  },
+  "author": "Avichay Eyal <eavichay@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eavichay/slim-web-components/issues"
+  },
+  "homepage": "https://github.com/eavichay/slim-web-components#readme",
+  "devDependencies": {
+    "eslint": "^3.6.1"
+  }
+}

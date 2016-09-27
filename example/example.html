@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <link rel="import" href="../lib/SlimElement.html" />
+        <link rel="import" href="../lib/SlimListOptions.html" />
+        <link rel="import" href="../lib/SlimViewstack.html" />
+    </head>
+    <body>
+
+        <list-options id="main-nav" selected="state-1">
+            <item label="OPTION 1" value="state-1" />
+            <item label="OPTION 2" value="state-2" />
+            <item label="OPTION 3" value="state-3" />
+        </list-options>
+
+        <view-stack id="main-view" current-state="state-1">
+            <div id="view-1" in-state="state-1">Hi, I'm suppose to be here if state 1 is selected</div>
+            
+            <div id="view-2" in-state="state-2">Wooah, state #2 is now selected</div>
+            
+            <div id="view-3" in-state="state-3">
+                <h1>I'm in nested view stack, appears in #3</h1>
+                <list-options selected="nested-1" onchange="simpleJavascriptEventHandler(event)">
+                    <item label="OPTION 1" value="state-1" />
+                    <item label="OPTION 2" value="state-2" />
+                    <item label="OPTION 3" value="state-3" />
+                </list-options>
+                <view-stack id="nested-view" current-state="state-1">
+                    <span in-state="state-1" style="color:red">option 3.1</span>
+                    <span in-state="state-2" style="color:blue">option 3.2</span>
+                    <span in-state="state-3" style="color:green">option 3.3</span>
+                </view-stack>
+            </div>
+            
+            <div id="view-2-2" in-state="state-2">I'm another one appears in state #2</div>
+        </view-stack>
+
+        <script>
+            $(document).ready( ()=> {
+                document.querySelector('#main-nav').onchange = (event) => {
+                    document.querySelector('#main-view').currentState = event.target.getAttribute('selected');
+                }
+            });
+
+            function simpleJavascriptEventHandler(event) {
+                event.target.parentElement.querySelector('#nested-view').currentState = event.target.getAttribute('selected');
+            }
+        </script>
+
+    </body>
+</html>
