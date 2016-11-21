@@ -2,81 +2,47 @@
 <html>
     <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-        <link rel="import" href="../lib/SlimElement.html" />
-        <link rel="import" href="../lib/SlimListOptions.html" />
-        <link rel="import" href="../lib/SlimViewstack.html" />
-        <style>
-            div {
-                border: 1px solid gray;
-                background-color: rgba(0, 0, 0, 0.2);
-                padding: 5px;
-            }
-
-            list-options::shadow .item.selected {
-                font-style: italic;
-                text-decoration: underline;
-            } 
-        </style>
+        <script src="../lib/SlimBase.js"></script>
+        <script src="../lib/SlimUtil.js"></script>
+        <script src="bindExample.js"></script>
     </head>
     <body>
-        <div>
-            <h2>Demo: slim-web-components</h4>
-            <h4>https://github.com/eavichay/slim-web-components</h4>
-        </div>
 
-        <pre>
-This is how the markup looks like.
-Check out how it looks when there's a shadow-dom
+    <input id="inp" type="text" oninput="{#target,what,value}" onfocus="{#target,entry,value}" onblur="{#target,out,value}"></input>
+    <div id="target"></div>
 
-&lt;list-options id="main-nav" selected="state-1"&gt;
-    &lt;item label="OPTION 1" value="state-1" /&gt;
-    &lt;item label="OPTION 2" value="state-2" /&gt;
-    &lt;item label="OPTION 3" value="state-3" /&gt;
-&lt;/list-options&gt;
-        </pre>
+    <hr />
 
-        <div>
-            <h1>Example menu</h1>
-            <list-options id="main-nav" selected="state-1">
-                <item label="OPTION 1" value="state-1"></item>
-                <item label="OPTION 2" value="state-2"></item>
-                <item label="OPTION 3" value="state-3"></item>
-            </list-options>
-            <h1>Example view-stack</h1>
-            <view-stack id="main-view" current-state="state-1">
-                <div id="view-1" in-state="state-1">Hi, I'm suppose to be here if state 1 is selected</div>
-                
-                <div id="view-2" in-state="state-2">Wooah, state #2 is now selected</div>
-                
-                <div id="view-3" in-state="state-3">
-                    <h1>I'm in nested view stack, appears in #3</h1>
-                    <list-options selected="state-3" onchange="simpleJavascriptEventHandler(event)">
-                        <item label="OPTION 1" value="state-1" />
-                        <item label="OPTION 2" value="state-2" />
-                        <item label="OPTION 3" value="state-3" />
-                    </list-options>
-                    <view-stack id="nested-view" current-state="state-1">
-                        <span in-state="state-1" style="color:red">option 3.1</span>
-                        <span in-state="state-2" style="color:blue">option 3.2</span>
-                        <span in-state="state-3" style="color:green">option 3.3</span>
-                    </view-stack>
-                </div>
-                
-                <div id="view-2-2" in-state="state-2">I'm another one appears in state #2</div>
-            </view-stack>
-        </div>
+    <example-bind></example-bind>
 
-        <script>
-            $(document).ready( ()=> {
-                document.querySelector('#main-nav').onchange = (event) => {
-                    document.querySelector('#main-view').currentState = event.target.getAttribute('selected');
+
+
+    <script>
+
+        //
+
+        function bindElement(selector) {
+            var el = document.querySelector(selector);
+            for (let i = 0; i < el.attributes.length; i++) {
+                let attribute = el.attributes[i].nodeName
+                var raw = el.attributes[i].nodeValue
+                if (raw[0] !== '{') continue
+                el.removeAttribute(attribute)
+                let a = raw.split('{').join('').split('}').join('').split(' ').join('').split(',')
+                el[attribute] = function doBind() {
+                    document.querySelector(a[0]).setAttribute(a[1], el[a[2]])
                 }
-            });
-
-            function simpleJavascriptEventHandler(event) {
-                event.target.parentElement.querySelector('#nested-view').currentState = event.target.getAttribute('selected');
             }
-        </script>
+
+
+        }
+
+        bindElement('#inp', 'oninput');
+//        let inp = document.getElementById('inp')
+//        let target = document.getElementById('target')
+//        let p = bindAttribute(inp, 'value', target, 'what')
+
+    </script>
 
     </body>
 </html>
