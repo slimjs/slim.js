@@ -1,0 +1,7 @@
+{
+  "name": "slim",
+  "main": "./lib/**/*.js",
+  "ignore": [
+    "example"
+  ]
+}
