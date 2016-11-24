@@ -5,42 +5,16 @@
         <script src="../lib/SlimBase.js"></script>
         <script src="../lib/SlimUtil.js"></script>
         <script src="bindExample.js"></script>
+        <script src="parentExample.js"></script>
     </head>
     <body>
 
-    <input id="inp" type="text" oninput="{#target,what,value}" onfocus="{#target,entry,value}" onblur="{#target,out,value}"></input>
-    <div id="target"></div>
 
-    <hr />
-
-    <example-bind></example-bind>
+    <example-parent></example-parent>
 
 
 
     <script>
-
-        //
-
-        function bindElement(selector) {
-            var el = document.querySelector(selector);
-            for (let i = 0; i < el.attributes.length; i++) {
-                let attribute = el.attributes[i].nodeName
-                var raw = el.attributes[i].nodeValue
-                if (raw[0] !== '{') continue
-                el.removeAttribute(attribute)
-                let a = raw.split('{').join('').split('}').join('').split(' ').join('').split(',')
-                el[attribute] = function doBind() {
-                    document.querySelector(a[0]).setAttribute(a[1], el[a[2]])
-                }
-            }
-
-
-        }
-
-        bindElement('#inp', 'oninput');
-//        let inp = document.getElementById('inp')
-//        let target = document.getElementById('target')
-//        let p = bindAttribute(inp, 'value', target, 'what')
 
     </script>
 

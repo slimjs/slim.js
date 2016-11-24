@@ -3,17 +3,21 @@
 
     const template = `<input type="text" value="@{customValue}" custom="@{anotherValue}"></input>`
 
-    document.registerElement('example-bind', class extends SlimBaseElement {
+    document.registerElement('example-bound', class extends SlimBaseElement {
 
-        constructor() {
-            super()
+        get _renderOnAttributes() {
+            return ['my-number'];
+        }
 
+        _onAttributeChanged(attribute, oldValue, newValue) {
+            if (attribute === 'my-number') {
+                this.myNumber = newValue
+            }
+            super._onAttributeChanged(attribute, oldValue, newValue)
         }
 
         render() {
-            this.innerHTML = template;
-            this.customValue = "12345"
-            this.anotherValue = "5678"
+            this.innerHTML = `<p>My lucky number is ${this.myNumber}</p>`
         }
 
     })
