@@ -20,6 +20,7 @@
 <example-bound my-number="@{reverse(number1, number2)}"></example-bound>`
             this.find('#myBtn').onclick = function() {
                 this.number1 = Math.random()
+                this.number2 = Math.random();
             }.bind(this)
         }
         myMethod(what) {
