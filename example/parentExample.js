@@ -17,9 +17,16 @@
             return what.toString().split('').reverse().join('') + '____' + what2
         }
 
+        getObject(a, b) {
+            return {
+                a: a,
+                b: b
+            }
+        }
+
         render() {
             this.innerHTML = `
-<example-bound my-number="@{number1}"></example-bound>
+<example-bound my-number="@{number1}" myObject="@{getObject(number1, number2)}"></example-bound>
 <button id="myBtn">Click me:</button>
 <example-bound my-number="@{reverse(number1, number2)}"></example-bound>
 <hr/>
