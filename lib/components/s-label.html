@@ -1,0 +1,44 @@
+<template id="s-label-template">
+    <content></content>
+</template>
+<script type="text/javascript">
+
+    const doc = document.currentScript.ownerDocument
+
+    document.registerElement('s-label', class SlimLabel extends SlimBaseElement {
+        get _renderOnAttributes() {
+            return ['text']
+        }
+
+        get text() {
+            return this._text
+        }
+
+        set text(x) {
+            this._text = x
+            this._render()
+        }
+
+        onCreated () {
+            this.text = this.getAttribute('text')
+            this.root = this.createShadowRoot()
+            var template = doc.querySelector('#s-label-template')
+            this.clone = doc.importNode(template.content, true)
+        }
+
+        onAdded () {
+            this._render()
+        }
+
+        render () {
+            if (!this.root || !this.clone) return
+
+            if (this.clone.parentNode !== this.root) {
+                this.root.appendChild(this.clone)
+            }
+
+            this.root.querySelector('content').innerText = this.text
+            }
+    })
+
+</script>
