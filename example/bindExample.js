@@ -23,7 +23,6 @@
 
         render() {
             this.innerHTML = `<p>My lucky number is ${this.getAttribute('my-number')}</p>`
-            console.log(this.myobject)
         }
 
     })

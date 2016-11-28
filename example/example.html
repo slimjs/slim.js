@@ -5,20 +5,29 @@
         <script src="../lib/SlimBase.js"></script>
         <script src="../lib/SlimUtil.js"></script>
         <script src="../lib/SlimModal.js"></script>
+        <script src="../lib/dependencyInjection/SlimDependencyInjection.js"></script>
         <script src="bindExample.js"></script>
         <script src="parentExample.js"></script>
+        <script src="example-repeater.js"></script>
         <link rel="import" href="../lib/components/s-label.html"/>
+        <link rel="import" href="../lib/components/s-repeat.html"/>
     </head>
     <body>
+
+    <script>
+
+        //define(nodeName, factory, eventName = 'elementAdded', setter = '$dependency')
+        document.SlimInjector.define('example-parent', () => { return "foo" }, 'elementCreated')
+
+    </script>
 
 
     <example-parent></example-parent>
 
 
+    <hr/>
 
-    <script>
-
-    </script>
+    <example-repeater></example-repeater>
 
     </body>
 </html>

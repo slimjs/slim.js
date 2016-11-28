@@ -7,10 +7,19 @@
             this.number1 = 1;
             this.number2 = 5;
             this._render();
+            this._x = '';
 
             this.modalContent = document.createElement('div');
             this.modalContent.innerHTML = `<p>Hello</p>
             <button id="close-modal">Close</button><button id="do-something">Say something</button>`
+        }
+
+        set $dependency(x) {
+            this._x = x
+        }
+
+        get $dependency() {
+            return this._x
         }
 
         reverse(what, what2) {
@@ -33,6 +42,8 @@
 <button id="mdl">Modal</button>
 <hr/>
 <s-label text="@{reverse(number2, number2)}"></s-label>
+<hr/>
+<input type="text" value="@{$dependency}"></input>
 `
             this.find('#myBtn').onclick = function() {
                 this.number1 = Math.random()

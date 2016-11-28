@@ -1,0 +1,45 @@
+<template id="s-repeat-tpl">
+    <content select=".."></content>
+</template>
+
+<script type="text/javascript">
+
+    +(function() {
+        const doc = document.currentScript.ownerDocument
+
+        document.registerElement('s-repeat', class SlimRepeat extends SlimBaseElement {
+
+            onCreated() {
+                this.sourceContent = this.children
+                this.root = this.createShadowRoot()
+                this.sourceData = this.parentNode[this.getAttribute('source')]
+                this.template = doc.importNode( doc.querySelector('#s-repeat-tpl').content, true)
+            }
+
+            onAdded() {
+                if (this.template.parentNode !== this.root) {
+                    this.root.appendChild(this.template)
+                }
+
+                for (let dataItem of this.sourceData) {
+                    for (let child of this.sourceContent) {
+                        let node = doc.importNode(child, true)
+                        for (let prop in dataItem) {
+                            node[prop] = dataItem[prop]
+                            node.setAttribute(prop, dataItem[prop])
+                        }
+                        this.root.appendChild(node)
+                    }
+                }
+            }
+
+            render() {
+
+            }
+
+            onRemoved() {
+            }
+
+        }) 
+    })() 
+</script>

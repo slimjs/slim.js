@@ -3,7 +3,7 @@
 </template>
 <script type="text/javascript">
 
-    const doc = document.currentScript.ownerDocument
+    let doc = document.currentScript.ownerDocument
 
     document.registerElement('s-label', class SlimLabel extends SlimBaseElement {
         get _renderOnAttributes() {
