@@ -3,7 +3,7 @@
 
     document.registerElement('example-parent', class extends SlimBaseElement{
 
-        _onAdded() {
+        onAdded() {
             this.number1 = 1;
             this.number2 = 5;
             this._render();
@@ -23,7 +23,10 @@
 <button id="myBtn">Click me:</button>
 <example-bound my-number="@{reverse(number1, number2)}"></example-bound>
 <hr/>
-<button id="mdl">Modal</button>`
+<button id="mdl">Modal</button>
+<hr/>
+<s-label text="@{reverse(number2, number2)}"></s-label>
+`
             this.find('#myBtn').onclick = function() {
                 this.number1 = Math.random()
                 this.number2 = Math.random();

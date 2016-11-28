@@ -4,12 +4,12 @@
     document.registerElement('example-bound', class extends SlimBaseElement {
 
 
-        _onAttributeChanged(attribute, oldValue, newValue) {
+        onAttributeChanged(attribute, oldValue, newValue) {
             if (attribute === 'my-number') {
                 this.myNumber = newValue
                 this.render()
             }
-            super._onAttributeChanged(attribute, oldValue, newValue)
+            super.onAttributeChanged(attribute, oldValue, newValue)
         }
 
         render() {
