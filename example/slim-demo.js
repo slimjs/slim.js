@@ -25,8 +25,7 @@
         }
 
         updatePlayer() {
-            let yt = this.find('slim-yt-player')
-            yt.setAttribute('video-id', this.find('input#vidid').value)
+            this.videoId = this.find('input#vidid').value
         }
 
         render() {
