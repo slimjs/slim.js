@@ -9,15 +9,27 @@
         }
 
         get template() {
-            return `<iframe width=720" height="480" src="https://www.youtube.com/embed/$VID_ID?autoplay=1"></iframe>`
+            return `<div id="container"><iframe frameborder="0" width="100%" height="100%" src="[getURL(videoId)]"></iframe></div>`
+        }
+
+        set width(x) {
+            this._width = x
+            this.find('#container').style.width = x + 'px'
+        }
+
+        set height(x) {
+            this._height = x
+            this.find('#container').style.height = x + 'px'
+        }
+
+        getURL() {
+            var videoId = this['video-id']
+            return `https://www.youtube.com/embed/${videoId}?autoplay=1`
         }
 
         onAdded() {
-            this._render()
-        }
-
-        render() {
-            this.innerHTML = this.template.replace('$VID_ID', this.getAttribute('video-id'));
+            this.height = 0
+            this.width = 0
         }
 
 
