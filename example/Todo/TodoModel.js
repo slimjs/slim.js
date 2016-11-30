@@ -35,10 +35,10 @@
 
     const instance = new TodoModel()
 
-    instance.addTask('t1')
-    instance.addTask('t2')
-    instance.addTask('t3')
-    instance.todos[2].done = true
+    instance.addTask('Get SlimJS')
+    instance.addTask('Learn how to work with it in 5 minutes')
+    instance.addTask('Throw away all the libraries')
+    instance.addTask('Enjoy building apps')
 
     SlimInjector.define('model', function() {
         "use strict";
