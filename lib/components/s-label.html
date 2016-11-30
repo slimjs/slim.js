@@ -20,14 +20,14 @@
         }
 
         onCreated () {
+
+        }
+
+        onAdded () {
             this.text = this.getAttribute('text')
             this.root = this.createShadowRoot()
             var template = doc.querySelector('#s-label-template')
             this.clone = doc.importNode(template.content, true)
-        }
-
-        onAdded () {
-            this._render()
         }
 
         render () {
@@ -37,7 +37,7 @@
                 this.root.appendChild(this.clone)
             }
 
-            this.root.querySelector('content').innerText = this.text
+            this.root.querySelector('content').innerHTML = `<span>${this.text}</span>`
             }
     })
 
