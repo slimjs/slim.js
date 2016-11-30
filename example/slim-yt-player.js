@@ -23,8 +23,7 @@
         }
 
         getURL() {
-            var videoId = this['video-id']
-            return `https://www.youtube.com/embed/${videoId}?autoplay=1`
+            return `https://www.youtube.com/embed/${this['video-id']}?autoplay=1`
         }
 
         onAdded() {
