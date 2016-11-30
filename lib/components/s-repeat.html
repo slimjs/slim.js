@@ -9,37 +9,48 @@
 
         document.registerElement('s-repeat', class SlimRepeat extends SlimBaseElement {
 
-            onCreated() {
+            onAdded() {
                 this.sourceContent = this.children
                 this.root = this.createShadowRoot()
+                this._template = doc.importNode( doc.querySelector('#s-repeat-tpl').content, true)
                 this.sourceData = this.parentNode[this.getAttribute('source')]
-                this.template = doc.importNode( doc.querySelector('#s-repeat-tpl').content, true)
             }
 
-            onAdded() {
-                if (this.template.parentNode !== this.root) {
-                    this.root.appendChild(this.template)
+            set sourceData(data) {
+                if (!data) return
+                this._sourceData = data
+                if (this._template.parentNode !== this.root) {
+                    this.root.appendChild(this._template)
                 }
+                this.update()
+            }
 
+            get sourceData() {
+                return this._sourceData || []
+            }
+
+            update() {
+                if (this.root) this.root.innerHTML = ''
                 for (let dataItem of this.sourceData) {
                     for (let child of this.sourceContent) {
                         let node = doc.importNode(child, true)
+                        let x = doc.createElement('s-container')
+                        node.data = dataItem
                         for (let prop in dataItem) {
                             node[prop] = dataItem[prop]
-                            node.setAttribute(prop, dataItem[prop])
+                            if (!(typeof dataItem[prop] === "function") && !(typeof dataItem[prop] === "object")) {
+                                node.setAttribute(prop, dataItem[prop])
+                            }
                         }
-                        this.root.appendChild(node)
+                        try {
+                            x.appendChild(node)
+                            node.update()
+                            this.root.appendChild(x)
+                        }
+                        catch (err) {}
                     }
                 }
             }
-
-            render() {
-
-            }
-
-            onRemoved() {
-            }
-
-        }) 
+        })
     })() 
 </script>

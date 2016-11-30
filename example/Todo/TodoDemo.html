@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo Demo - SlimJS</title>
+
+    <link rel="import" href="../../lib/SlimElement.html"/>
+    <script src="TodoModel.js"></script>
+
+    <link rel="import" href="../../lib/components/s-repeat.html">
+    <script src="../../lib/components/s-container.js"></script>
+    <script src="./todo-new-task-input.js"></script>
+    <script src="./todo-task-list.js"></script>
+    <script src="./todo-task-item.js"></script>
+
+    <style>
+        s-container {
+            align-items: center;
+        }
+
+        s-container s-container {
+            width: 80vw;
+        }
+
+        todo-new-task-input {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        todo-new-task-input input[type="text"] {
+            width: 60%;
+            height: 4em;
+            border-radius: 0.5em;
+            border-style: hidden;
+            background-color: #efefef;
+            text-align: center;
+        }
+
+        todo-task-list {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            padding-top: 2em;
+        }
+
+        s-repeat::shadow todo-task-item #container{
+            display: flex;
+            flex-direction: row;
+            flex-grow: 100;
+            background: #afafaf;
+            padding: 0.5em;
+            margin-bottom: 0.2em;
+            position: relative;
+        }
+
+        s-repeat::shadow todo-task-item input[value="X"] {
+            position: absolute;
+            right: 0.5em;
+        }
+
+        s-repeat::shadow todo-task-item span#number {
+            width: 3em;
+        }
+
+        s-repeat::shadow todo-task-item span#title {
+            padding-left: 1em;
+        }
+    </style>
+
+</head>
+<body>
+
+<s-container>
+    <s-container layout="vertical">
+        <h1>SlimJS TodoMVC</h1>
+        <h2>What would you like to do?</h2>
+        <todo-new-task-input model="{model}"></todo-new-task-input>
+        <todo-task-list model="{model}"></todo-task-list>
+    </s-container>
+</s-container>
+</body>
+</html>

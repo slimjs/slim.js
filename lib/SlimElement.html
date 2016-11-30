@@ -1,0 +1,251 @@
+<script>
+
+    (function() {
+
+
+        var __injectors = {}
+
+        class SlimDependencyInjection {
+
+
+            define(injectorName, factory) {
+                __injectors[injectorName] = factory
+            }
+
+
+            inject(nodeName, factory, eventName = 'elementAdded', setter = '$dependency') {
+                __factories[eventName] = __factories[eventName] || SlimDependencyInjection._createWatch(eventName)
+                __factories[eventName][nodeName.toLowerCase()] = { factory: factory, setter: setter }
+            }
+
+            getInjector(name) {
+                return __injectors[name]
+            }
+
+            static _createWatch(eventName) {
+                document.addEventListener(eventName, (event) => {
+                    this._inject(eventName, event)
+                })
+                var result = {}
+                return result
+            }
+
+            static _inject(eventName, event) {
+                for (let nodeName in __factories[eventName]) {
+                    let target = event.srcElement || event.target
+                    let injector = __factories[eventName][target.nodeName.toLowerCase()] || null
+                    if (injector !== null) {
+                        target[injector.setter] = injector.factory()
+                    }
+                }
+            }
+        }
+
+        window.SlimInjector = new SlimDependencyInjection()
+
+
+        function __describeAttribute(attribute) {
+            const rxInject = /\{(.+[^(\((.+)\))])\}/.exec(attribute.nodeValue)
+            const rxProp = /\[(.+[^(\((.+)\))])\]/.exec(attribute.nodeValue)
+            const rxMethod = /\[(.+)(\((.+)\)){1}\]/.exec(attribute.nodeValue)
+
+            if (rxMethod) {
+                return {
+                    type: 'M',
+                    attribute: attribute.nodeName,
+                    method: rxMethod[1],
+                    properties: rxMethod[3].replace(' ','').split(',')
+                }
+            } else if (rxProp) {
+                return {
+                    type: 'P',
+                    attribute: attribute.nodeName,
+                    properties: [ rxProp[1] ]
+                }
+            } else if (rxInject) {
+                return {
+                    type: 'I',
+                    attribute: attribute.nodeName,
+                    factory: rxInject[1]
+                }
+            } else return {}
+        }
+
+        function __inject(descriptor, child) {
+            child[descriptor.attribute] = window.SlimInjector.getInjector(descriptor.factory)()
+        }
+
+        function __bind(source, target, descriptor) {
+            if (!source.__bindings) throw 'Source is not bindable'
+            descriptor.properties.forEach( prop => {
+                source.__bindings[prop] = source.__bindings[prop] || {
+                    value: source[prop],
+                    executors: []
+                }
+                var executor = function() {
+                    var result
+                    if (descriptor.type === 'M') {
+                        result = source[descriptor.method]
+                                .apply( source,
+                                        descriptor.properties.map( prop => {
+                                            return source[prop]
+                                        }))
+                    } else if (descriptor.type === "P") {
+                        result = source[descriptor.properties[0]]
+                    }
+                    if (result !== undefined) {
+                        target[descriptor.attribute] = result
+                        target.setAttribute(descriptor.attribute, result)
+                    }
+                    
+                }
+                source.__bindings[prop].executors.push( executor )
+                source.__defineSetter__(prop, x => {
+                    source.__bindings[prop].value = x
+                    source.__bindings[prop].executors.forEach( fn => { fn() })
+                })
+                source.__defineGetter__(prop, () => {
+                    return source.__bindings[prop].value
+                })
+                executor()
+            })
+        }
+
+
+        class SlimBaseElement extends HTMLElement {
+
+
+            //noinspection JSMethodCanBeStatic
+            /**
+             * interface
+             */
+            get template() { return null }
+
+
+            //noinspection JSMethodCanBeStatic
+            get updateOnAttributes() { return [] }
+
+            onCreated() {}
+            beforeRender() {}
+            render() {}
+            afterRender() {}
+            onAdded() {}
+            update() {}
+            onRemoved() {}
+
+            //noinspection JSUnusedGlobalSymbols
+            /**
+             * Lifecycle
+             */
+            createdCallback() {
+                this.__bindings = {}
+                this.__bindingTree = document.createElement('virtual-dom')
+                this._captureBindings()
+                this.onCreated()
+                this.dispatchEvent(new Event('elementCreated', {bubbles:true}))
+                this._applyBindings()
+                this._renderCycle()
+            }
+
+            _renderCycle() {
+                this.beforeRender()
+
+                if (!this.isAttached) {
+                    this.innerHTML = ''
+                    while (this.__bindingTree.children.length) {
+                        this.appendChild(this.__bindingTree.children[0])
+                    }
+                }
+
+                this.render()
+                this.afterRender()
+            }
+
+            //noinspection JSUnusedGlobalSymbols
+            attachedCallback() {
+                this.dispatchEvent(new Event('elementAdded', {bubbles:true}))
+                this.onAdded()
+            }
+
+            //noinspection JSUnusedGlobalSymbols
+            attributeChangedCallback(attribute, oldValue, newValue) {
+                this.onAttributeChange(attribute, oldValue, newValue)
+            }
+
+            //noinspection JSUnusedGlobalSymbols
+            detachedCallback() {
+                this.onRemoved()
+                this._destroy()
+                this.dispatchEvent(new Event('elementRemoved', {bubbles:true}))
+            }
+
+            //noinspection JSUnusedGlobalSymbols
+            /**
+             * Base Class
+             */
+            find(selector) {
+                return this.querySelector(selector)
+            }
+
+            onAttributeChange(attribute, oldValue, newValue) {
+                if (this.updateOnAttributes.indexOf(attribute) >= 0) {
+                    this.update(attribute, oldValue, newValue)
+                }
+            }
+
+            //noinspection JSUnusedGlobalSymbols
+            /**
+             *
+             * @returns {boolean}
+             */
+            get isAttached() {
+                if (!this.parentNode || this.parentNode.nodeName === 'virtual-dom') {
+                    return false
+                }
+                let p = this
+                while (p && p !== document) {
+                    p = p.parentNode
+                }
+            }
+
+            /**
+             * private
+             */
+
+            _captureBindings() {
+                this.__bindingTree.innerHTML = this.template || this.innerHTML
+                for (let child of this.__bindingTree.querySelectorAll('*')) {
+                    if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
+                        let descriptor = __describeAttribute(child.attributes[i])
+                        if (descriptor.type === 'P' || descriptor.type === 'M') {
+                            __bind(this, child, descriptor)
+                        } else if (descriptor.type === 'I') {
+                            __inject(descriptor, child)
+                        }
+                    }
+                }
+            }
+
+            _applyBindings() {
+                Object.keys(this.__bindings).forEach( (property) => {
+                    this.__bindings[property].executors.forEach( executor => {
+                        executor()
+                    })
+                })
+            }
+
+            _destroy() {
+                delete this.__bindings
+                delete this.__bindingTree
+            }
+
+
+        }
+
+        window.SlimBaseElement = SlimBaseElement
+
+
+
+    }())
+
+</script>
