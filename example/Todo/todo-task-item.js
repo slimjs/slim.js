@@ -34,7 +34,7 @@
             var delButton = this.find('input[value="X"]')
 
             checkbox.dataItem = this.data
-            if (this.getAttribute('done') === "true") {
+            if (this.data.done) {
                 checkbox.setAttribute('checked', 'checked')
             } else {
                 checkbox.removeAttribute('checked')

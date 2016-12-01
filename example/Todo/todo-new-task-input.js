@@ -13,10 +13,6 @@
             this.find('input').value = ''
         }
 
-        _renderCycle() {
-            super._renderCycle()
-        }
-
         afterRender() {
             this.find('input').onkeydown = (event) => {
                 if (event.keyCode === 13) {
