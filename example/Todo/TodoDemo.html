@@ -14,8 +14,69 @@
     <script src="./todo-task-item.js"></script>
 
     <style>
+
+        h1 {
+            padding-right: 1em;
+            padding-left: 1em;
+            color: #cecece;
+            font-size: 2.4em;
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #fff;
+            font-family: "Helvetica", Sans-serif;
+            margin-bottom: -0.3em;
+            margin-top: 2em;
+            letter-spacing: -0.04em;
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+            color: #888;
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #fff;
+            font-family: "Helvetica", Sans-serif;
+            letter-spacing: -0.03em;
+        }
+
+        span.license {
+            font-family: Sans-serif;
+            position: fixed;
+            bottom: 0;
+            text-align: center;
+            width: 100%;
+            display: inline-block;
+            background-color: white;
+            padding: 0.5em;
+            font-size: 0.8em;
+        }
+
+        h4 {
+            text-align: center;
+            width: 100%;
+            text-align: center;
+            border-top: 1em dotted white;
+            padding: 2em;
+        }
+
         s-container {
             align-items: center;
+        }
+
+        s-container.code {
+            background-image: url(paper.png);
+            background-repeat-x: repeat;
+            background-repeat-y: no-repeat;
+            margin: 0 auto;
+            margin-bottom: 4em;
+            border-radius: 1em;
+            background-color: #efefef;
+            width: 50%;
+            padding: 0.5em;
+            overflow-x: hidden;
+        }
+
+        s-container.code p {
+            width: 80%;
+            line-height: 1.4em;
+            letter-spacing: 0.02em;
         }
 
         s-container s-container {
@@ -69,6 +130,7 @@
         }
     </style>
 
+
 </head>
 <body>
 
@@ -81,6 +143,40 @@
     </s-container>
 </s-container>
 
-<a href="https://github.com/eavichay/slim-web-components"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
+<s-container class="code" layout="vertical" style="margin-top: 3em;">
+    <h1>SlimJS is for the lazy coder</h1>
+    <h2>It's Web Components, on steroids</h2>
+    <p>SlimJS Provides fun and easy-to-use data-binding and injection mechanism for <strong>native web-components</strong> without the hassle of heavyweight frameworks.</p>
+    <h4>It's not a framework, it's your enemy's enemy</h4>
+    <p>Write your code without any forced code-conventions or patterns from a 3rd party library.</p>
+    <h4>Data-Binding</h4>
+    <p>One-way properties and method bindings using brackets. Every change in "user" property on the parent, will propogate to the bound nodes</p>
+    <pre><code class="javascript">
+        &lt;login-screen>
+            &lt;login-form user="[user]"
+                        user-details="[getDetails(user)]" />
+        &lt;/login-screen>
+    </code>
+    </pre>
+    <h4>Dependency Injection</h4>
+    <p>Dependency injection using curly braces</p>
+    <pre><code class="javascript">
+        const instance = new TodoModel()
+
+        SlimInjector.define('loginModel', function() {
+            "use strict";
+            return instance
+        })
+
+        ...
+
+        &lt;login-details model="{loginModel}" />
+    </code>
+    </pre>
+</s-container>
+
+<span class="license">© 2016 Avichay Eyal. All code provided is open source under the MIT License</span>
+
+<a href="https://github.com/eavichay/slim-web-components"><img style="position: fixed; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
 </body>
 </html>
