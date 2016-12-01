@@ -10,9 +10,9 @@
         get template() {
             return `
 <div id="container">
-<span id="number">$NUM</span>
+<span id="number" bind>[[data.todoId]]</span>
 <input type="checkbox" done="[done]"/>
-<span id="title" text="[name]">$NAME</span>
+<span id="title" text="[name]" bind>[[data.name]]</span>
 <input type="button" value="X">
 </div>`
         }
@@ -26,9 +26,7 @@
         }
 
         update () {
-            this.innerHTML = this.innerHTML
-                .split('$NAME').join(this.data.name)
-                .split('$NUM').join(this.data.todoId)
+            super.update()
 
             var checkbox = this.find('input[type=checkbox]')
             var delButton = this.find('input[value="X"]')

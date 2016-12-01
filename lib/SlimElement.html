@@ -130,7 +130,9 @@
             render() {}
             afterRender() {}
             onAdded() {}
-            update() {}
+            update() {
+                this._applyTextBindings()
+            }
             onRemoved() {}
 
             //noinspection JSUnusedGlobalSymbols
@@ -159,6 +161,26 @@
 
                 this.render()
                 this.afterRender()
+            }
+
+            _applyTextBindings() {
+                const x = function getDescendantProp(obj, desc) {
+                    var arr = desc.split(".");
+                    while(arr.length && obj) {
+                            obj = obj[arr.shift()]
+                    };
+                    return obj;
+                }
+
+                for (let child of this.querySelectorAll('*[bind]')) {
+                    var match = child.textContent.match(/\[\[([\w|.]+)\]\]/g)
+                    child.sourceTextContent = child.textContent;
+                    if (match) {
+                        for (var i = 0; i < match.length; i++) {
+                            child.innerText = child.innerText.replace(match[i], x(this, match[i].match(/([^\[].+[^\]])/)[0]))
+                        }
+                    }
+                }
             }
 
             //noinspection JSUnusedGlobalSymbols

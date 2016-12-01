@@ -158,19 +158,29 @@
         &lt;/login-screen>
     </code>
     </pre>
+    <h4>Text-to-Data-Binding</h4>
+    <p>Inject property values into your text with a simple annotation. Have no fear from performance issues: you choose where and when your bindings happen!</p>
+    <pre><code class="javascript">
+        &lt;my-element user="{UserModel}"}>
+            &lt;span bind>
+                Hello, [[user.name]]! Welcome to [[location]]
+            &lt;/span>
+        &lt;/my-element>
+    </code>
+    </pre>
     <h4>Dependency Injection</h4>
     <p>Dependency injection using curly braces</p>
     <pre><code class="javascript">
         const instance = new TodoModel()
 
-        SlimInjector.define('loginModel', function() {
+        SlimInjector.define('LoginModel', function() {
             "use strict";
             return instance
         })
 
         ...
 
-        &lt;login-details model="{loginModel}" />
+        &lt;login-details model="{LoginModel}" />
     </code>
     </pre>
 </s-container>
