@@ -1,27 +1,20 @@
-<template id="s-repeat-tpl">
-    <content select="..."></content>
-</template>
-
 <script type="text/javascript">
 
     +(function() {
-        const doc = document.currentScript.ownerDocument
 
         document.registerElement('s-repeat', class SlimRepeat extends SlimBaseElement {
 
             onAdded() {
-                this.sourceContent = this.children
-                this.root = this.createShadowRoot()
-                this._template = doc.importNode( doc.querySelector('#s-repeat-tpl').content, true)
-                this.sourceData = this.parentNode[this.getAttribute('source')]
+                this.sourceData = this.parentNode.parentNode[this.getAttribute('source')]
+            }
+
+            _renderCycle() {
+                super._renderCycle(true)
             }
 
             set sourceData(data) {
                 if (!data) return
                 this._sourceData = data
-                if (this._template.parentNode !== this.root) {
-                    this.root.appendChild(this._template)
-                }
                 this.update()
             }
 
@@ -30,11 +23,10 @@
             }
 
             update() {
-                if (this.root) this.root.innerHTML = ''
+                this.innerHTML = ''
                 for (let dataItem of this.sourceData) {
-                    for (let child of this.sourceContent) {
-                        let node = doc.importNode(child, true)
-                        let x = doc.createElement('s-container')
+                    for (let child of this.__bindingTree.children) {
+                        let node = document.importNode(child, false)
                         node.data = dataItem
                         for (let prop in dataItem) {
                             node[prop] = dataItem[prop]
@@ -42,12 +34,8 @@
                                 node.setAttribute(prop, dataItem[prop])
                             }
                         }
-                        try {
-                            x.appendChild(node)
-                            node.update()
-                            this.root.appendChild(x)
-                        }
-                        catch (err) {}
+                        this.appendChild(node)
+                        node.update()
                     }
                 }
             }

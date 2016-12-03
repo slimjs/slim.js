@@ -3,7 +3,7 @@
 
     doc.registerElement('todo-task-item', class extends SlimBaseElement {
 
-        get _renderOnAttributes() {
+        get updateOnAttributes() {
             return ['name', 'done', 'todoid']
         }
 
@@ -17,17 +17,8 @@
 </div>`
         }
 
-        set data(value) {
-            this._dataItem = value
-        }
-
-        get data() {
-            return this._dataItem
-        }
-
         update () {
             super.update()
-
             var checkbox = this.find('input[type=checkbox]')
             var delButton = this.find('input[value="X"]')
 

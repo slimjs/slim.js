@@ -84,7 +84,6 @@
         }
 
         function __bind(source, target, descriptor) {
-            if (!source.__bindings) throw 'Source is not bindable'
             descriptor.properties.forEach( prop => {
                 source.__bindings[prop] = source.__bindings[prop] || {
                     value: source[prop],
@@ -120,6 +119,8 @@
         }
 
 
+
+
         class SlimBaseElement extends HTMLElement {
 
 
@@ -149,7 +150,7 @@
              */
             createdCallback() {
                 this.__bindings = {}
-                this.__bindingTree = document.createElement('virtual-dom')
+                this.__bindingTree = document.createElement('slim-component')
                 this._captureBindings()
                 this.onCreated()
                 this.dispatchEvent(new Event('elementCreated', {bubbles:true}))
@@ -157,15 +158,10 @@
                 this._renderCycle()
             }
 
-            _renderCycle() {
+            _renderCycle(skipTree = false) {
                 this.beforeRender()
 
-                if (!this.isAttached) {
-                    this.innerHTML = ''
-                    while (this.__bindingTree.children.length) {
-                        this.appendChild(this.__bindingTree.children[0])
-                    }
-                }
+                if (!skipTree) this.appendChild(this.__bindingTree)
 
                 this.render()
                 this.afterRender()
@@ -229,13 +225,11 @@
              * @returns {boolean}
              */
             get isAttached() {
-                if (!this.parentNode || this.parentNode.nodeName === 'virtual-dom') {
-                    return false
-                }
                 let p = this
-                while (p && p !== document) {
+                while (p && p !== document.body) {
                     p = p.parentNode
                 }
+                if (p === document.body) return true
             }
 
             /**
@@ -243,7 +237,13 @@
              */
 
             _captureBindings() {
-                this.__bindingTree.innerHTML = this.template || this.innerHTML
+                if (this.template) {
+                    this.__bindingTree.innerHTML = this.template
+                } else {
+                    while (this.children.length) {
+                        this.__bindingTree.appendChild( this.children[0] )
+                    }
+                }
                 for (let child of this.__bindingTree.querySelectorAll('*')) {
                     if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
                         let descriptor = __describeAttribute(child.attributes[i])
@@ -272,6 +272,9 @@
 
         }
 
+        document.registerElement('slim-component', class extends Element{
+
+        })
         window.SlimBaseElement = SlimBaseElement
 
 
