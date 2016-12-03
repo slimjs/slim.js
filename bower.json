@@ -2,6 +2,9 @@
   "name": "slim",
   "main": "./lib/**/*.js",
   "ignore": [
-    "example"
+    "example",
+    "SlimModal.js",
+    "StateStack.js",
+    "StateView.js"
   ]
 }
