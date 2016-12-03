@@ -1,6 +1,9 @@
 {
   "name": "slim",
-  "main": "./lib/**/*.js",
+  "main": "./lib/SlimElement.js",
+  "include": [
+    "./lib/**/*.js"
+  ],
   "ignore": [
     "example",
     "SlimModal.js",
