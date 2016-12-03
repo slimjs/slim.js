@@ -43,6 +43,14 @@
 
         window.SlimInjector = new SlimDependencyInjection()
 
+        function dashToCamel(dash) {
+            return dash.indexOf('-') < 0 ? dash : dash.replace(/-[a-z]/g, m => {return m[1].toUpperCase()})
+        }
+
+        function camelToDash(camel) {
+            return camel.replace(/([A-Z])/g, '-$1').toLowerCase();
+        }
+
 
         function __describeAttribute(attribute) {
             const rxInject = /\{(.+[^(\((.+)\))])\}/.exec(attribute.nodeValue)
@@ -72,7 +80,7 @@
         }
 
         function __inject(descriptor, child) {
-            child[descriptor.attribute] = window.SlimInjector.getInjector(descriptor.factory)()
+            child[dashToCamel(descriptor.attribute)] = window.SlimInjector.getInjector(descriptor.factory)()
         }
 
         function __bind(source, target, descriptor) {
@@ -94,8 +102,8 @@
                         result = source[descriptor.properties[0]]
                     }
                     if (result !== undefined) {
-                        target[descriptor.attribute] = result
-                        target.setAttribute(descriptor.attribute, result)
+                        target[dashToCamel(descriptor.attribute)] = result
+                        target.setAttribute(camelToDash(descriptor.attribute), result)
                     }
                     
                 }
