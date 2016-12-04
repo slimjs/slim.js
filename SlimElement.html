@@ -1,3 +1,6 @@
+<style>
+slim-component { all: inherit; }
+</style>
 <script>
 
     (function() {
@@ -257,6 +260,7 @@
                     }
                 }
                 for (let child of this.__bindingTree.querySelectorAll('*')) {
+                    child.parentBind = this
                     if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
                         let descriptor = __describeAttribute(child.attributes[i])
                         if (descriptor.type === 'P' || descriptor.type === 'M') {

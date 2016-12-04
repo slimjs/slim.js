@@ -1,0 +1,25 @@
+<script>
+
+    document.registerElement('injection-demo', class extends SlimBaseElement {
+
+
+        get template() {
+            return `<div bind>My text is [[data]] and in reverse it's [[reverse]]</div>`
+        }
+
+        onAdded() {
+            this.update()
+        }
+
+        rev(what) {
+            return what.split('').reverse().join('')
+        }
+
+        get reverse() {
+            return this.rev(this.data)
+        }
+
+
+    })
+
+</script>

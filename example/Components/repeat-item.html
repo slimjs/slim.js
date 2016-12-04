@@ -1,0 +1,20 @@
+<script>
+
+
+    document.registerElement('repeat-item', class extends SlimBaseElement {
+
+
+        get template() {
+            return `<div bind>Hello, my number is [[data.index]] and my value is [[data.value]]</div>`
+        }
+
+        onAdded() {
+            this.update()
+        }
+
+
+    })
+
+
+
+</script>

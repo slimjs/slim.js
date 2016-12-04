@@ -1,0 +1,21 @@
+<link rel="import" href="../../components/s-button.html"/>
+<script>
+
+
+    document.registerElement('button-demo', class extends SlimBaseElement {
+
+
+        get template() {
+            return `<s-button text="&lt;s-button onclick=&quot;myMethod&quot;&gt;" onclick="myMethod"></s-button>`
+        }
+
+        myMethod() {
+            console.log(this)
+            alert('myMethod invoked on <button-demo>, the <s-button> wrapper. check the console')
+        }
+
+
+    })
+
+
+</script>

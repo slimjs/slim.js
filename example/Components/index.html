@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Slim Web Components Library</title>
+
+
+    <link rel="import" href="../../SlimElement.html" />
+    <link rel="import" href="../../components/s-button.html" />
+    <link rel="import" href="../../components/s-repeat.html" />
+    <link rel="import" href="./button-demo.html" />
+    <link rel="import" href="./repeat-demo.html" />
+    <link rel="import" href="./repeat-item.html" />
+    <link rel="import" href="./injection-demo.html" />
+
+
+    <script src="../../components/s-container.js"></script>
+
+
+
+</head>
+<body>
+<h1>Slim Web Component Library Demo</h1>
+<s-container layout="vertical">
+
+    <h3>s-button</h3>
+    <button-demo></button-demo>
+
+    <h3>s-repeat</h3>
+    <pre><code>
+    &lt;s-repeat source="myItems">
+        &lt;repeat-item>&lt;/repeat-item>
+    &lt;/s-repeat>
+    </code></pre>
+    <repeat-demo>
+        <s-repeat source="myItems">
+            <repeat-item></repeat-item>
+        </s-repeat>
+    </repeat-demo>
+
+    <h3>Injection</h3>
+    <p>Text injected from a factory function</p>
+
+    <script>
+        SlimInjector.define('text-es', () => { return 'hola!' })
+        SlimInjector.define('text-en', () => { return 'Hello!'})
+        SlimInjector.define('text-he', () => { return 'שלום'})
+    </script>
+    <s-container>
+    <injection-demo data="{text-es}"></injection-demo>
+    <injection-demo data="{text-en}"></injection-demo>
+    <injection-demo data="{text-he}"></injection-demo>
+    </s-container>
+
+
+</s-container>
+
+</body>
+</html>
