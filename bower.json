@@ -1,6 +1,6 @@
 {
   "name": "slim",
-  "main": "./lib/SlimElement.js",
+  "main": "SlimElement.js",
   "ignore": [
     "example",
     "SlimModal.js",
