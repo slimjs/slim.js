@@ -1,8 +1,8 @@
 {
-  "name": "slim-web-components",
-  "version": "1.0.0",
+  "name": "slim-js",
+  "version": "1.0.5",
   "description": "Slim web components infrastructure",
-  "main": "index.js",
+  "main": "SlimElement.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,5 +18,16 @@
   "homepage": "https://github.com/eavichay/slim-web-components#readme",
   "devDependencies": {
     "eslint": "^3.6.1"
-  }
+  },
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "eslint": "^3.6.1"
+  },
+  "keywords": [
+    "web",
+    "components",
+    "binding"
+  ]
 }
