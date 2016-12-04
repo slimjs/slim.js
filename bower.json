@@ -1,6 +1,6 @@
 {
   "name": "slim",
-  "main": "SlimElement.js",
+  "main": "SlimElement.html",
   "ignore": [
     "example",
     "SlimModal.js",
