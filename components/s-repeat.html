@@ -4,22 +4,21 @@
 
         document.registerElement('s-repeat', class SlimRepeat extends SlimBaseElement {
 
-            onAdded() {
-                this.sourceData = this.parentNode.parentNode[this.getAttribute('source')]
-            }
-
-            _renderCycle() {
-                super._renderCycle(true)
-            }
-
-            set sourceData(data) {
-                if (!data) return
-                this._sourceData = data
+            afterRender() {
                 this.update()
             }
 
             get sourceData() {
-                return this._sourceData || []
+                try {
+                    return this.parentNode.parentNode[this.getAttribute('source')]
+                }
+                catch (err) {
+                    return []
+                }
+            }
+
+            _renderCycle() {
+                super._renderCycle(true)
             }
 
             update() {

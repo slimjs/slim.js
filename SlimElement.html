@@ -139,8 +139,20 @@
             render() {}
             afterRender() {}
             onAdded() {}
-            update() {
+            update(root = false) {
+                if (root) {
+                    document.querySelectorAll('[root]').forEach( (element) => {
+                        element.update(false)
+                    })
+                    return
+                }
                 this._applyTextBindings()
+                for (let child of this.children) {
+                    try {
+                        child.update()
+                    }
+                    catch (err) {}
+                }
             }
             onRemoved() {}
 
@@ -273,6 +285,15 @@
         }
 
         document.registerElement('slim-component', class extends Element{
+
+                update() {
+                        for (let child of this.children) {
+                                try {
+                                        child.update()
+                                }
+                                catch (err) {}
+                        }
+                }
 
         })
         window.SlimBaseElement = SlimBaseElement
