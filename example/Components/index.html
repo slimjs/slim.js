@@ -7,7 +7,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js"></script>
 
-    <link rel="import" href="../../SlimElement.js" />
+    <script src="../../SlimElement.js"></script>
     <link rel="import" href="../../components/s-button.html" />
     <link rel="import" href="../../components/s-input.html" />
     <link rel="import" href="../../components/s-repeat.html" />
@@ -24,6 +24,9 @@
         html {
             padding: 0;
         }
+
+        slim-component { all: inherit; }
+
         body {
             padding: 0;
             font-size: 1.5em;
