@@ -1,6 +1,5 @@
 <script>
 
-
     document.registerElement('s-button', class extends SlimBaseElement {
 
         get updateOnAttributes() {
@@ -21,9 +20,7 @@
         }
 
         update() {
-            this.updateOnAttributes.forEach( (attr) => {
-                this.find('input').value = this.getAttribute('text')
-            })
+            this.find('input').value = this.getAttribute('text')
         }
 
 

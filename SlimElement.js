@@ -1,9 +1,7 @@
-<style>
-slim-component { all: inherit; }
-</style>
-<script>
+    ;(function() {
 
-    (function() {
+
+        window.Slim = document.registerElement.bind(document)
 
 
         var __injectors = {}
@@ -288,7 +286,7 @@ slim-component { all: inherit; }
 
         }
 
-        document.registerElement('slim-component', class extends Element{
+        Slim('slim-component', class extends Element{
 
                 update() {
                         for (let child of this.children) {
@@ -304,6 +302,6 @@ slim-component { all: inherit; }
 
 
 
-    }())
 
-</script>
+
+    }())

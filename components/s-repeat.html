@@ -10,7 +10,7 @@
 
             get sourceData() {
                 try {
-                    return this.parentNode.parentNode[this.getAttribute('source')]
+                    return this.parentBind[this.getAttribute('source')]
                 }
                 catch (err) {
                     return []

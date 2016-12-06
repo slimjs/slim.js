@@ -2,16 +2,17 @@
 <script>
 
 
-    document.registerElement('button-demo', class extends SlimBaseElement {
+    Slim('button-demo', class extends SlimBaseElement {
 
 
         get template() {
-            return `<s-button text="&lt;s-button onclick=&quot;myMethod&quot;&gt;" onclick="myMethod"></s-button>`
+            return `
+<s-button text="&lt;s-button onclick=&quot;myMethod&quot;&gt;" onclick="myMethod"></s-button>
+<s-input type="text" onchange="myMethod" onkeydown="myMethod" onclick="myMethod"/>`
         }
 
-        myMethod() {
-            console.log(this)
-            alert('myMethod invoked on <button-demo>, the <s-button> wrapper. check the console')
+        myMethod(event) {
+            console.log(this, event)
         }
 
 

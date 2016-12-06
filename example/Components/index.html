@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Slim Web Components Library</title>
+    <title>slim.js - Productive Web Components Library</title>
+    <link href="https://fonts.googleapis.com/css?family=Merriweather|Roboto+Slab" rel="stylesheet">
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js"></script>
 
-    <link rel="import" href="../../SlimElement.html" />
+    <link rel="import" href="../../SlimElement.js" />
     <link rel="import" href="../../components/s-button.html" />
+    <link rel="import" href="../../components/s-input.html" />
     <link rel="import" href="../../components/s-repeat.html" />
     <link rel="import" href="./button-demo.html" />
     <link rel="import" href="./repeat-demo.html" />
@@ -17,40 +20,189 @@
     <script src="../../components/s-container.js"></script>
 
 
+    <style>
+        html {
+            padding: 0;
+        }
+        body {
+            padding: 0;
+            font-size: 1.5em;
+            padding-top: 6em;
+            background-color: #5aa99e;
+            font-family: "Roboto Slab", Sans-serif;
+        }
+
+        h1 {
+            line-height: 0.3em;
+        }
+
+        h6 {
+            background-color: white;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 2em;
+        }
+
+        h2, h3, h4, h5 {
+            font-family: "Merriweather", serif;
+            font-weight: normal;
+        }
+        #main-container {
+            align-items: center;
+            width: 100%;
+        }
+
+        pre {
+            background-color: whitesmoke;
+            border: 5px solid antiquewhite;
+            border-radius: 1em;
+            padding: 1em;
+            /*background: url("./bg_texture.png") transparent;*/
+            background-color: whitesmoke;
+            background-position: -5px -5px;
+            background-repeat: repeat;
+        }
+
+        p {
+            text-align: center;
+        }
+
+        code {
+            letter-spacing: -0.05em;
+            line-height: 1.3em;
+        }
+
+        code strong {
+            letter-spacing: 0.015em;
+            background-color: lightblue;
+        }
+    </style>
 
 </head>
 <body>
-<h1>Slim Web Component Library Demo</h1>
-<s-container layout="vertical">
+<a href="https://github.com/eavichay/slim-web-components" target="_blank"><img style="position: fixed; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
 
-    <h3>s-button</h3>
-    <button-demo></button-demo>
+<s-container id="main-container" layout="vertical">
 
-    <h3>s-repeat</h3>
-    <pre><code>
-    &lt;s-repeat source="myItems">
-        &lt;repeat-item>&lt;/repeat-item>
-    &lt;/s-repeat>
+    <h6>
+    <img src="./slim.js.logo.png" width="168px" height="56px"/>
+    </h6>
+    <h1>SLIM is your PRODUCTIVE way</h1>
+    <h1>for writing NATIVE web components</h1>
+    <p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
+    <h2>Featuring</h2>
+    <ul>
+        <li>Lightweight and fast (~1KB minified)</li>
+        <li>Easy and intuitive data binding across your application</li>
+        <li>Dependency injection</li>
+        <li>Text template with data binding done naturally</li>
+        <li>Repeater with array as data source</li>
+    </ul>
+
+    <pre><h2>Data binding and Text-to-data Binding</h2><h4>todo-task-item.js</h4><code>document.registerElement(
+    'todo-task-item',
+    class extends <strong>SlimBaseElement</strong> {
+
+        <strong>get updateOnAttributes</strong>() {
+            return ['name', 'done', 'todoid']
+        }
+
+        <strong>get template</strong>() {
+            return `
+                &lt;div id="container">
+                    &lt;span id="number" <strong>bind</strong>><strong>[[data.todoId]]</strong>&lt;/span>
+                    &lt;input type="checkbox" <strong>done="[done]"</strong>/>
+                    &lt;span id="title" <strong>text="[name]" bind</strong>><strong>[[data.name]]</strong>&lt;/span>
+                    &lt;input type="button" value="X">
+                &lt;/div>`
+        }
+
+        <strong>update</strong>() {
+            <strong>super.update()</strong> // propogate downstream the DOM
+            var checkbox = this.find('input[type=checkbox]')
+            var delButton = this.find('input[value="X"]')
+
+            checkbox.dataItem = this.data
+            if (this.data.done) {
+                checkbox.setAttribute('checked', 'checked')
+            } else {
+                checkbox.removeAttribute('checked')
+            }
+
+            checkbox.onchange = () => {
+                checkbox.dataItem.done = checkbox.checked
+            }
+
+            delButton.onclick = () => {
+                checkbox.dataItem.delete()
+            }
+        }
+
+    })</code></pre>
+
+    <pre><h2>Using repeater</h2><h4>todo-task-list.js</h4><code>document.registerElement(
+    'todo-task-list',
+    class extends <strong>SlimBaseElement</strong> {
+
+    // @override
+    <strong>get updateOnAttributes</strong>() {
+        return ['model']
+    }
+
+    // @override
+    <strong>get template</strong>() {
+        return `<strong>&lt;s-repeat source="items"></strong>&lt;todo-task-item>&lt;/todo-task-item><strong>&lt;/s-repeat></strong>`
+    }
+
+    // @override abstract
+    <strong>afterRender</strong>() {
+        this.model.addEventListener('change', () => {
+            this.<strong>find('s-repeat').update()</strong>
+        })
+        this.<strong>find('s-repeat').update()</strong>
+    }})
+
+    get items() {
+        return this.model.todos
+    }</code></pre>
+
+    <pre><h2>Using injection</h2><h4>Todo.html</h4><code>&lt;todo-task-list <strong>model="{model}"</strong>>&lt;/todo-task-list>
     </code></pre>
-    <repeat-demo>
-        <s-repeat source="myItems">
-            <repeat-item></repeat-item>
-        </s-repeat>
-    </repeat-demo>
 
-    <h3>Injection</h3>
-    <p>Text injected from a factory function</p>
+    <pre><h4>TodoModel.js</h4><code>
+class TodoModel {
 
-    <script>
-        SlimInjector.define('text-es', () => { return 'hola!' })
-        SlimInjector.define('text-en', () => { return 'Hello!'})
-        SlimInjector.define('text-he', () => { return 'שלום'})
-    </script>
-    <s-container>
-    <injection-demo data="{text-es}"></injection-demo>
-    <injection-demo data="{text-en}"></injection-demo>
-    <injection-demo data="{text-he}"></injection-demo>
-    </s-container>
+    constructor extends EventDispatcher() {
+        this.todos = []
+    }
+
+    addTask(value) {
+        this.todos.push( {
+            name: value,
+            done: false,
+            todoId: this.todos.length + 1,
+            delete: function() {
+            instance.removeTask(this.todoId)
+        }})
+
+        this.dispatchEvent(new Event('change'))
+    }
+
+    removeTask(taskId) {
+        this.todos.splice(taskId - 1, 1)
+        this.todos.forEach( (todo, index) => {
+            todo.todoId = index + 1
+        })
+        this.dispatchEvent(new Event('change'))
+    }
+
+}
+
+const singleton = new TodoModel()
+
+SlimInjector.define('model', () => { return singleton })</code></pre>
 
 
 </s-container>
