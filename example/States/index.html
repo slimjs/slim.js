@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SlimJS - States Demo</title>
+
+    <script src="../../SlimElement.js"></script>
+    <script src="../../components/s-states.js"></script>
+</head>
+<body>
+
+
+<s-states current-state="init">
+
+    <div in-state="init">Init</div>
+    <div in-state="hello">Hello</div>
+    <div in-state="hello">World</div>
+    <div in-state="bye">Goodbye</div>
+
+
+</s-states>
+<button onclick="nextState()" value="next..."></button>
+
+<script>
+
+    const states = ['init','hello','bye'];
+    var x = 0;
+
+    function nextState() {
+        document.querySelector('s-states').setAttribute('current-state', states[x++ % states.length])
+        console.log(x)
+    }
+
+
+</script>
+
+</body>
+</html>
