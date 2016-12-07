@@ -1,5 +1,5 @@
-<script>
-    document.registerElement('s-input', class extends SlimBaseElement {
+;(function(){
+    Slim('s-input', class extends SlimBaseElement {
 
         get updateOnAttributes() {
             return ['onchange',
@@ -49,4 +49,4 @@
         }
 
     })
-</script>
+})()

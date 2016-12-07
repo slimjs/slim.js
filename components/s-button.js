@@ -1,6 +1,5 @@
-<script>
-
-    document.registerElement('s-button', class extends SlimBaseElement {
++(function() {
+    Slim('s-button', class extends SlimBaseElement {
 
         get updateOnAttributes() {
             return ['onclick', 'text']
@@ -25,6 +24,4 @@
 
 
     })
-
-
-</script>
+}())

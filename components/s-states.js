@@ -2,7 +2,7 @@
 
     const template = `<div currentState=""></div>`
 
-    document.registerElement('s-states', class extends SlimBaseElement {
+    Slim('s-states', class extends SlimBaseElement {
 
         get updateOnAttributes() {
             return ['current-state']

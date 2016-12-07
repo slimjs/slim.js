@@ -8,9 +8,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js"></script>
 
     <script src="../../SlimElement.js"></script>
-    <link rel="import" href="../../components/s-button.html" />
-    <link rel="import" href="../../components/s-input.html" />
-    <link rel="import" href="../../components/s-repeat.html" />
+    <link rel="import" href="../../components/s-button.js" />
+    <link rel="import" href="../../components/s-input.js" />
+    <link rel="import" href="../../components/s-repeat.js" />
     <link rel="import" href="./button-demo.html" />
     <link rel="import" href="./repeat-demo.html" />
     <link rel="import" href="./repeat-item.html" />
@@ -27,8 +27,9 @@
 
         body {
             padding: 0;
+            margin: 0;
+            margin-bottom: 5em;
             font-size: 1.5em;
-            padding-top: 6em;
             background-color: #5aa99e;
             font-family: "Roboto Slab", Sans-serif;
         }
@@ -44,6 +45,17 @@
             align-items: center;
             justify-content: space-around;
             padding: 2em;
+            margin: 0em;
+            margin-bottom: 4em;
+        }
+
+        h6 p {
+            text-align: left;
+            padding-left: 1.6em;
+        }
+
+        h6 img {
+            margin-left: 5em;
         }
 
         h2, h3, h4, h5 {
@@ -79,20 +91,34 @@
             letter-spacing: 0.015em;
             background-color: lightblue;
         }
+
+        span.license {
+            font-family: Sans-serif;
+            position: fixed;
+            bottom: 0;
+            text-align: center;
+            width: 100%;
+            display: inline-block;
+            background-color: white;
+            padding: 0.5em;
+            font-size: 0.8em;
+        }
     </style>
 
 </head>
 <body>
+<span class="license">© 2016 Avichay Eyal. All code provided is open source under the MIT License</span>
 <a href="https://github.com/eavichay/slim-web-components" target="_blank"><img style="position: fixed; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
 
 <s-container id="main-container" layout="vertical">
 
     <h6>
     <img src="./slim.js.logo.png" width="168px" height="56px"/>
+        <p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
     </h6>
     <h1>SLIM is your PRODUCTIVE way</h1>
     <h1>for writing NATIVE web components</h1>
-    <p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
+
     <h2>Featuring</h2>
     <ul>
         <li>Lightweight and fast (~1KB minified)</li>

@@ -1,6 +1,6 @@
 +(function() {
 
-    document.registerElement('s-container', class extends SlimBaseElement {
+    Slim('s-container', class extends SlimBaseElement {
 
         onAttributeChanged(attribute, oldVal, newVal) {
             switch (attribute) {

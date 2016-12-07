@@ -1,8 +1,6 @@
-<script type="text/javascript">
+  +(function() {
 
-    +(function() {
-
-        document.registerElement('s-repeat', class SlimRepeat extends SlimBaseElement {
+        Slim('s-repeat', class SlimRepeat extends SlimBaseElement {
 
             afterRender() {
                 this.update()
@@ -39,5 +37,4 @@
                 }
             }
         })
-    })() 
-</script>
+    })()
