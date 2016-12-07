@@ -17,7 +17,10 @@
 
         })()
 
-
+        window.slimTemplate = function(selector) {
+            let node = document.querySelector(selector)
+            return document.importNode(node, true)
+        }
         window.Slim = document.registerElement.bind(document)
 
 
@@ -31,6 +34,7 @@
             }
 
 
+            //noinspection JSUnusedGlobalSymbols
             inject(nodeName, factory, eventName = 'elementAdded', setter = '$dependency') {
                 __factories[eventName] = __factories[eventName] || SlimDependencyInjection._createWatch(eventName)
                 __factories[eventName][nodeName.toLowerCase()] = { factory: factory, setter: setter }
@@ -44,8 +48,7 @@
                 document.addEventListener(eventName, (event) => {
                     this._inject(eventName, event)
                 })
-                var result = {}
-                return result
+                return {}
             }
 
             static _inject(eventName, event) {
@@ -132,7 +135,6 @@
                 source.__defineGetter__(prop, () => {
                     return source.__bindings[prop].value
                 })
-                executor()
             })
         }
 
@@ -182,9 +184,9 @@
                 this.__bindings = {}
                 this.__bindingTree = document.createElement('slim-component')
                 this._captureBindings()
+                this._applyBindings()
                 this.onCreated()
                 this.dispatchEvent(new Event('elementCreated', {bubbles:true}))
-                this._applyBindings()
                 this._renderCycle()
             }
 
@@ -194,6 +196,7 @@
                 if (!skipTree) this.appendChild(this.__bindingTree)
 
                 this.render()
+                this._applyTextBindings()
                 this.afterRender()
             }
 
@@ -211,7 +214,11 @@
                     child.sourceTextContent = child.textContent;
                     if (match) {
                         for (var i = 0; i < match.length; i++) {
-                            child.innerText = child.innerText.replace(match[i], x(this, match[i].match(/([^\[].+[^\]])/)[0]))
+                            let result = x(this, match[i].match(/([^\[].+[^\]])/)[0])
+                            if (result) {
+                                child.innerText = child.innerText.replace(match[i], result)
+                            }
+                            
                         }
                     }
                 }
@@ -267,24 +274,44 @@
              */
 
             _captureBindings() {
-                if (this.template) {
-                    this.__bindingTree.innerHTML = this.template
-                } else {
+                let $tpl = this.template;
+                if (!$tpl) {
                     while (this.children.length) {
                         this.__bindingTree.appendChild( this.children[0] )
                     }
+                } else {
+                    if (typeof($tpl) === 'string') {
+                        this.__bindingTree.innerHTML = $tpl
+                    }
                 }
-                for (let child of this.__bindingTree.querySelectorAll('*')) {
-                    child.parentBind = this
+
+                let descriptors = []
+                let allChildren = this.__bindingTree.querySelectorAll('*')
+                allChildren = Array.prototype.slice.call(allChildren).concat(this)
+                for (let child of allChildren) {
+                    child.parentBind = child.parentBind || this
                     if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
                         let descriptor = __describeAttribute(child.attributes[i])
-                        if (descriptor.type === 'P' || descriptor.type === 'M') {
-                            __bind(this, child, descriptor)
-                        } else if (descriptor.type === 'I') {
-                            __inject(descriptor, child)
+                        if (descriptor.type) {
+                            descriptor.child = child
+                            descriptors.push(descriptor)
                         }
                     }
                 }
+
+                descriptors = descriptors.sort( (a,b) => {
+                    if (a.type === "I") {
+                        return -1
+                    } else return 1
+                })
+
+                descriptors.forEach( descriptor => {
+                    if (descriptor.type === 'P' || descriptor.type === 'M') {
+                        __bind(this, descriptor.child, descriptor)
+                    } else if (descriptor.type === 'I') {
+                        __inject(descriptor, descriptor.child)
+                    }
+                })
             }
 
             _applyBindings() {

@@ -5,43 +5,36 @@
 
     class KanbanModel {
 
-
-        get lists() {
-            if (!this._lists) {
-                this._lists = {}
-            }
-            return this._lists
+        constructor() {
+            this.lists = ['Todo', 'In-Progress', 'Done']
+            this.tasks = []
         }
 
-        addList(name = 'new list') {
-            var self = this
-            this.lists[name] = {
-                name: name,
-                items: [],
-                deleteList: function() {
-                    delete self.lists[this.name]
-                },
-                createItem: function(name = 'new task') {
-                    let newItem = {
-                        name: name,
-                        description: ''
-                    }
-                    this.items.push(newItem)
-                    return newItem
-                }
-            }
+        getTasks(column) {
+            return tasks.filter( task => {
+                return task.column === column
+            })
         }
+
+        addTask(name = 'New Task', description = '') {
+            let newTask = { name, description}
+            newTask.column = 'Todo'
+            this.tasks.push(newTask)
+        }
+
+        get hello() {
+            return 'Hello'
+        }
+
+
     }
 
 
     const instance = new KanbanModel()
 
-
-    instance.addList('list 1')
-    instance.addList('list 2')
-    instance.addList('list 3')
-
-    instance.lists['list 1'].createItem('new task 1')
+    for (let x = 0; x < 10; x++) {
+        instance.addTask(`Task ${x+1}`, `this is task number ${x+1}`)
+    }
 
 
     SlimInjector.define("KanbanModel", function() {

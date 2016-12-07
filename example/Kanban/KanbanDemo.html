@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <title>Kanban Demo - SlimJS</title>
 
-    <link rel="import" href="../../SlimElement.js" />
-    <link rel="import" href="../../components/s-repeat.js" />
+    <script src="../../SlimElement.js"></script>
+    <script src="KanbanModel.js"></script>
+    <script src="../../components/s-repeat.js"></script>
     <script src="../../components/s-container.js"></script>
 
-    <script src="KanbanModel.js"></script>
+
     <link rel="import" href="kanban-app.html" />
-    <link rel="import" href="kanban-list.html" />
-    <link rel="import" href="kanban-item.html" />
+    <!--<link rel="import" href="kanban-list.html" />-->
+    <!--<link rel="import" href="kanban-item.html" />-->
 
     <style type="text/css">
 
@@ -48,8 +49,6 @@
 </head>
 <body>
 
-<s-container>
     <kanban-app root model="{KanbanModel}"></kanban-app>
-</s-container>
 </body>
 </html>

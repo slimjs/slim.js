@@ -1,39 +1,17 @@
 <script>
 
-    (function() {
+    Slim('kanban-app', class extends SlimBaseElement {
 
-
-        document.registerElement('kanban-app', class extends SlimBaseElement {
-
-
-            get template() {
-                return `
-<input type="button" id="add" />
-<s-repeat source="lists">
-<kanban-list></kanban-list>
-</s-repeat>
+        get template() {
+            return `
+<span bind>[[model.hello]]</span><div test="[wtf]" model="{KanbanModel}"></div>
 `
-            }
+        }
 
-            get lists() {
-                if (this.model) {
-                    return Object.keys( this.model.lists ).map( k => { return this.model.lists[k] })
-                }
-                else return []
-            }
+        onCreated() {
+            this.wtf = "Hello"
+        }
+    })
 
-            afterRender() {
-                this.find('#add').onclick = () => {
-                    this.model.addList(prompt('list name?'))
-                    this.update()
-                }
-                this.update()
-            }
-
-
-        })
-
-
-    })()
 
 </script>

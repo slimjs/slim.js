@@ -5,8 +5,6 @@
     <title>slim.js - Productive Web Components Library</title>
     <link href="https://fonts.googleapis.com/css?family=Merriweather|Roboto+Slab" rel="stylesheet">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js"></script>
-
     <script src="../../SlimElement.js"></script>
     <link rel="import" href="../../components/s-button.js" />
     <link rel="import" href="../../components/s-input.js" />
@@ -31,11 +29,16 @@
             margin-bottom: 5em;
             font-size: 1.5em;
             background-color: #5aa99e;
-            font-family: "Roboto Slab", Sans-serif;
+            font-family: "Roboto Slab", "Helvetica Neue", "Helvetica", Sans-serif;
+            overflow-x: hidden;
         }
 
         h1 {
-            line-height: 0.3em;
+            font-weight: normal;
+            line-height: 1em;
+            text-align: center;
+            letter-spacing: -0.008em;
+            text-shadow: 1px 1px antiquewhite;
         }
 
         h6 {
@@ -45,7 +48,7 @@
             align-items: center;
             justify-content: space-around;
             padding: 2em;
-            margin: 0em;
+            margin: 0;
             margin-bottom: 4em;
         }
 
@@ -93,7 +96,9 @@
         }
 
         span.license {
-            font-family: Sans-serif;
+            border-top: 5px solid antiquewhite;
+            font-family: 'Merriweather', serif;
+            font-size: 0.6em;
             position: fixed;
             bottom: 0;
             text-align: center;
@@ -101,7 +106,6 @@
             display: inline-block;
             background-color: white;
             padding: 0.5em;
-            font-size: 0.8em;
         }
     </style>
 
@@ -116,8 +120,7 @@
     <img src="./slim.js.logo.png" width="168px" height="56px"/>
         <p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
     </h6>
-    <h1>SLIM is your PRODUCTIVE way</h1>
-    <h1>for writing NATIVE web components</h1>
+    <h1><strong>SLIM</strong> is your <strong>PRODUCTIVE</strong> way<br/>for writing <strong>NATIVE</strong> web components</h1>
 
     <h2>Featuring</h2>
     <ul>
