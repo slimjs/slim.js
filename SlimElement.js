@@ -1,21 +1,17 @@
     ;(function() {
 
 
-        (function() {
+        var css = 'slim-component, s-repeat { all: inherit; padding: 0; margin: 0; background: none; }',
+            head = document.head || document.getElementsByTagName('head')[0],
+            style = document.createElement('style');
 
-            var css = 'slim-component, s-repeat { all: inherit; padding: 0; margin: 0; background: none; }',
-                head = document.head || document.getElementsByTagName('head')[0],
-                style = document.createElement('style');
-
-            style.type = 'text/css';
-            if (style.styleSheet) {
-                style.styleSheet.cssText = css;
-            } else {
-                style.appendChild(document.createTextNode(css));
-            }
-            head.appendChild(style);
-
-        })()
+        style.type = 'text/css';
+        if (style.styleSheet) {
+            style.styleSheet.cssText = css;
+        } else {
+            style.appendChild(document.createTextNode(css));
+        }
+        head.appendChild(style);
 
         window.slimTemplate = function(selector) {
             let node = document.querySelector(selector)

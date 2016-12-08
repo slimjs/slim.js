@@ -24,7 +24,7 @@
             this.currentState = this.getAttribute('current-state') || ''
         }
 
-        render() {
+        afterRender() {
             this.update()
         }
 
