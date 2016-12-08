@@ -5,8 +5,6 @@
 
     Slim('kanban-item', class extends SlimBaseElement {
 
-
-
         get template() {
             return `
 <div>
@@ -15,13 +13,7 @@
 </div>`
         }
 
-
-
-
-
-
     })
-
 
 
 
@@ -41,14 +33,19 @@
         justify-content: center;
     }
 
+    kanban-item:last-child {
+        margin-bottom: 0;
+    }
+
     kanban-item div {
         width: 100%;
     }
 
     kanban-item .title {
+        font-family: "Catamaran", Sans-serif;
+        font-weight: normal;
         display: block;
         font-size: 1.3em;
         width: 100%;
-        text-align: center;
     }
 </style>

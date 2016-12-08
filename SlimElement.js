@@ -187,7 +187,16 @@
             onBeforeCreated() {}
             onCreated() {}
             beforeRender() {}
-            render() {}
+            render(template) {
+                this.isForcedRender = true;
+                let newTemplate = template;
+                if (this.template !== newTemplate) {
+                    this.__bindings = {}
+                    this.__bindingTree = document.createElement('slim-component')
+                    this._bindingCycle(newTemplate)
+                    this._renderCycle()
+                }
+            }
             afterRender() {}
             onAdded() {}
             update(root = false) {
@@ -222,19 +231,18 @@
                 this._renderCycle()
             }
 
-            _bindingCycle() {
-                this._captureBindings()
-                this._applyBindings()
+            _bindingCycle(forcedTemplate) {
+                this._captureBindings(forcedTemplate)
+                this._applyBindings(forcedTemplate)
             }
 
             _renderCycle(skipTree = false) {
-                this.beforeRender()
+                if (!this.isForcedRender) this.beforeRender()
 
                 if (!skipTree) this.appendChild(this.__bindingTree)
-
-                this.render()
                 this._applyTextBindings()
-                this.afterRender()
+                if (!this.isForcedRender) this.afterRender()
+                this.isForcedRender = false;
             }
 
             _applyTextBindings() {
@@ -315,8 +323,8 @@
              * private
              */
 
-            _captureBindings() {
-                let $tpl = this.template;
+            _captureBindings(forcedTemplate) {
+                let $tpl = forcedTemplate || this.template;
                 if (!$tpl) {
                     while (this.children.length) {
                         this.__bindingTree.appendChild( this.children[0] )

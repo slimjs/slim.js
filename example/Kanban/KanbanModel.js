@@ -10,6 +10,10 @@
             this.tasks = []
         }
 
+        getIdForNewTask() {
+            return this.tasks.length + 1;
+        }
+
         getTasks(column) {
             return this.tasks.filter( task => {
                 return task.column === column
@@ -19,6 +23,7 @@
         addTask(title = 'New Task', description = '') {
             let newTask = { title, description}
             newTask.column = 'Todo'
+            newTask.id = this.getIdForNewTask()
             this.tasks.push(newTask)
         }
 
