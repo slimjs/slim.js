@@ -1,7 +1,7 @@
     ;(function() {
 
 
-        var css = 'slim-component, s-repeat { all: inherit; padding: 0; margin: 0; background: none; }',
+        var css = 'slim-component, s-repeat { all: inherit; padding: 0; margin: 0; background: none; left: 0; top: 0;}',
             head = document.head || document.getElementsByTagName('head')[0],
             style = document.createElement('style');
 
@@ -195,20 +195,23 @@
             }
             afterRender() {}
             onAdded() {}
-            update(root = false) {
+            update(root = false, flat = true) {
                 if (root) {
                     document.querySelectorAll('[root]').forEach( (element) => {
                         element.update(false)
                     })
                     return
                 }
-                this._applyTextBindings()
+                if (!flat) this._applyTextBindings()
                 for (let child of this.children) {
                     try {
                         child.update()
                     }
                     catch (err) {}
                 }
+            }
+            refresh() {
+                this.createdCallback(true)
             }
             onRemoved() {}
 

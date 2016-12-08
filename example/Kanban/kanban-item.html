@@ -13,6 +13,14 @@
 </div>`
         }
 
+        afterRender() {
+            $(this).draggable({
+                revert: 'invalid',
+                revertDuration: 100,
+                connectWith: 'kanban-column'
+            })
+        }
+
     })
 
 

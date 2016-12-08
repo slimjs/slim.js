@@ -13,6 +13,18 @@
             return this.model.getTasks(this.data.name)
         }
 
+        afterRender() {
+            this.model.addEventListener('change', () => {
+                this.update()
+            })
+            $(this).droppable({
+                accept: 'kanban-item',
+                drop: function(event, ui) {
+                    this.model.moveTask(ui.draggable[0].data, this.data)
+                }
+            })
+        }
+
 
     })
 

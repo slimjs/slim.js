@@ -1,13 +1,25 @@
 +(function(){
     "use strict";
 
+    class Dispatcher {
+        constructor() {
+            var delegate = document.createDocumentFragment();
+            ['addEventListener', 'dispatchEvent', 'removeEventListener'].forEach(
+                f => this[f] = (...xs) => delegate[f](...xs)
+            )
+        }
+    }
 
-
-    class KanbanModel {
+    class KanbanModel extends Dispatcher{
 
         constructor() {
+            super()
             this.columns = [{name: 'Todo'},{name:'In-Progress'},{name:'Done'}]
             this.tasks = []
+        }
+
+        notify() {
+            this.dispatchEvent(new Event('change'))
         }
 
         getIdForNewTask() {
@@ -25,6 +37,11 @@
             newTask.column = 'Todo'
             newTask.id = this.getIdForNewTask()
             this.tasks.push(newTask)
+        }
+
+        moveTask(task, column) {
+            task.column = column.name
+            this.notify()
         }
 
         get hello() {
