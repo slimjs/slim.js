@@ -1,0 +1,54 @@
+<script>
+
+;(function(){
+
+
+    Slim('kanban-item', class extends SlimBaseElement {
+
+
+
+        get template() {
+            return `
+<div>
+    <div class="title"><span bind>[[data.title]]</span></div>
+    <div class="description" bind>[[data.description]]</div>
+</div>`
+        }
+
+
+
+
+
+
+    })
+
+
+
+
+})()
+
+
+</script>
+
+<style>
+    kanban-item {
+        display: inline-flex;
+        background: white;
+        width: 100%;
+        padding: 0.5em;
+        border-radius: 1em;
+        margin-bottom: 1em;
+        justify-content: center;
+    }
+
+    kanban-item div {
+        width: 100%;
+    }
+
+    kanban-item .title {
+        display: block;
+        font-size: 1.3em;
+        width: 100%;
+        text-align: center;
+    }
+</style>

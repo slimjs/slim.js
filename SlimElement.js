@@ -3,7 +3,7 @@
 
         (function() {
 
-            var css = 'slim-component { all: inherit; }',
+            var css = 'slim-component, s-repeat { all: inherit; padding: 0; margin: 0; background: none; }',
                 head = document.head || document.getElementsByTagName('head')[0],
                 style = document.createElement('style');
 

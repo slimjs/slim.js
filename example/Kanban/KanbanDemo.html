@@ -6,13 +6,13 @@
 
     <script src="../../SlimElement.js"></script>
     <script src="KanbanModel.js"></script>
-    <script src="kanban-column.js"></script>
-    <script src="kanban-item.js"></script>
     <script src="../../components/s-repeat.js"></script>
     <script src="../../components/s-container.js"></script>
 
 
     <link rel="import" href="kanban-app.html" />
+    <link rel="import" href="kanban-column.html" />
+    <link rel="import" href="kanban-item.html" />
     <!--<link rel="import" href="kanban-list.html" />-->
     <!--<link rel="import" href="kanban-item.html" />-->
 
@@ -21,29 +21,12 @@
         body, html {
             width: 100%;
             height: 100%;
+            margin: 0;
+            padding: 0;
         }
 
-        kanban-app {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        slim-element {
-            display: inline-block;
-        }
-
-        kanban-list {
-            background-color: #afafaf;
-            display: block;
-            float: left;
-            text-align: center;
-            width: 10em;
-            flex-direction: column;
-            align-items: center;
-            margin: 0 1em 1em 0
+        * {
+            box-sizing: content-box;
         }
 
     </style>

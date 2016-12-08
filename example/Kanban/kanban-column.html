@@ -1,0 +1,40 @@
+<script>
+;(function(){
+
+
+    Slim('kanban-column', class extends SlimBaseElement {
+
+
+        get template() {
+            return `<span bind>[[data.name]]</span><kanban-item slim-repeat="myTasks"></kanban-item>`
+        }
+
+        onAdded() {
+            console.log(this.myTasks)
+        }
+
+        get myTasks() {
+            return this.model.getTasks(this.data.name)
+        }
+
+
+    })
+
+
+
+
+})()
+</script>
+
+<style>
+    kanban-column {
+        display: inline-flex;
+        flex-direction: column;
+        height: 100%;
+        width: 15em;
+        padding: 1em;
+        background: antiquewhite;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
