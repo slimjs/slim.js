@@ -6,18 +6,18 @@
     class KanbanModel {
 
         constructor() {
-            this.lists = ['Todo', 'In-Progress', 'Done']
+            this.columns = [{name: 'Todo'},{name:'In-Progress'},{name:'Done'}]
             this.tasks = []
         }
 
         getTasks(column) {
-            return tasks.filter( task => {
+            return this.tasks.filter( task => {
                 return task.column === column
             })
         }
 
-        addTask(name = 'New Task', description = '') {
-            let newTask = { name, description}
+        addTask(title = 'New Task', description = '') {
+            let newTask = { title, description}
             newTask.column = 'Todo'
             this.tasks.push(newTask)
         }

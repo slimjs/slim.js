@@ -2,15 +2,15 @@
 
     Slim('kanban-app', class extends SlimBaseElement {
 
+
         get template() {
-            return `
-<span bind>[[model.hello]]</span><div test="[wtf]" model="{KanbanModel}"></div>
-`
+            return `<kanban-column slim-repeat="columns" model="{KanbanModel}"></kanban-column>`
         }
 
-        onCreated() {
-            this.wtf = "Hello"
+        get columns() {
+            return this.model.columns
         }
+
     })
 
 

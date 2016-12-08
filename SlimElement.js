@@ -72,8 +72,22 @@
             return camel.replace(/([A-Z])/g, '-$1').toLowerCase();
         }
 
+        function __describeRepeater(attribute) {
+            
+            return {
+                type: "R",
+                attribute: attribute.nodeName,
+                properties: [attribute.nodeValue],
+                source: attribute.ownerElement.parentBind
+            }
+        }
+
 
         function __describeAttribute(attribute) {
+            if (attribute.nodeName === 'slim-repeat') {
+                return __describeRepeater(attribute)
+            }
+
             const rxInject = /\{(.+[^(\((.+)\))])\}/.exec(attribute.nodeValue)
             const rxProp = /\[(.+[^(\((.+)\))])\]/.exec(attribute.nodeValue)
             const rxMethod = /\[(.+)(\((.+)\)){1}\]/.exec(attribute.nodeValue)
@@ -104,6 +118,17 @@
             child[dashToCamel(descriptor.attribute)] = window.SlimInjector.getInjector(descriptor.factory)()
         }
 
+        function __repeater(descriptor) {
+                let sRepeat = document.createElement('s-repeat')
+                sRepeat.setAttribute('source', descriptor.properties[0])
+                sRepeat.parentBind = descriptor.source
+                descriptor.child.removeAttribute('slim-repeat')
+                descriptor.child.parentNode.insertBefore(sRepeat, descriptor.child)
+                sRepeat.appendChild(descriptor.child)
+                sRepeat.createdCallback(true)
+                sRepeat.update()
+        }
+
         function __bind(source, target, descriptor) {
             descriptor.properties.forEach( prop => {
                 source.__bindings[prop] = source.__bindings[prop] || {
@@ -124,6 +149,7 @@
                     if (result !== undefined) {
                         target[dashToCamel(descriptor.attribute)] = result
                         target.setAttribute(camelToDash(descriptor.attribute), result)
+                        source.update()
                     }
                     
                 }
@@ -150,10 +176,15 @@
              */
             get template() { return null }
 
+            get isSlim() {
+                    return true
+            }
+
 
             //noinspection JSMethodCanBeStatic
             get updateOnAttributes() { return [] }
 
+            onBeforeCreated() {}
             onCreated() {}
             beforeRender() {}
             render() {}
@@ -180,14 +211,20 @@
             /**
              * Lifecycle
              */
-            createdCallback() {
+            createdCallback(force) {
+                if (!this.isAttached && !force) return
+                this.onBeforeCreated()
                 this.__bindings = {}
                 this.__bindingTree = document.createElement('slim-component')
-                this._captureBindings()
-                this._applyBindings()
+                this._bindingCycle()
                 this.onCreated()
                 this.dispatchEvent(new Event('elementCreated', {bubbles:true}))
                 this._renderCycle()
+            }
+
+            _bindingCycle() {
+                this._captureBindings()
+                this._applyBindings()
             }
 
             _renderCycle(skipTree = false) {
@@ -209,14 +246,19 @@
                     return obj;
                 }
 
-                for (let child of this.querySelectorAll('*[bind]')) {
+                let allChildren = this.querySelectorAll('*[bind]')
+                allChildren = Array.prototype.slice.call(allChildren).concat(this)
+                for (let child of allChildren) {
+                    if (child.sourceTextContent) {
+                        child.textContent = child.sourceTextContent
+                    }
                     var match = child.textContent.match(/\[\[([\w|.]+)\]\]/g)
                     child.sourceTextContent = child.textContent;
                     if (match) {
                         for (var i = 0; i < match.length; i++) {
-                            let result = x(this, match[i].match(/([^\[].+[^\]])/)[0])
+                            let result = x(child.parentBind || this, match[i].match(/([^\[].+[^\]])/)[0])
                             if (result) {
-                                child.innerText = child.innerText.replace(match[i], result)
+                                child.textContent = child.textContent.replace(match[i], result)
                             }
                             
                         }
@@ -310,6 +352,8 @@
                         __bind(this, descriptor.child, descriptor)
                     } else if (descriptor.type === 'I') {
                         __inject(descriptor, descriptor.child)
+                    } else if (descriptor.type === 'R') {
+                        __repeater(descriptor, descriptor.child)
                     }
                 })
             }

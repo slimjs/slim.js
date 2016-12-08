@@ -2,10 +2,6 @@
 
         Slim('s-repeat', class SlimRepeat extends SlimBaseElement {
 
-            afterRender() {
-                this.update()
-            }
-
             get sourceData() {
                 try {
                     return this.parentBind[this.getAttribute('source')]
@@ -21,19 +17,31 @@
 
             update() {
                 this.innerHTML = ''
+                let childrenToAdd = []
                 for (let dataItem of this.sourceData) {
                     for (let child of this.__bindingTree.children) {
-                        let node = document.importNode(child, false)
+                        let node = child.cloneNode(true)
+                        node.parentBind = node
                         node.data = dataItem
+                        if (!node.parentBind) {
+                                node.parentBind = node
+                        }
                         for (let prop in dataItem) {
                             node[prop] = dataItem[prop]
                             if (!(typeof dataItem[prop] === "function") && !(typeof dataItem[prop] === "object")) {
                                 node.setAttribute(prop, dataItem[prop])
                             }
                         }
-                        this.appendChild(node)
-                        node.update()
+                        if (node.isSlim) {
+                                node.createdCallback(true)
+                        } else {
+                                this._applyTextBindings.bind(node)()
+                        }
+                        childrenToAdd.push(node)
                     }
+                }
+                for (let child of childrenToAdd) {
+                    this.appendChild(child)
                 }
             }
         })
