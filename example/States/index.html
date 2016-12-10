@@ -5,7 +5,6 @@
     <title>SlimJS - States Demo</title>
 
     <script src="../../SlimElement.js"></script>
-    <script src="../../components/s-states.js"></script>
 </head>
 <body>
 
@@ -24,7 +23,7 @@
 <script>
 
     const states = ['init','hello','bye'];
-    var x = 0;
+    var x = 1;
 
     function nextState() {
         document.querySelector('s-states').setAttribute('current-state', states[x++ % states.length])

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SlimJS - Hello, World!</title>
+    <link href="https://fonts.googleapis.com/css?family=Muli|Source+Sans+Pro" rel="stylesheet">
+
+    <script src="../../SlimElement.js"></script>
+    <link rel="import" href="demo-binding.html" />
+
+    <style type="text/css">
+        html, body {
+            font-size: 16px;
+            font-family: "Georgia", Serif;
+            background: #fff8e5;
+            box-sizing: content-box;
+            padding-bottom: 5em;
+        }
+
+        body {
+            border: 0.5em solid #400300;
+            height: 100%;
+            max-width: 45em;
+        }
+
+        html {
+            background: url(bg.jpg);
+            background-size: cover;
+            background-position: 25% -50%;
+        }
+
+        html {
+            padding-left: 150px;
+            padding-top: 3em;
+            
+            margin: 0;
+        }
+
+        h1 {
+            background: #400300;
+            color: white;
+            padding: 0.3em;
+            font-family: "Georgia", Serif;
+            font-weight: normal;
+            letter-spacing: -0.03em;
+            font-size: 1.2em;
+            width 100%;
+            max-width: 45em;
+            left: 0em;
+            margin: 0;
+            display: block;
+            line-height: 1.5em;
+            min-height: 3em;
+        }
+
+        h1 strong {
+            font-style: italic;
+            font-weight: normal;
+        }
+
+        h2 {
+            color: #00408f;
+            word-spacing: -0.125em;
+            letter-spacing: -0.03em;
+            padding: 0 0.6em;
+        }
+
+        p {
+            word-spacing: 0.025em;
+            padding: 0 1em;
+            text-align: left;
+            text-justify: inter-character;
+        }
+
+        code {
+            font-family: "Source Sans Pro", monospace;
+            width: 100%;
+            display: block;
+            padding-left: 5em;
+            padding-top: 1em;
+            padding-bottom: 1em;
+        }
+
+        pre {
+            display: inline-block;
+            margin: 0 auto;
+            width: 100%;
+            background: bisque;
+        }
+
+        header {
+            position: relative;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        footer {
+            display: block;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+            background: #400300;
+            color: white;
+            text-align: center;
+            line-height: 2em;
+        }
+
+        #menu li {
+            cursor: pointer;
+        }
+
+        #menu li:hover {
+            text-decoration: underline;
+        }
+
+        #logo {
+            background: fff8e5;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            padding: 0.3em;
+        }
+
+        code strong {
+            background-color: darkorange;
+            letter-spacing: 0.015em;
+            padding-left: 0.3em;
+            padding-right: 0.3em;
+        }
+    </style>
+
+</head>
+<body>
+<a href="https://github.com/eavichay/slim-web-components" target="_blank"><img style="position: fixed; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
+
+
+<header>
+<div id="logo"><img src="slim.js.logo.png" width="168" height="56"></div><h1>SLIM <strong>is your</strong> PRODUCTIVE way for <strong>building your own</strong> NATIVE web components</h1>
+</header>
+<p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
+<h2>Meet SlimJS</h2>
+
+<slim-states current-state="li-binding">
+    <div in-state="li-binding">
+        <p>Here's a demo web component.<br/>Insinde you could find two text input with two ids: "in" and "out". Please type anything into "in"</p>
+        <demo-binding></demo-binding>
+    </div>
+    <div in-state="li-injection">
+        <p>Dependency injection is quite easy. Use curly braces for declarative dependency injection in your project.
+        Wherever and whenever your component appears, it receives the requirements as you define it</p>
+        <pre><code>&lt;my-component <strong>myModel={ApplicationModel}</strong> /></code></pre>
+        <p>And in some other part of your code</p>
+        <pre><code><strong>Slim.define</strong>('ApplicationModel', () => { return appModelInstance })</code></pre>
+    </div>
+    <div in-state="li-repeater">
+        <p>Use any array as data-source for repeaters. Every item in the array will be injected as data property to each replica. Easy!</p>
+        <pre><code>&lt;span <strong>slim-repeat="dataSource"</strong> bind>[[data.name]]&lt;/span></code></pre>
+        <p>Assuming the source has name property in each item, you would expect an output similiar to this: <strong>Alpha Beta Gamma Delta Echo</strong> ...</p>
+    </div>
+</slim-states>
+
+<p>This is all possible thanks to SlimJS, and without effort as seen in the code. SlimJS is not a framework!
+    it's a series of es6 classes and base-classes
+    the are here for you to build your own native web components, without the sweat.
+    No need to comply to a 3rd party library's conventions anymore. Fear not of performance issues, it's native, it's easy and it's light.</p>
+
+<h2>Features</h2>
+<p>Pick a feature and see how it works</p>
+<ul id="menu">
+    <li>Lightweight (~2K) and fast</li>
+    <li id="li-binding">Data binding</li>
+    <li id="li-injection">Dependency Injection</li>
+    <li id="li-repeater">Repeaters, States and other cool stuff</li>
+</ul>
+<h2>Get SlimJS</h2>
+<pre><code>bower install slimjs
+npm install slim-js</code></pre>
+
+<footer><span class="license">© 2016 Avichay Eyal. All code provided is open source under the MIT License</span></footer>
+
+<script>
+    document.querySelectorAll('ul li').forEach( (element) => {
+        element.onclick = function() {
+            if (this.id) {
+                document.querySelector('slim-states').setAttribute('current-state', this.id)
+                window.scrollTo(0, 0)
+            }
+        }
+    })
+</script>
+
+
+</body>
+</html>

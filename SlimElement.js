@@ -384,7 +384,7 @@
 
         }
 
-        Slim('s-states', class extends SlimBaseElement {
+        Slim('slim-states', class extends SlimBaseElement {
 
             get updateOnAttributes() {
                 return ['current-state']
