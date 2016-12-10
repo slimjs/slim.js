@@ -1,7 +1,7 @@
     ;(function() {
 
 
-        var css = 'slim-component, s-repeat { all: inherit; padding: 0; margin: 0; background: none; left: 0; top: 0;}',
+        var css = 's-repeat { display: none; } slim-component { all: inherit; padding: 0; margin: 0; background: none; left: 0; top: 0;}',
             head = document.head || document.getElementsByTagName('head')[0],
             style = document.createElement('style');
 
@@ -249,7 +249,7 @@
                     var arr = desc.split(".");
                     while(arr.length && obj) {
                             obj = obj[arr.shift()]
-                    };
+                    }
                     return obj;
                 }
 
@@ -339,6 +339,9 @@
                 allChildren = Array.prototype.slice.call(allChildren).concat(this)
                 for (let child of allChildren) {
                     child.parentBind = child.parentBind || this
+                    if (child.getAttribute('id')) {
+                        child.parentBind[ child.getAttribute('id') ] = child
+                    }
                     if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
                         let descriptor = __describeAttribute(child.attributes[i])
                         if (descriptor.type) {
@@ -443,7 +446,12 @@
             }
 
             update() {
-                this.innerHTML = ''
+                if (this.childrenToRemove) {
+                    for (let child of this.childrenToRemove) {
+                        if (child.parentNode) child.parentNode.removeChild(child)
+                    }
+                }
+                this.childrenToRemove = []
                 let childrenToAdd = []
                 for (let dataItem of this.sourceData) {
                     for (let child of this.__bindingTree.children) {
@@ -468,7 +476,8 @@
                     }
                 }
                 for (let child of childrenToAdd) {
-                    this.appendChild(child)
+                    this.parentNode.appendChild(child)
+                    this.childrenToRemove.push(child)
                 }
             }
         })

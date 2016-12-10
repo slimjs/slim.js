@@ -9,16 +9,49 @@
             return `
 <div>
     <div class="title"><span bind>[[data.title]]</span></div>
+    <div><input class="toggle" type="button" value="[getToggleText(open)]" /></div>
     <div class="description" bind>[[data.description]]</div>
 </div>`
         }
 
+        beforeRender() {
+            this.open = true;
+        }
+
+        getToggleText(value) {
+            if (value) {
+                return '-'
+            }
+            return '+'
+        }
+
         afterRender() {
             $(this).draggable({
+                handle: '.title',
+                scroll: 'false',
+                start: () => {
+                    this.open = false
+                    this.update()
+                },
+                snap: 'kanban-column',
                 revert: 'invalid',
                 revertDuration: 100,
                 connectWith: 'kanban-column'
             })
+            $(this.find('.toggle')).click( () => {
+                this.open = !this.open
+                this.update()
+            })
+            this.update()
+        }
+
+        update() {
+            super.update()
+            if (this.open) {
+                $(this.find('.description')).show()
+            } else {
+                $(this.find('.description')).hide()
+            }
         }
 
     })
@@ -52,8 +85,9 @@
     kanban-item .title {
         font-family: "Catamaran", Sans-serif;
         font-weight: normal;
-        display: block;
         font-size: 1.3em;
         width: 100%;
+        border-bottom: 1px solid black;
+        display: inline-flex;
     }
 </style>

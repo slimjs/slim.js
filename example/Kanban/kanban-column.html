@@ -6,7 +6,7 @@
 
 
         get template() {
-            return `<span bind>[[data.name]]</span><kanban-item slim-repeat="myTasks"></kanban-item>`
+            return `<div id="title" bind>[[data.name]]</div><kanban-item slim-repeat="myTasks"></kanban-item>`
         }
 
         get myTasks() {
@@ -15,7 +15,7 @@
 
         afterRender() {
             this.model.addEventListener('change', () => {
-                this.update()
+                this.update(false, true)
             })
             $(this).droppable({
                 accept: 'kanban-item',
@@ -38,11 +38,16 @@
     kanban-column {
         display: inline-flex;
         flex-direction: column;
-        height: 100%;
         width: 15em;
         padding: 1em;
+        padding-bottom: 5em;
         background: antiquewhite;
         align-items: center;
         justify-content: flex-start;
+    }
+
+    kanban-column #title {
+        align-self: flex-start;
+        margin-bottom: 1em;
     }
 </style>
