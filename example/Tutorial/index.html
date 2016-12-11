@@ -5,7 +5,10 @@
     <title>SlimJS - Hello, World!</title>
     <script>
         try {
-            if (typeof InstallTrigger !== 'undefined') {
+            var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0 || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || safari.pushNotification);
+            var isFirefox = typeof InstallTrigger !== 'undefined';
+
+            if (isSafari || isFirefox || isIOS) {
                 let s = "<script type=\"text\/javascript\" " +
                         "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
                         " > <\/script> "
