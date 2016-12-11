@@ -4,6 +4,7 @@
   "description": "Slim web components infrastructure",
   "main": "SlimElement.html",
   "scripts": {
+    "start": "uglifyjs "
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,18 +17,12 @@
     "url": "https://github.com/eavichay/slim-web-components/issues"
   },
   "homepage": "https://github.com/eavichay/slim-web-components#readme",
-  "devDependencies": {
-    "eslint": "^3.6.1"
-  },
-  "directories": {
-    "example": "example"
-  },
-  "dependencies": {
-    "eslint": "^3.6.1"
-  },
   "keywords": [
     "web",
     "components",
     "binding"
-  ]
+  ],
+  "devDependencies": {
+    "uglify-js-harmony": "^2.6.2"
+  }
 }
