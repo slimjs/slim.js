@@ -339,8 +339,8 @@
                 allChildren = Array.prototype.slice.call(allChildren).concat(this)
                 for (let child of allChildren) {
                     child.parentBind = child.parentBind || this
-                    if (child.getAttribute('id')) {
-                        child.parentBind[ child.getAttribute('id') ] = child
+                    if (child.getAttribute('slim-id')) {
+                        child.parentBind[ child.getAttribute('slim-id') ] = child
                     }
                     if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
                         let descriptor = __describeAttribute(child.attributes[i])

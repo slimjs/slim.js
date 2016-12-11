@@ -5,10 +5,10 @@
 
         get template() {
             return `
-                <div id="main"><span>[in]:</span><input id="in" type="text" /><span>[out]:</span><input type="text" readonly="readonly" id="out" value=[myProperty] /></div>
+                <div id="main"><span>[in]:</span><input slim-id="in" type="text" /><span>[out]:</span><input type="text" readonly="readonly" value=[myProperty] /></div>
                 <div><pre><code>
-    &lt;input id="in" type="text" />
-    &lt;input id="out" type="text" value=<strong>[myProperty]</strong> /></code></pre></div>
+    &lt;input <strong>slim-id="in"</strong> type="text" />
+    &lt;input type="text" value=<strong>[myProperty]</strong> /></code></pre></div>
                 <div><pre><code>
     <strong>afterRender()</strong> {
         this.<strong>in</strong>.onkeyup = () => {
