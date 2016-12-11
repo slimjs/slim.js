@@ -197,13 +197,13 @@
             onAdded() {}
             update(root = false, flat = true) {
                 if (root) {
-                    document.querySelectorAll('[root]').forEach( (element) => {
+                    Array.prototype.slice.call(document.querySelectorAll('[root]')).forEach( (element) => {
                         element.update(false)
                     })
                     return
                 }
                 if (!flat) this._applyTextBindings()
-                for (let child of this.children) {
+                for (let child of Array.prototype.slice.call(this.children)) {
                     try {
                         child.update()
                     }
@@ -312,10 +312,10 @@
              */
             get isAttached() {
                 let p = this
-                while (p && p !== document.body) {
+                while (p && p.tagName !== 'BODY') {
                     p = p.parentNode
                 }
-                if (p === document.body) return true
+                if (p.tagName === 'BODY') return true
             }
 
             /**

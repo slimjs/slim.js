@@ -3,6 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>SlimJS - Hello, World!</title>
+    <script>
+        try {
+            if (typeof InstallTrigger !== 'undefined') {
+                let s = "<script type=\"text\/javascript\" " +
+                        "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
+                        " > <\/script> "
+                document.write(s)
+            }
+        }
+        catch (err) {}
+    </script>
     <link href="https://fonts.googleapis.com/css?family=Muli|Source+Sans+Pro" rel="stylesheet">
 
     <script src="../../SlimElement.js"></script>
@@ -182,7 +193,7 @@ npm install slim-js</code></pre>
 <footer><span class="license">© 2016 Avichay Eyal. All code provided is open source under the MIT License</span></footer>
 
 <script>
-    document.querySelectorAll('ul li').forEach( (element) => {
+    Array.prototype.slice.call(document.querySelectorAll('ul li')).forEach( (element) => {
         element.onclick = function() {
             if (this.id) {
                 document.querySelector('slim-states').setAttribute('current-state', this.id)
