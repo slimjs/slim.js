@@ -2,9 +2,10 @@
   "name": "slim-js",
   "version": "1.2.2",
   "description": "Slim web components infrastructure",
-  "main": "SlimElement.html",
+  "main": "bin/SlimElement.min.js",
   "scripts": {
-    "start": "uglifyjs "
+    "start": "uglifyjs SlimElement.js -o ./bin/SlimElement.min.js",
+    "postinstall": "uglifyjs SlimElement.js -o ./bin/SlimElement.min.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
