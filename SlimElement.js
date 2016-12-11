@@ -414,7 +414,6 @@
                 for (let i = this.actual.children.length; i > 0; i--) {
                     let child = this.actual.children[i - 1];
                     if (child.getAttribute('in-state') !== this.currentState) {
-                        this.actual.removeChild(child)
                         this.virtual.appendChild(child)
                     }
                 }
@@ -422,8 +421,10 @@
                 for (let i = this.virtual.children.length; i > 0; i--) {
                     let child = this.virtual.children[i - 1];
                     if (child.getAttribute('in-state') === this.currentState) {
-                        this.virtual.removeChild(child)
                         this.actual.appendChild(child)
+                        try {
+                            child.createdCallback()
+                        } catch (err) {}
                     }
                 }
             }
