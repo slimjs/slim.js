@@ -3,9 +3,6 @@
   "main": "bin/SlimElement.min.js",
   "version": "1.2.2",
   "ignore": [
-    "example",
-    "SlimModal.js",
-    "StateStack.js",
-    "StateView.js"
+    "example"
   ]
 }
