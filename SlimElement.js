@@ -191,7 +191,10 @@
                 }
                 this.innerHTML = ''
                 this.isForcedRender = true
-                this.createdCallback(this.isForcedRender)
+                this.__bindings = {}
+                this.__bindingTree = document.createElement('slim-component')
+                this._bindingCycle()
+                this._renderCycle()
             }
             afterRender() {}
             onAdded() {}
@@ -225,8 +228,8 @@
                 this.__bindings = {}
                 this.__bindingTree = document.createElement('slim-component')
                 this._bindingCycle()
-                if (!force) this.onCreated()
-                if (!force) this.dispatchEvent(new Event('elementCreated', {bubbles:true}))
+                this.onCreated()
+                this.dispatchEvent(new Event('elementCreated', {bubbles:true}))
                 this._renderCycle()
             }
 

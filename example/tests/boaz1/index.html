@@ -15,14 +15,14 @@
         get template() {
             return  `<div>SPINNER</div>`;
         }
-        onAdded(){
+        onCreated(){
             setTimeout( ()=>{
                 this.render(`<div>[[data.type]] : [[data.name]] </div>` );
             },1000);
 
             setTimeout( ()=> {
                 this.render(true)
-            }, 2000)
+            }, 1500)
         }
     })
 
