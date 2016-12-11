@@ -184,14 +184,14 @@
             onCreated() {}
             beforeRender() {}
             render(template) {
-                this.isForcedRender = true;
-                let newTemplate = template;
-                if (this.template !== newTemplate) {
-                    this.__bindings = {}
-                    this.__bindingTree = document.createElement('slim-component')
-                    this._bindingCycle(newTemplate)
-                    this._renderCycle()
+                if (template === true) {
+                    this.alternateTemplate = this.template
+                } else {
+                    this.alternateTemplate = template
                 }
+                this.innerHTML = ''
+                this.isForcedRender = true
+                this.createdCallback(this.isForcedRender)
             }
             afterRender() {}
             onAdded() {}
@@ -221,18 +221,18 @@
              */
             createdCallback(force) {
                 if (!this.isAttached && !force) return
-                this.onBeforeCreated()
+                if (!force) this.onBeforeCreated()
                 this.__bindings = {}
                 this.__bindingTree = document.createElement('slim-component')
                 this._bindingCycle()
-                this.onCreated()
-                this.dispatchEvent(new Event('elementCreated', {bubbles:true}))
+                if (!force) this.onCreated()
+                if (!force) this.dispatchEvent(new Event('elementCreated', {bubbles:true}))
                 this._renderCycle()
             }
 
-            _bindingCycle(forcedTemplate) {
-                this._captureBindings(forcedTemplate)
-                this._applyBindings(forcedTemplate)
+            _bindingCycle() {
+                this._captureBindings()
+                this._applyBindings()
             }
 
             _renderCycle(skipTree = false) {
@@ -256,6 +256,7 @@
                 let allChildren = this.querySelectorAll('*[bind]')
                 allChildren = Array.prototype.slice.call(allChildren).concat(this)
                 for (let child of allChildren) {
+                    if (this.alternateTemplate) child.sourceTextContent = undefined
                     if (child.sourceTextContent) {
                         child.textContent = child.sourceTextContent
                     }
@@ -322,8 +323,8 @@
              * private
              */
 
-            _captureBindings(forcedTemplate) {
-                let $tpl = forcedTemplate || this.template;
+            _captureBindings() {
+                let $tpl = this.alternateTemplate || this.template;
                 if (!$tpl) {
                     while (this.children.length) {
                         this.__bindingTree.appendChild( this.children[0] )
@@ -422,7 +423,7 @@
                     let child = this.virtual.children[i - 1];
                     if (child.getAttribute('in-state') === this.currentState) {
                         this.actual.appendChild(child)
-                        if (child.isSlim) child.render()
+                        if (child.isSlim) child.update()
                     }
                 }
             }
