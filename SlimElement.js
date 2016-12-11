@@ -422,7 +422,7 @@
                     let child = this.virtual.children[i - 1];
                     if (child.getAttribute('in-state') === this.currentState) {
                         this.actual.appendChild(child)
-                        if (child.isSlim) child.createdCallback()
+                        if (child.isSlim) child.render()
                     }
                 }
             }
