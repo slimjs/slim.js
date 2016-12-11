@@ -315,7 +315,7 @@
                 while (p && p.tagName !== 'BODY') {
                     p = p.parentNode
                 }
-                if (p.tagName === 'BODY') return true
+                if (p && p.tagName === 'BODY') return true
             }
 
             /**
