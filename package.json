@@ -1,8 +1,8 @@
 {
   "name": "slim-js",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Slim web components infrastructure",
-  "main": "bin/SlimElement.min.js",
+  "main": "SlimElement.js",
   "scripts": {
     "start": "uglifyjs SlimElement.js -o ./bin/SlimElement.min.js",
     "postinstall": "uglifyjs SlimElement.js -o ./bin/SlimElement.min.js",
