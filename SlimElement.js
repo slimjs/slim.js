@@ -208,7 +208,7 @@
                 if (!flat) this._applyTextBindings()
                 for (let child of Array.prototype.slice.call(this.children)) {
                     try {
-                        child.update()
+                        _updateTree(child)
                     }
                     catch (err) {}
                 }
@@ -489,10 +489,7 @@
 
                 update() {
                         for (let child of this.children) {
-                                try {
-                                        child.update()
-                                }
-                                catch (err) {}
+                                _updateTree(child)
                         }
                 }
 
@@ -500,7 +497,16 @@
         window.SlimBaseElement = SlimBaseElement
 
 
-
+        function _updateTree(node) {
+                try {
+                        node.update()
+                }
+                catch(err) {
+                        Array.prototype.slice.call(node.children).forEach( child => {
+                                _updateTree(child)
+                                })
+                }
+        }
 
 
     }())

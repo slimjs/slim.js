@@ -38,8 +38,7 @@
         }
 
         html {
-            background: url(bg.jpg);
-            background-size: cover;
+            background: midnightblue;
             background-position: 25% -50%;
         }
 
@@ -158,6 +157,8 @@
 <h2>Meet SlimJS</h2>
 
 <slim-states current-state="li-binding">
+    <div in-state="li-image"><p>Here's how it works. Your job is to implement (not mandatory) the red parts, as you wish.
+    SlimJS will do the rest of the magic for you.</p><img src="lifecycle.png" width="464px" height="328px"></div>
     <div in-state="li-binding">
         <p>Here's a demo web component.<br/>Insinde you could find two text input with two ids: "in" and "out". Please type anything into "in"</p>
         <demo-binding></demo-binding>
@@ -184,7 +185,7 @@
 <h2>Features</h2>
 <p>Pick a feature and see how it works</p>
 <ul id="menu">
-    <li>Lightweight (~2K) and fast</li>
+    <li id="li-image">Lightweight and fast</li>
     <li id="li-binding">Data binding</li>
     <li id="li-injection">Dependency Injection</li>
     <li id="li-repeater">Repeaters, States and other cool stuff</li>

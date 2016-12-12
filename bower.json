@@ -1,7 +1,7 @@
 {
   "name": "slimjs",
   "main": "bin/SlimElement.min.js",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "ignore": [
     "example"
   ]
