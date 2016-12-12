@@ -2,20 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SlimJS - Hello, World!</title>
+    <title>slim.js - Hello, World!</title>
     <script>
+        var isChrome;
         try {
-            var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0 || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || safari.pushNotification);
-            var isFirefox = typeof InstallTrigger !== 'undefined';
-
-            if (isSafari || isFirefox || isIOS) {
-                let s = "<script type=\"text\/javascript\" " +
-                        "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
-                        " > <\/script> "
-                document.write(s)
-            }
+            isChrome = typeof window.chrome.webstore === 'object'
         }
-        catch (err) {}
+        catch (err) {
+            isChrome = false;
+        }
+        if (!isChrome) {
+            let s = "<script type=\"text\/javascript\" " +
+                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
+                    " > <\/script> "
+            document.write(s)
+        }
     </script>
     <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Nixie+One|Ubuntu+Mono" rel="stylesheet">
 
@@ -26,19 +27,35 @@
         html, body {
             font-size: 16px;
             font-family: "Libre Baskerville", Serif;
-            background: #ffe3ad;
+            /*background: #ffe3ad;*/
             box-sizing: content-box;
             padding-bottom: 5em;
+            background-color: #222222;
         }
 
         body {
+            padding: 0;
+            margin: 0 auto;
+        }
+
+        div#logo, div#content {
+            padding: 2em;
+            padding-top: 4em;
+            padding-bottom: 4em;
+            background: #ffe3ad;
+        }
+
+        div#logo {
+            text-align: center;
+        }
+
+        div#wrapper {
             max-width: 55em;
+            width: 100%;
+            margin: 0 auto;
         }
 
         html {
-            padding-left: 150px;
-            padding-top: 3em;
-
             margin: 0;
         }
 
@@ -57,7 +74,10 @@
         }
 
         h1 {
-            font-size: 2.4em;
+            font-size: 2.5em;
+            letter-spacing: -0.025em;
+            text-align: center;
+            color: #ffe3ad;
         }
 
         h1 strong {
@@ -67,17 +87,17 @@
 
         h2 {
             color: #00408f;
-            word-spacing: -0.125em;
-            letter-spacing: -0.03em;
+            word-spacing: 0.025em;
+            letter-spacing: -0.02em;
             font-size: 2em;
         }
 
         p {
-            font-family: "Libre Baskerville", "Georgia", Serif;
+            font-family: "Libre Baskerville", Serif;
             word-spacing: 0.025em;
             line-height: 1.4em;
             text-align: left;
-            text-justify: inter-character;
+            letter-spacing: -0.015em;
         }
 
         li {
@@ -95,8 +115,8 @@
             width: 100%;
             bottom: 0;
             left: 0;
-            background: #400300;
-            color: white;
+            background: #f7ead6;
+            color: #222222;
             text-align: center;
             line-height: 2em;
         }
@@ -115,51 +135,54 @@
 <a href="https://github.com/eavichay/slim-web-components" target="_blank"><img style="position: fixed; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/567c3a48d796e2fc06ea80409cc9dd82bf714434/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"></a>
 
 
-<header>
-<div id="logo"><img src="slim3.png" width="460" height="183"></div><h1>SLIM <strong>is your</strong> PRODUCTIVE way for <strong>building your own</strong> NATIVE web components</h1>
-</header>
-<p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
-<h2>Meet SlimJS</h2>
+<div id="wrapper">
+    <header>
+    <div id="logo"><img src="slim1.png" width="261" height="91"></div><h1>SLIM <strong>is your</strong> PRODUCTIVE way for <strong>building your own</strong> NATIVE web components</h1>
+    </header>
+    <div id="content">
+        <p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
+        <h2>Hello, slim.js</h2>
 
-<slim-states current-state="li-binding">
-    <div in-state="li-image"><p>Here's how it works. Your job is to implement (not mandatory) the red parts, as you wish.
-    SlimJS will do the rest of the magic for you.</p><img src="lifecycle.png" width="464px" height="328px"></div>
-    <div in-state="li-binding">
-        <p>Here's a demo web component.<br/>Insinde you could find two text input with two ids: "in" and "out". Please type anything into "in"</p>
-        <demo-binding></demo-binding>
+        <slim-states current-state="li-binding">
+            <div in-state="li-image"><p>Here's how it works. Your job is to implement (not mandatory) the red parts, as you wish.
+            slim.js will do the rest of the magic for you.</p><img src="lifecycle.png" width="464px" height="328px"></div>
+            <div in-state="li-binding">
+                <p>Here's a demo web component.<br/>Insinde you could find two text input with two ids: "in" and "out". Please type your name into "in"</p>
+                <demo-binding></demo-binding>
+            </div>
+            <div in-state="li-injection">
+                <p>Dependency injection is quite easy. Use curly braces for declarative dependency injection in your project.
+                Wherever and whenever your component appears, it receives the requirements as you define it</p>
+                <pre><code>&lt;my-component <strong>myModel={ApplicationModel}</strong> /></code></pre>
+                <p>And in some other part of your code</p>
+                <pre><code><strong>Slim.define</strong>('ApplicationModel', () => { return appModelInstance })</code></pre>
+            </div>
+            <div in-state="li-repeater">
+                <p>Use any array as data-source for repeaters. Every item in the array will be injected as data property to each replica. Easy!</p>
+                <pre><code>&lt;span <strong>slim-repeat="dataSource"</strong> bind>[[data.name]]&lt;/span></code></pre>
+                <p>Assuming the source has name property in each item, you would expect an output similiar to this: <strong>Alpha Beta Gamma Delta Echo</strong> ...</p>
+            </div>
+        </slim-states>
+
+        <p>This is all possible thanks to slim.js, and look at the code - without effort!<br/>slim.js is not a framework,
+            it's a series of es6 classes and base-classes
+            the are here for you to build your own native web components, without the sweat.
+            No need to comply to a 3rd party library's conventions anymore. Fear not of performance issues, it's native, it's easy and it's light.</p>
+
+        <h2>Features</h2>
+        <p>Pick a feature and see how it works</p>
+        <ul id="menu">
+            <li id="li-image">Lightweight and fast</li>
+            <li id="li-binding">Data binding</li>
+            <li id="li-injection">Dependency Injection</li>
+            <li id="li-repeater">Repeaters, States and other cool stuff</li>
+        </ul>
+        <h2>Get slim.js</h2>
+        <pre><code>bower install slim.js
+        npm install slim-js</code></pre>
     </div>
-    <div in-state="li-injection">
-        <p>Dependency injection is quite easy. Use curly braces for declarative dependency injection in your project.
-        Wherever and whenever your component appears, it receives the requirements as you define it</p>
-        <pre><code>&lt;my-component <strong>myModel={ApplicationModel}</strong> /></code></pre>
-        <p>And in some other part of your code</p>
-        <pre><code><strong>Slim.define</strong>('ApplicationModel', () => { return appModelInstance })</code></pre>
-    </div>
-    <div in-state="li-repeater">
-        <p>Use any array as data-source for repeaters. Every item in the array will be injected as data property to each replica. Easy!</p>
-        <pre><code>&lt;span <strong>slim-repeat="dataSource"</strong> bind>[[data.name]]&lt;/span></code></pre>
-        <p>Assuming the source has name property in each item, you would expect an output similiar to this: <strong>Alpha Beta Gamma Delta Echo</strong> ...</p>
-    </div>
-</slim-states>
-
-<p>This is all possible thanks to SlimJS, and look at the code - without effort!<br/>SlimJS is not a framework,
-    it's a series of es6 classes and base-classes
-    the are here for you to build your own native web components, without the sweat.
-    No need to comply to a 3rd party library's conventions anymore. Fear not of performance issues, it's native, it's easy and it's light.</p>
-
-<h2>Features</h2>
-<p>Pick a feature and see how it works</p>
-<ul id="menu">
-    <li id="li-image">Lightweight and fast</li>
-    <li id="li-binding">Data binding</li>
-    <li id="li-injection">Dependency Injection</li>
-    <li id="li-repeater">Repeaters, States and other cool stuff</li>
-</ul>
-<h2>Get SlimJS</h2>
-<pre><code>bower install slimjs
-npm install slim-js</code></pre>
-
 <footer><span class="license">© 2016 Avichay Eyal. All code provided is open source under the MIT License</span></footer>
+</div>
 
 <script>
     Array.prototype.slice.call(document.querySelectorAll('ul li')).forEach( (element) => {

@@ -235,6 +235,7 @@
 
             _bindingCycle() {
                 this._captureBindings()
+                this._captureTextBindings()
                 this._applyBindings()
             }
 
@@ -247,33 +248,47 @@
                 this.isForcedRender = false;
             }
 
-            _applyTextBindings() {
+            _captureTextBindings() {
                 const x = function getDescendantProp(obj, desc) {
                     var arr = desc.split(".");
+                    var prop;
                     while(arr.length && obj) {
-                            obj = obj[arr.shift()]
+                        obj = obj[prop = arr.shift()]
                     }
-                    return obj;
+                    return prop;
                 }
-
-                let allChildren = this.querySelectorAll('*[bind]')
-                allChildren = Array.prototype.slice.call(allChildren).concat(this)
+                let allChildren = this.__bindingTree.querySelectorAll('*[bind]')
+                allChildren = Array.prototype.slice.call( allChildren )
                 for (let child of allChildren) {
-                    if (this.alternateTemplate) child.sourceTextContent = undefined
-                    if (child.sourceTextContent) {
-                        child.textContent = child.sourceTextContent
-                    }
+                    if (child.nodeName)
+                    child.sourceTextContent = child.textContent
                     var match = child.textContent.match(/\[\[([\w|.]+)\]\]/g)
-                    child.sourceTextContent = child.textContent;
                     if (match) {
                         for (var i = 0; i < match.length; i++) {
-                            let result = x(child.parentBind || this, match[i].match(/([^\[].+[^\]])/)[0])
-                            if (result) {
-                                child.textContent = child.textContent.replace(match[i], result)
+                            var prop = x(child.parentBind, match[i].match(/([^\[].+[^\]])/)[0])
+                            var tMatch = match[i]
+                            var value = this[prop] || ''
+                            var executor = function() {
+                                child.textContent = child.textContent.replace(tMatch, value)
                             }
-                            
+                            this.__textBindings = this.__textBindings || []
+                            this.__textBindings.push(executor)
+                            if (!this.__lookupSetter__(prop)) this.__defineSetter__(prop, x => {
+                                value = x
+                                child.textContent = child.sourceTextContent
+                                this._applyTextBindings()
+                            })
+                            this.__defineGetter__(prop, () => {
+                                return value
+                            })
                         }
                     }
+                }
+            }
+
+            _applyTextBindings() {
+                if (this.__textBindings) {
+                    this.__textBindings.forEach( executor => { executor() })
                 }
             }
 
@@ -325,6 +340,7 @@
             /**
              * private
              */
+
 
             _captureBindings() {
                 let $tpl = this.alternateTemplate || this.template;

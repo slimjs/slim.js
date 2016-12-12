@@ -5,7 +5,7 @@
 
         get template() {
             return `
-                <div id="main"><span>[in]:</span><input slim-id="in" type="text" /><span>[out]:</span><input type="text" readonly="readonly" value=[myProperty] /></div>
+                <span id="main"><span>[in]:</span><input slim-id="in" type="text" /><span bind>Hello, [[myProperty]]</span>
                 <div><pre><code>
     &lt;input <strong>slim-id="in"</strong> type="text" />
     &lt;input type="text" value=<strong>[myProperty]</strong> /></code></pre></div>
@@ -19,9 +19,6 @@
                 `
         }
 
-        onCreated() {
-            this.myProperty = ''
-        }
 
         afterRender() {
             this.in.onkeyup = () => {
