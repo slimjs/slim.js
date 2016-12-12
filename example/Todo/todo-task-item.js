@@ -11,30 +11,29 @@
             return `
 <div id="container">
 <span id="number" bind>[[data.todoId]]</span>
-<input type="checkbox" done="[done]"/>
+<input slim-id="checkbox" type="checkbox" done="[done]"/>
 <span id="title" text="[name]" bind>[[data.name]]</span>
-<input type="button" value="X">
+<input slim-id="delButton" type="button" value="X">
 </div>`
         }
 
-        update () {
+        afterRender () {
             super.update()
-            var checkbox = this.find('input[type=checkbox]')
             var delButton = this.find('input[value="X"]')
 
-            checkbox.dataItem = this.data
+            this.checkbox.dataItem = this.data
             if (this.data.done) {
-                checkbox.setAttribute('checked', 'checked')
+                this.checkbox.setAttribute('checked', 'checked')
             } else {
-                checkbox.removeAttribute('checked')
+                this.checkbox.removeAttribute('checked')
             }
 
-            checkbox.onchange = () => {
-                checkbox.dataItem.done = checkbox.checked
+            this.checkbox.onchange = () => {
+                this.checkbox.dataItem.done = this.checkbox.checked
             }
 
-            delButton.onclick = () => {
-                checkbox.dataItem.delete()
+            this.delButton.onclick = () => {
+                this.checkbox.dataItem.delete()
             }
         }
 

@@ -17,7 +17,7 @@
         }
         catch (err) {}
     </script>
-    <link href="https://fonts.googleapis.com/css?family=Muli|Source+Sans+Pro" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Nixie+One|Ubuntu+Mono" rel="stylesheet">
 
     <script src="../../SlimElement.js"></script>
     <link rel="import" href="demo-binding.html" />
@@ -25,45 +25,39 @@
     <style type="text/css">
         html, body {
             font-size: 16px;
-            font-family: "Georgia", Serif;
-            background: #fff8e5;
+            font-family: "Libre Baskerville", Serif;
+            background: #ffe3ad;
             box-sizing: content-box;
             padding-bottom: 5em;
         }
 
         body {
-            border: 0.5em solid #400300;
-            height: 100%;
-            max-width: 45em;
-        }
-
-        html {
-            background: midnightblue;
-            background-position: 25% -50%;
+            max-width: 55em;
         }
 
         html {
             padding-left: 150px;
             padding-top: 3em;
-            
+
             margin: 0;
         }
 
-        h1 {
-            background: #400300;
-            color: white;
-            padding: 0.3em;
-            font-family: "Georgia", Serif;
-            font-weight: normal;
-            letter-spacing: -0.03em;
-            font-size: 1.2em;
-            width 100%;
-            max-width: 45em;
-            left: 0em;
+        pre {
+            background-color: #f7ead6;
             margin: 0;
-            display: block;
-            line-height: 1.5em;
-            min-height: 3em;
+            padding: 1em;
+        }
+
+        code {
+            font-family: "Ubuntu Mono", monospace;
+        }
+
+        h1, h2 {
+            font-family: "Nixie One", Sans-serif
+        }
+
+        h1 {
+            font-size: 2.4em;
         }
 
         h1 strong {
@@ -75,37 +69,24 @@
             color: #00408f;
             word-spacing: -0.125em;
             letter-spacing: -0.03em;
-            padding: 0 0.6em;
+            font-size: 2em;
         }
 
         p {
+            font-family: "Libre Baskerville", "Georgia", Serif;
             word-spacing: 0.025em;
-            padding: 0 1em;
+            line-height: 1.4em;
             text-align: left;
             text-justify: inter-character;
         }
 
-        code {
-            font-family: "Source Sans Pro", monospace;
-            width: 100%;
-            display: block;
-            padding-left: 5em;
-            padding-top: 1em;
-            padding-bottom: 1em;
+        li {
+            cursor: pointer;
+            font-style: italic;
         }
 
-        pre {
-            display: inline-block;
-            margin: 0 auto;
-            width: 100%;
-            background: bisque;
-        }
-
-        header {
-            position: relative;
-            top: 0;
-            left: 0;
-            width: 100%;
+        li:hover {
+            text-decoration: underline;
         }
 
         footer {
@@ -120,22 +101,6 @@
             line-height: 2em;
         }
 
-        #menu li {
-            cursor: pointer;
-        }
-
-        #menu li:hover {
-            text-decoration: underline;
-        }
-
-        #logo {
-            background: fff8e5;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            padding: 0.3em;
-        }
 
         code strong {
             background-color: darkorange;
@@ -151,7 +116,7 @@
 
 
 <header>
-<div id="logo"><img src="slim.js.logo.png" width="168" height="56"></div><h1>SLIM <strong>is your</strong> PRODUCTIVE way for <strong>building your own</strong> NATIVE web components</h1>
+<div id="logo"><img src="slim3.png" width="460" height="183"></div><h1>SLIM <strong>is your</strong> PRODUCTIVE way for <strong>building your own</strong> NATIVE web components</h1>
 </header>
 <p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
 <h2>Meet SlimJS</h2>
@@ -177,7 +142,7 @@
     </div>
 </slim-states>
 
-<p>This is all possible thanks to SlimJS, and without effort as seen in the code. SlimJS is not a framework!
+<p>This is all possible thanks to SlimJS, and look at the code - without effort!<br/>SlimJS is not a framework,
     it's a series of es6 classes and base-classes
     the are here for you to build your own native web components, without the sweat.
     No need to comply to a 3rd party library's conventions anymore. Fear not of performance issues, it's native, it's easy and it's light.</p>

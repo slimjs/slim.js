@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <title>Todo Demo - SlimJS</title>
 
-    <link rel="import" href="../../SlimElement.js"/>
+    <script src="../../SlimElement.js"></script>
     <script src="TodoModel.js"></script>
 
-    <link rel="import" href="../../components/s-repeat.js">
-    <script src="../../components/s-container.js"></script>
     <script src="./todo-new-task-input.js"></script>
     <script src="./todo-task-list.js"></script>
     <script src="./todo-task-item.js"></script>
@@ -60,8 +58,15 @@
             padding: 2em;
         }
 
-        s-container {
-            align-items: center;
+        div.wrapper {
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+            justify-content: center;
+            width: 40em;
+            align-self: center;
+            text-align: center;
         }
 
         s-container.code {
@@ -108,6 +113,7 @@
             width: 100%;
             flex-direction: column;
             padding-top: 2em;
+            text-align: left;
         }
 
         s-repeat todo-task-item #container{
@@ -138,56 +144,13 @@
 </head>
 <body>
 
-<s-container>
-    <s-container layout="vertical">
-        <h1>SlimJS TodoMVC</h1>
-        <h2>What would you like to do?</h2>
-        <todo-new-task-input model="{model}"></todo-new-task-input>
-        <todo-task-list model="{model}"></todo-task-list>
-    </s-container>
-</s-container>
-
-<s-container class="code" layout="vertical" style="margin-top: 3em;">
-    <h1>SlimJS is for the lazy coder</h1>
-    <h2>It's Web Components, on steroids</h2>
-    <p>SlimJS Provides fun and easy-to-use data-binding and injection mechanism for <strong>native web-components</strong> without the hassle of heavyweight frameworks.</p>
-    <h4>It's not a framework, it's your enemy's enemy</h4>
-    <p>Write your code without any forced code-conventions or patterns from a 3rd party library.</p>
-    <h4>Data-Binding</h4>
-    <p>One-way properties and method bindings using brackets. Every change in "user" property on the parent, will propogate to the bound nodes</p>
-    <pre><code class="javascript">
-        &lt;login-screen>
-            &lt;login-form user="[user]"
-                        user-details="[getDetails(user)]" />
-        &lt;/login-screen>
-    </code>
-    </pre>
-    <h4>Text-to-Data-Binding</h4>
-    <p>Inject property values into your text with a simple annotation. Have no fear from performance issues: you choose where and when your bindings happen!</p>
-    <pre><code class="javascript">
-        &lt;my-element user="{UserModel}"}>
-            &lt;span bind>
-                Hello, [[user.name]]! Welcome to [[location]]
-            &lt;/span>
-        &lt;/my-element>
-    </code>
-    </pre>
-    <h4>Dependency Injection</h4>
-    <p>Dependency injection using curly braces</p>
-    <pre><code class="javascript">
-        const instance = new TodoModel()
-
-        SlimInjector.define('LoginModel', function() {
-            "use strict";
-            return instance
-        })
-
-        ...
-
-        &lt;login-details model="{LoginModel}" />
-    </code>
-    </pre>
-</s-container>
+<div class="wrapper">
+    <h1><img src="slim3.png" /></h1>
+    <h1>TodoMVC Demo</h1>
+    <h2>What would you like to do with slim.js?</h2>
+    <todo-new-task-input model="{model}"></todo-new-task-input>
+    <todo-task-list model="{model}"></todo-task-list>
+</div>
 
 <span class="license">© 2016 Avichay Eyal. All code provided is open source under the MIT License</span>
 

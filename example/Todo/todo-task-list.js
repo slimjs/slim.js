@@ -10,7 +10,7 @@
 
 
         get template() {
-            return `<s-repeat source="items"><todo-task-item></todo-task-item></s-repeat>`
+            return `<todo-task-item slim-repeat="items"></todo-task-item>`
         }
 
         get items() {

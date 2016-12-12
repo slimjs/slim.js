@@ -415,6 +415,7 @@
             }
 
             update() {
+                if (!this.virtual) this.beforeRender()
                 for (let i = this.actual.children.length; i > 0; i--) {
                     let child = this.actual.children[i - 1];
                     if (child.getAttribute('in-state') !== this.currentState) {
@@ -426,7 +427,7 @@
                     let child = this.virtual.children[i - 1];
                     if (child.getAttribute('in-state') === this.currentState) {
                         this.actual.appendChild(child)
-                        if (child.isSlim) child.update()
+                        if (child.isSlim) child.render(true)
                     }
                 }
             }
