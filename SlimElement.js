@@ -498,7 +498,7 @@
                     }
                 }
                 for (let child of childrenToAdd) {
-                    this.parentNode.appendChild(child)
+                    this.insertAdjacentElement('beforeBegin', child)
                     this.childrenToRemove.push(child)
                 }
             }
