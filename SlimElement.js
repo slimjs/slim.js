@@ -259,8 +259,9 @@
                 }
                 let allChildren = this.__bindingTree.querySelectorAll('*[bind]')
                 allChildren = Array.prototype.slice.call( allChildren )
+                if (this.getAttribute('bind') !== null) allChildren.push(this)
                 for (let child of allChildren) {
-                    if (child.nodeName)
+                    if (this.nodeName === 'S-REPEAT') continue;
                     child.sourceTextContent = child.textContent
                     var match = child.textContent.match(/\[\[([\w|.]+)\]\]/g)
                     if (match) {
@@ -483,15 +484,23 @@
                         if (!node.parentBind) {
                             node.parentBind = node
                         }
-                        for (let prop in dataItem) {
-                            node[prop] = dataItem[prop]
-                            if (!(typeof dataItem[prop] === "function") && !(typeof dataItem[prop] === "object")) {
-                                node.setAttribute(prop, dataItem[prop])
-                            }
-                        }
                         if (node.isSlim) {
+                            for (let prop in dataItem) {
+                                node[prop] = dataItem[prop]
+                                if (!(typeof dataItem[prop] === "function") && !(typeof dataItem[prop] === "object")) {
+                                    node.setAttribute(prop, dataItem[prop])
+                                }
+                            }
                             node.createdCallback(true)
                         } else {
+                            for (let prop in dataItem) {
+                                node[prop] = dataItem[prop]
+                                if (!(typeof dataItem[prop] === "function") && !(typeof dataItem[prop] === "object")) {
+                                    node[prop] = dataItem[prop]
+                                }
+                            }
+                            node.__bindingTree = node
+                            this._captureTextBindings.bind(node)()
                             this._applyTextBindings.bind(node)()
                         }
                         childrenToAdd.push(node)
