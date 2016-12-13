@@ -251,11 +251,11 @@
             _captureTextBindings() {
                 const x = function getDescendantProp(obj, desc) {
                     var arr = desc.split(".");
-                    var prop;
+                    var prop = arr[0]
                     while(arr.length && obj) {
                         obj = obj[prop = arr.shift()]
                     }
-                    return prop;
+                    return {source: desc, prop:prop, obj:obj};
                 }
                 let allChildren = this.__bindingTree.querySelectorAll('*[bind]')
                 allChildren = Array.prototype.slice.call( allChildren )
@@ -265,10 +265,12 @@
                     var match = child.textContent.match(/\[\[([\w|.]+)\]\]/g)
                     if (match) {
                         for (var i = 0; i < match.length; i++) {
-                            var prop = x(child.parentBind, match[i].match(/([^\[].+[^\]])/)[0])
-                            var tMatch = match[i]
-                            var value = this[prop] || ''
-                            var executor = function() {
+                            let lookup = match[i].match(/([^\[].+[^\]])/)[0]
+                            let desc = x(child.parentBind, lookup)
+                            let prop = desc.prop
+                            let tMatch = match[i]
+                            let value = desc.obj ? desc.obj.toString() : ''
+                            let executor = function() {
                                 child.textContent = child.textContent.replace(tMatch, value)
                             }
                             this.__textBindings = this.__textBindings || []
