@@ -16,6 +16,10 @@
             return `<div class="todo-item"><input slim-id="complete" type="checkbox"/><span complete=[data.complete] class="todo-text" bind>[[data.text]]</span></div>`
         }
 
+        onBeforeCreated() {
+            this.watch('data.text', (what) => {console.log(what)})
+        }
+
         update() {
             if (this.data.complete) {
                 this.complete.setAttribute('checked', 'checked')

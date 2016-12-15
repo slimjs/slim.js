@@ -67,6 +67,17 @@ class Slim extends HTMLElement {
         return Array.prototype.slice.call(this.querySelectorAll(selector))
     }
 
+    watch(prop, executor) {
+        let descriptor = {
+            type: 'W',
+            properties: [ prop ],
+            executor: executor,
+            target: this,
+            source: this
+        }
+        this.__bind(descriptor)
+    }
+
     __bind(descriptor) {
         descriptor.properties.forEach(
             prop => {
@@ -113,6 +124,10 @@ class Slim extends HTMLElement {
                 } else if (descriptor.type === 'R') {
                     executor = () => {
                         descriptor.repeater.renderList()
+                    }
+                } else if (descriptor.type === 'W') {
+                    executor = () => {
+                        descriptor.executor(Slim.__lookup(source, prop).obj)
                     }
                 }
                 source._bindings[rootProp].executors.push( executor )
