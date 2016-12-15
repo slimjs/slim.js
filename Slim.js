@@ -6,6 +6,19 @@ class Slim extends HTMLElement {
         document.registerElement(tag, clazz)
     }
 
+    static plugin(phase, plugin) {
+        if (phase !== 'create' && phase !== 'beforeRender' && phase !== 'afterRender') {
+            throw "Supported phase can be create, beforeRender or afterRender only"
+        }
+        Slim.__plugins[phase].push(plugin)
+    }
+
+    static __runPlugins(phase, element) {
+        Slim.__plugins[phase].forEach( fn => {
+            fn(element)
+        })
+    }
+
     static __moveChildren(source, target, activate) {
         while (source.children.length) {
             let child = source.children[0]
@@ -92,7 +105,6 @@ class Slim extends HTMLElement {
                     executor = () => {
                         descriptor.repeater.renderList()
                     }
-                    console.log(descriptor)
                 }
                 source._bindings[prop].executors.push( executor )
             }
@@ -163,11 +175,14 @@ class Slim extends HTMLElement {
         if (this.isVirtual && !force) return
         if (!this.__onCreatedComplete) this.onBeforeCreated()
         this._captureBindings()
+        Slim.__runPlugins('create', this)
         if (!this.__onCreatedComplete) this.onCreated()
         this.__onCreatedComplete = true
         this.onBeforeRender()
+        Slim.__runPlugins('beforeRender', this)
         Slim.__moveChildren( this._virtualDOM, this, true )
         this.onAfterRender()
+        Slim.__runPlugins('afterRender', this)
         this.update()
         // this.appendChild(this._virtualDOM)
     }
@@ -281,6 +296,12 @@ class Slim extends HTMLElement {
         }
     }
 
+}
+
+Slim.__plugins = {
+    'create': [],
+    'beforeRender': [],
+    'afterRender': []
 }
 
 Slim.tag('slim-repeat', class extends Slim {
