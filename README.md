@@ -1,2 +1,80 @@
-# slim-web-components
-Slim web components infrastructure
+# Hello, slim.js
+
+MVVM infrastructure for rapid development of native web components using markup and code-behind technique.
+
+Supports data-binding, repeaters, plugins.
+
+## Custom components
+Usage:
+```
+Slim.tag('my-tag', class extends Slim {
+})
+```
+
+### Data-Binding
+A property can be bound to an attribute, see example:
+```
+<my-custom-tag child-attribute="[parentProperty]"></my-custom-tag>
+<my-custom-tag child-attribute="[someFunction(parentProperty)]"></my-custom-tag>
+```
+slim injects a property getter/setter functions for *parentProperty* and updates automatically the child node on every update
+
+### Interface
+- get template() // return your HTML
+- onBeforeCreated() // before the binding happens
+- onCreated() // after the generation of the tree
+- onBeforeRender() // before the virtual DOM becomes real DOM
+- onAfterRender() // after you have a DOM
+
+### Methods
+- render(&lt;HTML&gt; | undefined) // empty will reset to your original template
+- update() // flushes update down the tree
+
+### Attributes
+##### bind
+Enables property-to-text binding on an element
+
+Usage:
+```
+<div bind>[[myProperty]]</div>
+```
+
+##### slim-id
+Creates the name as a reference directly in your component
+
+Usage:
+```
+<div slim-id="myContent" />
+...
+afterRender() {
+  this.myContent.textContent = 'Hello, slim.js'
+}
+```
+
+##### slim-repeat
+Repeats and item from an array data source property in your element, and injects the result as "data" property in every cloned element
+
+Usage:
+```
+<div slim-repeat="items">[[data.title]]</div>
+```
+Repeaters are also available for custom elements
+```
+<my-custom-tag slim-repeat="items"></my-custom-tag>
+```
+And in your custom tag you could implement
+```
+get template() {
+  return `<div bind>[[data.someProperty]]</div>`
+}
+
+afterRender() {
+  alert(this.data)
+}
+```
+
+## Installation
+```
+npm install slim-js
+bower install slim.js
+```

@@ -45,7 +45,8 @@
             padding: 2em;
             padding-top: 4em;
             padding-bottom: 4em;
-            background: #ffe3ad;
+            /*background: #ffe3ad;*/
+            background: #ff8507;
         }
 
         div#logo {
@@ -63,7 +64,10 @@
         }
 
         pre {
-            background-color: #f7ead6;
+            border: 1px solid #f7c072;
+            border-radius: 0.5em;
+            background: #ff8507;
+            box-shadow: 2px 2px 1px 1px #222222;
             margin: 0;
             padding: 1em;
         }
@@ -72,8 +76,19 @@
             font-family: "Ubuntu Mono", monospace;
         }
 
-        h1, h2 {
+        h1, h2, h3 {
             font-family: "Nixie One", Sans-serif
+        }
+        
+        h3 {
+            color: #c02c33;
+            text-align: center;
+            font-weight: normal;
+        }
+
+        #content h3 {
+            text-align: left;
+            color: #222222;
         }
 
         h1 {
@@ -89,10 +104,11 @@
         }
 
         h2 {
-            color: #00408f;
+            color: #c02c33;
             word-spacing: 0.025em;
             letter-spacing: -0.02em;
-            font-size: 2em;
+            font-size: 3em;
+            border-bottom: 1px solid #c02c33;
         }
 
         p {
@@ -121,7 +137,7 @@
 
 
         code strong {
-            background-color: darkorange;
+            background-color: #ffb029;
             letter-spacing: 0.015em;
             padding-left: 0.3em;
             padding-right: 0.3em;
@@ -135,7 +151,10 @@
 
 <div id="wrapper">
     <header>
-    <div id="logo"><img src="slim1.png" width="261" height="91"></div><h1>SLIM <strong>is your</strong> PRODUCTIVE way for <strong>building your own</strong> NATIVE web components</h1>
+    <div id="logo">
+        <img src="slim1.png" width="261" height="91"></div>
+        <h1>SLIM <strong>is your</strong> PRODUCTIVE way for <strong>building your own</strong> NATIVE web components</h1>
+        <h3>Slim embraces the MVVM pattern for rapid development of UI components</h3>
     </header>
     <div id="content">
         <p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
@@ -143,16 +162,23 @@
 
         <div>
             <div>
+                <h3>Data binding</h3>
                 <p>Here's a demo web component.<br/>Insinde you could find two text input with two ids: "in" and "out". Please type your name into "in"</p>
                 <demo-binding></demo-binding>
             </div>
             <div>
+                <h3>Repeaters</h3>
                 <p>Use any array as data-source for repeaters. Every item in the array will be injected as data property to each replica. Easy!</p>
                 <pre><code>&lt;span <strong>slim-repeat="dataSource"</strong> bind>[[data.name]]&lt;/span></code></pre>
                 <p>Assuming the source has name property in each item, you would expect an output similiar to this: <strong>Alpha Beta Gamma Delta Echo</strong> ...</p>
             </div>
-            <div><p>Here's how it works. Your job is to implement (not mandatory) the red parts, as you wish.
-                slim.js will do the rest of the magic for you.</p><img src="lifecycle.png" width="464px" height="328px"></div>
+            <div>
+                <h3>Plugins</h3>
+                <p>Extend Slim.JS capabilities by writing plugins. It's that easy</p>
+                <pre><code><strong>Slim.plugin</strong>('afterRender', (element) => {console.log("Gotcha after rendering, ", element)}</code></pre>
+            </div>
+            <!--<div><p>Here's how it works. Your job is to implement (not mandatory) the red parts, as you wish.-->
+                <!--slim.js will do the rest of the magic for you.</p><img src="lifecycle.png" width="464px" height="328px"></div>-->
         </div>
 
         <p>This is all possible thanks to slim.js, and look at the code - without effort!<br/>slim.js is not a framework,
@@ -160,13 +186,6 @@
             the are here for you to build your own native web components, without the sweat.
             No need to comply to a 3rd party library's conventions anymore. Fear not of performance issues, it's native, it's easy and it's light.</p>
 
-        <h2>Features</h2>
-        <ul id="features">
-            <li id="li-image">Lightweight and fast</li>
-            <li id="li-binding">Data binding</li>
-            <li id="li-abinding">Attribute-property binding</li>
-            <li id="li-repeater">Repeaters</li>
-        </ul>
         <h2>Get slim.js</h2>
         <pre><code>bower install slim.js<br/>npm install slim-js</code></pre>
     </div>
