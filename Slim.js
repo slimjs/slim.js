@@ -58,18 +58,16 @@ class Slim extends HTMLElement {
                     value: source[prop],
                     executors: []
                 }
-                if (!source.__lookupSetter__(prop)) {
-                    source.__defineGetter__(prop, function() {
+                if (!source.__lookupGetter__(prop)) source.__defineGetter__(prop, function() {
                         return this._bindings[prop].value
                     })
-                    source.__defineSetter__(prop, function(x) {
+                if (!source.__lookupSetter__(prop)) source.__defineSetter__(prop, function(x) {
                         this._bindings[prop].value = x
                         if (descriptor.sourceText) {
                             descriptor.target.textContent = descriptor.sourceText
                         }
                         this._executeBindings()
                     })
-                }
                 let executor
                 if (descriptor.type === 'P') {
                     executor = () => {
@@ -161,19 +159,27 @@ class Slim extends HTMLElement {
     }
 
     createdCallback(force = false) {
-        this._bindings = this._bindings || {}
-        this._boundChildren = this._boundChildren || []
-        this.alternateTemplate = this.alternateTemplate || null
-        this._virtualDOM = this._virtualDOM || document.createElement('slim-root')
+        this.initialize()
         if (this.isVirtual && !force) return
-        this.onBeforeCreated()
+        if (!this.__onCreatedComplete) this.onBeforeCreated()
         this._captureBindings()
-        this.onCreated()
+        if (!this.__onCreatedComplete) this.onCreated()
+        this.__onCreatedComplete = true
         this.onBeforeRender()
         Slim.__moveChildren( this._virtualDOM, this, true )
         this.onAfterRender()
         this.update()
         // this.appendChild(this._virtualDOM)
+    }
+
+    initialize(forceNewVirtualDOM = false) {
+        this._bindings = this._bindings || {}
+        this._boundChildren = this._boundChildren || []
+        this.alternateTemplate = this.alternateTemplate || null
+        if (forceNewVirtualDOM) {
+            this._virtualDOM = document.createElement('slim-root')
+        }
+        this._virtualDOM = this._virtualDOM || document.createElement('slim-root')
     }
 
     get isSlim() { return true }
@@ -184,6 +190,15 @@ class Slim extends HTMLElement {
     onBeforeRender() { /* abstract */ }
     onAfterRender() { /* abstract */ }
     update() { /* abstract */ }
+
+    render(template) {
+        this.alternateTemplate = template
+        this.initialize(true)
+        this.innerHTML = ''
+        this._captureBindings()
+        Slim.__moveChildren( this._virtualDOM, this, true )
+        this._executeBindings()
+    }
 
 
     _executeBindings() {
@@ -289,16 +304,17 @@ Slim.tag('slim-repeat', class extends Slim {
         for (let dataItem of this.sourceData) {
             let clone = this.sourceNode.cloneNode(true)
             clone.removeAttribute('slim-repeat')
-            clone.sourceText = clone.textContent
+            clone._boundParent = clone
             clone.data = dataItem
+            clone.sourceText = clone.textContent
             this.clones.push(clone)
             this.insertAdjacentElement('afterBegin', clone)
         }
         this._captureBindings()
         for (let clone of this.clones) {
             clone.textContent = clone.sourceText
-            clone._boundParent = clone
             clone.data = clone.data
+            clone._boundParent = clone
         }
         this._executeBindings()
         Slim.__moveChildren(this._virtualDOM, this, true)
