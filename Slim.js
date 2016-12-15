@@ -27,7 +27,7 @@ class Slim extends HTMLElement {
         let children = Array.prototype.slice.call( target.querySelectorAll('*'))
         for (let child of children) {
             if (activate && child.isSlim) {
-                child.createdCallback()
+                child.createdCallback(true)
             }
         }
     }
@@ -57,6 +57,14 @@ class Slim extends HTMLElement {
 
     static __camelToDash(camel) {
         return camel.replace(/([A-Z])/g, '-$1').toLowerCase();
+    }
+
+    find(selector) {
+        return this.querySelector(selector)
+    }
+
+    findAll(selector) {
+        return Array.prototype.slice.call(this.querySelectorAll(selector))
     }
 
     __bind(descriptor) {
@@ -204,7 +212,9 @@ class Slim extends HTMLElement {
     onCreated() { /* abstract */}
     onBeforeRender() { /* abstract */ }
     onAfterRender() { /* abstract */ }
-    update() { /* abstract */ }
+    update() {
+        this._executeBindings()
+    }
 
     render(template) {
         this.alternateTemplate = template
@@ -249,7 +259,8 @@ class Slim extends HTMLElement {
 
             descriptors = descriptors.sort( (a,b) => {
                 if (a.type === 'I') { return -1 }
-                return 1
+                else if (a.type === 'R') return 1
+                return 0
             })
 
             descriptors.forEach(
@@ -329,7 +340,7 @@ Slim.tag('slim-repeat', class extends Slim {
             clone.data = dataItem
             clone.sourceText = clone.textContent
             this.clones.push(clone)
-            this.insertAdjacentElement('afterBegin', clone)
+            this.insertAdjacentElement('beforeEnd', clone)
         }
         this._captureBindings()
         for (let clone of this.clones) {

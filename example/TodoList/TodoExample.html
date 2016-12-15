@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>slim.js - TodoExample</title>
+
+    <script>
+        var isChrome;
+        try {
+            isChrome = typeof window.chrome.webstore === 'object'
+        }
+        catch (err) {
+            isChrome = false;
+        }
+        if (!isChrome) {
+            let s = "<script type=\"text\/javascript\" " +
+                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
+                    " > <\/script> "
+            document.write(s)
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Nixie+One|Ubuntu+Mono" rel="stylesheet">
+
+    <script src="../../Slim.js"></script>
+    <link rel="import" href="TodoApp.html" />
+
+</head>
+<body>
+
+    <todo-app></todo-app>
+
+</body>
+</html>

@@ -13,7 +13,7 @@ Slim.tag('bind-parent', class extends Slim {
         this.myProp = 0
         this.urProp = 1
         this.wProp = this.myProp + this.urProp
-        this.items = []
+        this.items = [ {label: 'item1', value: 1}]
     }
 
     calcMinus(a, b) {
@@ -33,7 +33,7 @@ Slim.tag('bind-parent', class extends Slim {
                 })
             }
             this.items = tmpItems
-        }, 1500)
+        }, 15000)
         setTimeout( () => {
             this.myProp = Math.random()
             this.urProp = Math.random()
@@ -46,7 +46,7 @@ Slim.tag('bind-parent', class extends Slim {
                 })
             }
             this.items = tmpItems
-        }, 500)
+        }, 5000)
     }
 
 })

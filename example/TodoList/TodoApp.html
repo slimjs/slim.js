@@ -1,0 +1,75 @@
+<script>
+
+    class Todo {
+        constructor(text) {
+            this.text = text;
+            this.complete = false;
+        }
+
+        setComplete(value) {
+            this.complete = !!value
+        }
+    }
+
+    Slim.tag('todo-item', class extends Slim {
+        get template() {
+            return `<div class="todo-item"><input slim-id="complete" type="checkbox"/><span complete=[data.complete] class="todo-text" bind>[[data.text]]</span></div>`
+        }
+
+        update() {
+            if (this.data.complete) {
+                this.complete.setAttribute('checked', 'checked')
+            } else {
+                this.complete.removeAttribute('checked')
+            }
+            super.update()
+        }
+
+        onAfterRender() {
+            this.complete.onchange = () => {
+                this.data.setComplete(this.complete.checked)
+                this.update()
+            }
+        }
+
+    })
+
+    Slim.tag('todo-app', class extends Slim {
+
+
+        get template() {
+            return `<div id="todo-container">
+                    <input type="text" slim-id="newTodo" />
+                    <todo-item slim-repeat="todos"></todo-item>
+                    <div id="todos-count" bind>You have [[todos.length]] items</div>`
+        }
+
+        onBeforeCreated() {
+            this.todos = [
+                new Todo('Get slim.js'),
+                new Todo('Quickly start writing native applications')
+            ]
+        }
+
+        onAfterRender() {
+            this.newTodo.onkeyup = (e) => {
+                if (e.which === 13) {
+                    this.todos.push( new Todo(this.newTodo.value) )
+                    this.newTodo.value = ''
+                    this.todos = this.todos
+                }
+            }
+        }
+
+
+
+
+    })
+
+</script>
+
+<style>
+todo-item span[complete="true"] {
+    text-decoration: line-through;
+}
+</style>
