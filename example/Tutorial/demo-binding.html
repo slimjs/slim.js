@@ -1,6 +1,6 @@
 <script>
 
-    Slim('demo-binding', class extends SlimBaseElement {
+    Slim.tag('demo-binding', class extends Slim {
 
 
         get template() {
@@ -23,6 +23,7 @@
         afterRender() {
             this.in.onkeyup = () => {
                 this.myProperty = this.in.value
+                this.myProp2 = this.myProperty.split('').reverse().join('')
             }
         }
 
