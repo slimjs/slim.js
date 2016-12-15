@@ -206,6 +206,9 @@ class Slim extends HTMLElement {
         for (let child of allChildren) {
             child._boundParent = this
             this._boundChildren.push(child)
+            if (child.getAttribute('slim-id')) {
+                child._boundParent[ Slim.__dashToCamel(child.getAttribute('slim-id')) ] = child
+            }
             let slimID = child.getAttribute('slim-id')
             if (slimID) this[slimID] = child
             let descriptors = []

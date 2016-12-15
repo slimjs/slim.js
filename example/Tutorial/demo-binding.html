@@ -10,7 +10,7 @@
     &lt;input <strong>slim-id="in"</strong> type="text" />
     &lt;span bind>Hello, <strong>[[myProperty]]</strong> /></code></pre></div>
                 <div><pre><code>
-    <strong>afterRender()</strong> {
+    <strong>onAfterRender()</strong> {
         this.<strong>in</strong>.onkeyup = () => {
             this.<strong>myProperty</strong> = this.in.value
         }
@@ -19,11 +19,14 @@
                 `
         }
 
+        onBeforeRender() {
+            this.myProperty = ''
+        }
 
-        afterRender() {
+
+        onAfterRender() {
             this.in.onkeyup = () => {
                 this.myProperty = this.in.value
-                this.myProp2 = this.myProperty.split('').reverse().join('')
             }
         }
 

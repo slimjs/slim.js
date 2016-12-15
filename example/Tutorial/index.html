@@ -23,7 +23,7 @@
     </script>
     <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Nixie+One|Ubuntu+Mono" rel="stylesheet">
 
-    <script src="../../SlimElement.js"></script>
+    <script src="../../Slim.js"></script>
     <link rel="import" href="demo-binding.html" />
 
     <style type="text/css">
@@ -104,12 +104,7 @@
         }
 
         li {
-            cursor: pointer;
             font-style: italic;
-        }
-
-        li:hover {
-            text-decoration: underline;
         }
 
         footer {
@@ -146,26 +141,19 @@
         <p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
         <h2>Hello, slim.js</h2>
 
-        <slim-states current-state="li-binding">
-            <div in-state="li-image"><p>Here's how it works. Your job is to implement (not mandatory) the red parts, as you wish.
-            slim.js will do the rest of the magic for you.</p><img src="lifecycle.png" width="464px" height="328px"></div>
-            <div in-state="li-binding">
+        <div>
+            <div>
                 <p>Here's a demo web component.<br/>Insinde you could find two text input with two ids: "in" and "out". Please type your name into "in"</p>
                 <demo-binding></demo-binding>
             </div>
-            <div in-state="li-injection">
-                <p>Dependency injection is quite easy. Use curly braces for declarative dependency injection in your project.
-                Wherever and whenever your component appears, it receives the requirements as you define it</p>
-                <pre><code>&lt;my-component <strong>myModel={ApplicationModel}</strong> /></code></pre>
-                <p>And in some other part of your code</p>
-                <pre><code><strong>Slim.define</strong>('ApplicationModel', () => { return appModelInstance })</code></pre>
-            </div>
-            <div in-state="li-repeater">
+            <div>
                 <p>Use any array as data-source for repeaters. Every item in the array will be injected as data property to each replica. Easy!</p>
                 <pre><code>&lt;span <strong>slim-repeat="dataSource"</strong> bind>[[data.name]]&lt;/span></code></pre>
                 <p>Assuming the source has name property in each item, you would expect an output similiar to this: <strong>Alpha Beta Gamma Delta Echo</strong> ...</p>
             </div>
-        </slim-states>
+            <div><p>Here's how it works. Your job is to implement (not mandatory) the red parts, as you wish.
+                slim.js will do the rest of the magic for you.</p><img src="lifecycle.png" width="464px" height="328px"></div>
+        </div>
 
         <p>This is all possible thanks to slim.js, and look at the code - without effort!<br/>slim.js is not a framework,
             it's a series of es6 classes and base-classes
@@ -173,30 +161,17 @@
             No need to comply to a 3rd party library's conventions anymore. Fear not of performance issues, it's native, it's easy and it's light.</p>
 
         <h2>Features</h2>
-        <p>Pick a feature and see how it works</p>
-        <ul id="menu">
+        <ul id="features">
             <li id="li-image">Lightweight and fast</li>
             <li id="li-binding">Data binding</li>
-            <li id="li-injection">Dependency Injection</li>
-            <li id="li-repeater">Repeaters, States and other cool stuff</li>
+            <li id="li-abinding">Attribute-property binding</li>
+            <li id="li-repeater">Repeaters</li>
         </ul>
         <h2>Get slim.js</h2>
-        <pre><code>bower install slim.js
-        npm install slim-js</code></pre>
+        <pre><code>bower install slim.js<br/>npm install slim-js</code></pre>
     </div>
 <footer><span class="license">© 2016 Avichay Eyal. All code provided is open source under the MIT License</span></footer>
 </div>
-
-<script>
-    Array.prototype.slice.call(document.querySelectorAll('ul li')).forEach( (element) => {
-        element.onclick = function() {
-            if (this.id) {
-                document.querySelector('slim-states').setAttribute('current-state', this.id)
-                window.scrollTo(0, 0)
-            }
-        }
-    })
-</script>
 
 
 </body>
