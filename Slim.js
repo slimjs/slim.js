@@ -73,10 +73,12 @@ class Slim extends HTMLElement {
                 let rootProp
                 if (prop.indexOf('.') > 0) {
                     rootProp = prop.split('.')[0]
+                } else {
+                    rootProp = prop
                 }
                 let source = descriptor.target._boundParent
-                source._bindings[prop] = source._bindings[prop] || {
-                    value: source[prop],
+                source._bindings[rootProp] = source._bindings[rootProp] || {
+                    value: source[rootProp],
                     executors: []
                 }
                 if (!source.__lookupGetter__(prop)) source.__defineGetter__(prop, function() {
@@ -96,7 +98,6 @@ class Slim extends HTMLElement {
                         descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value
                         descriptor.target.setAttribute( descriptor.attribute, value )
                     }
-                    source._bindings[prop].executors.push( executor )
                 } else if (descriptor.type === 'M') {
                     executor = () => {
                         let value = source[ descriptor.method ].apply( source,
@@ -114,7 +115,7 @@ class Slim extends HTMLElement {
                         descriptor.repeater.renderList()
                     }
                 }
-                source._bindings[prop].executors.push( executor )
+                source._bindings[rootProp].executors.push( executor )
             }
         )
     }
@@ -227,6 +228,11 @@ class Slim extends HTMLElement {
 
 
     _executeBindings() {
+        this._boundChildren.forEach( child => {
+            if (child.sourceText) {
+                child.textContent = child.sourceText
+            }
+        })
         Object.keys(this._bindings).forEach( property => {
             this._bindings[property].executors.forEach( fn => { fn() } )
         })
@@ -302,6 +308,7 @@ class Slim extends HTMLElement {
                     target: child,
                     sourceText: child.textContent
                 }
+                descriptor.target.sourceText = descriptor.sourceText
                 this.__bind(descriptor)
             }
         }

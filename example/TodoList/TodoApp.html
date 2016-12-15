@@ -56,7 +56,7 @@
                 if (e.which === 13) {
                     this.todos.push( new Todo(this.newTodo.value) )
                     this.newTodo.value = ''
-                    this.todos = this.todos
+                    this.update()
                 }
             }
         }
