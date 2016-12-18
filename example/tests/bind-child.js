@@ -1,7 +1,7 @@
 Slim.tag('bind-child', class extends Slim {
 
     get template() {
-        return `<div>Click for value</div>`
+        return `<div bind>[[data.label]] Click for value</div>`
     }
 
     onBeforeCreated() {

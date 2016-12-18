@@ -1,0 +1,86 @@
+<script>
+    Slim.tag('slim-notification', class extends Slim {
+        get template() {
+            return `<p bind>[[text]]</p><button slim-id="closeBtn" class="ui-notification_button"><svg width="14" height="15" viewBox="0 0 14 15" xmlns="http://www.w3.org/2000/svg"><path d="M5.434 9.455H.04V6.39h5.394V.935h3.053V6.39h5.395v3.065H8.487v5.386H5.434" fill-rule="evenodd"/></svg></button>`
+        }
+
+        createdCallback() {
+            this.text = this.textContent
+            this.innerHTML = ''
+            super.createdCallback()
+        }
+
+        get type() {
+            return this.getAttribute('type') || 'error'
+        }
+
+        onCreated() {
+            this.classList.add(`is--${this.type}`)
+        }
+
+        onAfterRender() {
+            this.closeBtn.onclick = () => {
+                this.remove()
+            }
+        }
+    })
+</script>
+<style>
+    slim-notification {
+        border-radius: 4px;
+        color: white;
+        display: flex;
+        justify-content: center;
+        margin: 1em;
+        opacity: 1;
+        padding: 1em 2em;
+        position: relative;
+        transform: translateY(0px);
+        transition: all 0.3s ease-in-out;
+        visibility: visible;
+        width: 90%;
+        max-width: 40em;
+    }
+
+    slim-notification.is--success {
+        background-color: #8AC832;
+    }
+
+    slim-notification.is--warning {
+        background-color: #FFA700;
+    }
+
+    slim-notification.is--warning svg {
+        fill: #BF7E02;
+    }
+
+    slim-notification.is--error {
+        background-color: #E03F3D;
+    }
+
+    slim-notification.is--error svg {
+        fill: #A02B29;
+    }
+
+
+    slim-notification .ui-notification_button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        transform-origin: center;
+        transform: rotate(134deg) scale(1);
+        transition: transform 0.2s ease-in-out;
+        outline: none;
+        position: absolute;
+        right: 15px;
+    }
+
+    slim-notification .ui-notification_button:hover,
+    slim-notification .ui-notification_button:focus {
+        transform: rotate(134deg) scale(1.2);
+    }
+
+    slim-notification .ui-notification_button svg {
+        fill: #ffffff;
+    }
+</style>

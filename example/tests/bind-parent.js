@@ -6,6 +6,9 @@ Slim.tag('bind-parent', class extends Slim {
 <div slim-repeat="items" bind>[[data.label]] >>> [[data.value]]</div>
 <hr/>
 <bind-child slim-repeat="items" a-prop="[myProp]" b-prop="[urProp]"></bind-child>
+<br/>
+<hr/>
+<tree-list slim-repeat="tree"></tree-list>
 `
     }
 
@@ -13,6 +16,13 @@ Slim.tag('bind-parent', class extends Slim {
         this.myProp = 0
         this.urProp = 1
         this.wProp = this.myProp + this.urProp
+        this.tree = [
+            "alpha", "beta", "charlie", "delta", [
+                "echo", "foxtrot", "golf", "hotel", "juliet", [
+                    "kilo", "lima", "mike", "november"
+                ]
+            ]
+        ]
         this.items = [ {label: 'item1', value: 1}]
     }
 
@@ -33,7 +43,8 @@ Slim.tag('bind-parent', class extends Slim {
                 })
             }
             this.items = tmpItems
-        }, 15000)
+            this.tree = this.tree
+        }, 1500)
         setTimeout( () => {
             this.myProp = Math.random()
             this.urProp = Math.random()
@@ -46,7 +57,7 @@ Slim.tag('bind-parent', class extends Slim {
                 })
             }
             this.items = tmpItems
-        }, 5000)
+        }, 500)
     }
 
 })
