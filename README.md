@@ -1,7 +1,6 @@
 # Hello, slim.js
 
-MVVM infrastructure for rapid development of native web components using markup and code-behind technique.
-
+MVVM infrastructure for rapid development of native web components using markup and code-behind.
 Supports data-binding, repeaters, plugins.
 
 ## Custom components
@@ -11,6 +10,10 @@ Slim.tag('my-tag', class extends Slim {
 })
 ```
 
+## Component Lifecycle
+Native element's lifecycle are extended in slim to the following
+creation -> initialization -> *onBeforeCreated* -> binding -> *onCreated* -> *onBeforeRender* -> first render -> *onAfterRender* -> *update*
+
 ### Data-Binding
 A property can be bound to an attribute, see example:
 ```
@@ -19,7 +22,7 @@ A property can be bound to an attribute, see example:
 ```
 slim injects a property getter/setter functions for *parentProperty* and updates automatically the child node on every update
 
-### Interface
+### Interface / Lifecycle
 - get template() // return your HTML
 - onBeforeCreated() // before the binding happens
 - onCreated() // after the generation of the tree
