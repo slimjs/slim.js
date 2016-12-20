@@ -5,7 +5,6 @@
   "main": "Slim.js",
   "scripts": {
     "start": "uglifyjs Slim.js -o ./bin/Slim.min.js",
-    "postinstall": "uglifyjs Slim.js -o ./bin/Slim.min.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
