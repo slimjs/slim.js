@@ -1,7 +1,8 @@
 Slim.tag('tree-list', class extends Slim {
 
-
-
+    get dependencies() {
+        return ['TreeModel']
+    }
 
     get template() {
         if (this.data instanceof Array) {
@@ -9,6 +10,10 @@ Slim.tag('tree-list', class extends Slim {
         } else {
             return '<div><span bind>Text: [[data]]</span></div>'
         }
+    }
+
+    onAfterRender() {
+        this.dependency.TreeModel(this)
     }
 
 })
