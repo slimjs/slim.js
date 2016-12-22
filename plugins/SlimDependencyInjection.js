@@ -15,6 +15,6 @@ SlimDependencyInjection.define = function(name, inject) {
     SlimDependencyInjection.injects[name] = inject
 }
 
-SlimDependencyInjection.define('TreeModel', console.log)
+SlimDependencyInjection.define('TreeModel', ()=>{})
 
 Slim.plugin('create', SlimDependencyInjection)

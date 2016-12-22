@@ -3,12 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Bind-Tests</title>
+    <script>
+        window.isChrome = false;
+        try {
+            isChrome = typeof window.chrome.webstore === 'object'
+        }
+        catch (err) {
+            isChrome = false;
+        }
+        if (!isChrome) {
+            let s = "<script type=\"text\/javascript\" " +
+                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
+                    " > <\/script> "
+            document.write(s)
+        }
+    </script>
 
     <script src="../../Slim.js"></script>
     <script src="bind-parent.js"></script>
     <script src="bind-child.js"></script>
     <script src="treeList.js"></script>
     <script src="../../plugins/SlimDependencyInjection.js"></script>
+    <script src="../../components/event-bus.js"></script>
+    <script src="event-bus-e1.js"></script>
 
 </head>
 <body>
@@ -21,5 +38,9 @@
 
 
     <bind-parent></bind-parent>
+
+<event-bus-e1></event-bus-e1>
+<event-bus-e2></event-bus-e2>
+<event-bus-e3></event-bus-e3>
 </body>
 </html>

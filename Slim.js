@@ -89,19 +89,19 @@ class Slim extends HTMLElement {
                 }
                 let source = descriptor.target._boundParent
                 source._bindings[rootProp] = source._bindings[rootProp] || {
-                    value: source[rootProp],
-                    executors: []
-                }
+                        value: source[rootProp],
+                        executors: []
+                    }
                 if (!source.__lookupGetter__(prop)) source.__defineGetter__(prop, function() {
-                        return this._bindings[prop].value
-                    })
+                    return this._bindings[prop].value
+                })
                 if (!source.__lookupSetter__(prop)) source.__defineSetter__(prop, function(x) {
-                        this._bindings[prop].value = x
-                        if (descriptor.sourceText) {
-                            descriptor.target.textContent = descriptor.sourceText
-                        }
-                        this._executeBindings()
-                    })
+                    this._bindings[prop].value = x
+                    if (descriptor.sourceText) {
+                        descriptor.target.textContent = descriptor.sourceText
+                    }
+                    this._executeBindings()
+                })
                 let executor
                 if (descriptor.type === 'P') {
                     executor = () => {
@@ -152,8 +152,8 @@ class Slim extends HTMLElement {
         }
 
         const rxInject = /\{(.+[^(\((.+)\))])\}/.exec(attribute.nodeValue)
-        const rxProp = /\[(.+[^(\((.+)\))])\]/.exec(attribute.nodeValue)
-        const rxMethod = /\[(.+)(\((.+)\)){1}\]/.exec(attribute.nodeValue)
+        const rxProp = /\[\[(.+[^(\((.+)\))])\]\]/.exec(attribute.nodeValue)
+        const rxMethod = /\[\[(.+)(\((.+)\)){1}\]\]/.exec(attribute.nodeValue)
 
         if (rxMethod) {
             return {
@@ -208,7 +208,6 @@ class Slim extends HTMLElement {
         this.onAfterRender()
         Slim.__runPlugins('afterRender', this)
         this.update()
-        // this.appendChild(this._virtualDOM)
     }
 
     initialize(forceNewVirtualDOM = false) {
@@ -278,7 +277,7 @@ class Slim extends HTMLElement {
                 if (desc) descriptors.push(desc)
             }
 
-            descriptors = descriptors.sort( (a,b) => {
+            descriptors = descriptors.sort( (a) => {
                 if (a.type === 'I') { return -1 }
                 else if (a.type === 'R') return 1
                 return 0
@@ -355,15 +354,17 @@ Slim.tag('slim-repeat', class extends Slim {
         if (!this.sourceNode) return
         this.clones = []
         this.innerHTML = ''
-        for (let dataItem of this.sourceData) {
+        this.sourceData.forEach( (dataItem, index ) => {
             let clone = this.sourceNode.cloneNode(true)
             clone.removeAttribute('slim-repeat')
             clone._boundParent = clone
             clone.data = dataItem
+            clone.data_index = index
+            clone.data_source = this.sourceData
             clone.sourceText = clone.textContent
             this.clones.push(clone)
             this.insertAdjacentElement('beforeEnd', clone)
-        }
+        })
         this._captureBindings()
         for (let clone of this.clones) {
             clone.textContent = clone.sourceText

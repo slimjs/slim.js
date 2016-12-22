@@ -8,7 +8,7 @@ Slim.tag('bind-parent', class extends Slim {
 <bind-child slim-repeat="items" a-prop="[myProp]" b-prop="[urProp]"></bind-child>
 <br/>
 <hr/>
-<tree-list slim-repeat="tree"></tree-list>
+<tree-list bind-wprop="[[wprop]]" slim-repeat="tree"></tree-list>
 `
     }
 
