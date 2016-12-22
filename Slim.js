@@ -3,6 +3,7 @@ console.log('SlimJS')
 class Slim extends HTMLElement {
 
     static tag(tag, clazz) {
+        Slim.__prototypeDict[tag] = clazz
         document.registerElement(tag, clazz)
     }
 
@@ -42,10 +43,22 @@ class Slim extends HTMLElement {
     }
 
     static __createRepeater(descriptor) {
-        let repeater = document.createElement('slim-repeat')
-        repeater.sourceNode = descriptor.target
+        var repeater
+        if (Slim.__isChrome) {
+            repeater = document.createElement('slim-repeat')
+            repeater.sourceNode = descriptor.target
+            descriptor.target.parentNode.insertBefore(repeater, descriptor.target)
+            descriptor.repeater = repeater
+        } else {
+            descriptor.target.insertAdjacentHTML('beforebegin', '<slim-repeat slim-new="true"></slim-repeat>')
+            repeater = descriptor.target.parentNode.querySelector('slim-repeat[slim-new="true"]')
+            repeater.__proto__ = window.SlimRepeater.prototype
+            repeater.sourceNode = descriptor.target
+            repeater.removeAttribute('slim-new')
+
+            repeater.createdCallback()
+        }
         repeater._boundParent = descriptor.source
-        descriptor.target.parentNode.insertBefore(repeater, descriptor.target)
         descriptor.target.parentNode.removeChild(descriptor.target)
         repeater.setAttribute('source', descriptor.properties[0])
         descriptor.repeater = repeater
@@ -135,20 +148,19 @@ class Slim extends HTMLElement {
         )
     }
 
-    static __processRepeater(attribute) {
+    static __processRepeater(attribute, child) {
         return {
             type: 'R',
-            target: attribute.ownerElement,
+            target: child,
             attribute: attribute.nodeName,
             properties: [ attribute.nodeValue ],
-            source: attribute.ownerElement._boundParent
+            source: child._boundParent
         }
     }
 
-    static __processAttribute(attribute) {
-        let child = attribute.ownerElement
+    static __processAttribute(attribute, child) {
         if (attribute.nodeName === 'slim-repeat') {
-            return Slim.__processRepeater(attribute)
+            return Slim.__processRepeater(attribute, child)
         }
 
         const rxInject = /\{(.+[^(\((.+)\))])\}/.exec(attribute.nodeValue)
@@ -158,7 +170,7 @@ class Slim extends HTMLElement {
         if (rxMethod) {
             return {
                 type: 'M',
-                target: attribute.ownerElement,
+                target: child,
                 attribute: attribute.nodeName,
                 method: rxMethod[1],
                 properties: rxMethod[3].replace(' ','').split(',')
@@ -166,14 +178,14 @@ class Slim extends HTMLElement {
         } else if (rxProp) {
             return {
                 type: 'P',
-                target: attribute.ownerElement,
+                target: child,
                 attribute: attribute.nodeName,
                 properties: [ rxProp[1] ]
             }
         } else if (rxInject) {
             return {
                 type: 'I',
-                target: attribute.ownerElement,
+                target: child,
                 attribute: attribute.nodeName,
                 factory: rxInject[1]
             }
@@ -273,7 +285,7 @@ class Slim extends HTMLElement {
             if (slimID) this[slimID] = child
             let descriptors = []
             if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
-                let desc = Slim.__processAttribute(child.attributes[i])
+                let desc = Slim.__processAttribute(child.attributes[i], child)
                 if (desc) descriptors.push(desc)
             }
 
@@ -330,13 +342,21 @@ class Slim extends HTMLElement {
 
 }
 
+Slim.__prototypeDict = {}
 Slim.__plugins = {
     'create': [],
     'beforeRender': [],
     'afterRender': []
 }
 
-Slim.tag('slim-repeat', class extends Slim {
+try {
+    Slim.__isChrome = (typeof window.chrome.webstore === 'object')
+}
+catch (err) {
+    Slim.__isChrome = false
+}
+
+class SlimRepeater extends Slim {
     get sourceData() {
         try {
             return this._boundParent[ this.getAttribute('source') ]
@@ -354,17 +374,33 @@ Slim.tag('slim-repeat', class extends Slim {
         if (!this.sourceNode) return
         this.clones = []
         this.innerHTML = ''
-        this.sourceData.forEach( (dataItem, index ) => {
-            let clone = this.sourceNode.cloneNode(true)
-            clone.removeAttribute('slim-repeat')
-            clone._boundParent = clone
-            clone.data = dataItem
-            clone.data_index = index
-            clone.data_source = this.sourceData
-            clone.sourceText = clone.textContent
-            this.clones.push(clone)
-            this.insertAdjacentElement('beforeEnd', clone)
-        })
+        if (Slim.__isChrome) {
+            this.sourceData.forEach( (dataItem, index ) => {
+                let clone = this.sourceNode.cloneNode(true)
+                clone.removeAttribute('slim-repeat')
+                clone._boundParent = clone
+                clone.data = dataItem
+                clone.data_index = index
+                clone.data_source = this.sourceData
+                clone.sourceText = clone.textContent
+                this.clones.push(clone)
+                this.insertAdjacentElement('beforeEnd', clone)
+            })
+        } else {
+            this.sourceData.forEach( (dataItem, index ) => {
+                let clone = this.sourceNode.cloneNode(true)
+                clone.removeAttribute('slim-repeat')
+                clone.setAttribute('slim-repeat-index', index)
+                this.insertAdjacentHTML('beforeEnd', clone.outerHTML)
+                clone = this.find('*[slim-repeat-index="' + index.toString() + '"]')
+                clone._boundParent = clone
+                clone.data = dataItem
+                clone.data_index = index
+                clone.data_source = this.sourceData
+                clone.sourceText = clone.textContent
+                this.clones.push(clone)
+            })
+        }
         this._captureBindings()
         for (let clone of this.clones) {
             clone.textContent = clone.sourceText
@@ -375,6 +411,8 @@ Slim.tag('slim-repeat', class extends Slim {
         Slim.__moveChildren(this._virtualDOM, this, true)
 
     }
-})
+}
+Slim.tag('slim-repeat', SlimRepeater)
+window.SlimRepeater = SlimRepeater
 
 Slim.tag('slim-element', class extends Slim {})
