@@ -44,7 +44,7 @@ class Slim extends HTMLElement {
 
     static __createRepeater(descriptor) {
         var repeater
-        if (Slim.__isChrome) {
+        if (Slim.__isWCSupported) {
             repeater = document.createElement('slim-repeat')
             repeater.sourceNode = descriptor.target
             descriptor.target.parentNode.insertBefore(repeater, descriptor.target)
@@ -350,16 +350,21 @@ Slim.__plugins = {
 }
 
 try {
-    Slim.__isChrome = (typeof window.chrome.webstore === 'object')
+    Slim.__isWCSupported = (function() {
+        return ('registerElement' in document
+        && 'import' in document.createElement('link')
+        && 'content' in document.createElement('template'))
+    })()
 }
 catch (err) {
-    Slim.__isChrome = false
+    Slim.__isWCSupported = false
 }
 
 class SlimRepeater extends Slim {
     get sourceData() {
         try {
-            return this._boundParent[ this.getAttribute('source') ]
+            let lookup = Slim.__lookup(this._boundParent, this.getAttribute('source'))
+            return lookup.obj || [] //this._boundParent[ this.getAttribute('source') ]
         }
         catch (err) {
             return []
@@ -374,7 +379,7 @@ class SlimRepeater extends Slim {
         if (!this.sourceNode) return
         this.clones = []
         this.innerHTML = ''
-        if (Slim.__isChrome) {
+        if (Slim.__isWCSupported) {
             this.sourceData.forEach( (dataItem, index ) => {
                 let clone = this.sourceNode.cloneNode(true)
                 clone.removeAttribute('slim-repeat')

@@ -5,15 +5,25 @@
     <title>Hello, slim.js</title>
     <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Nixie+One|Ubuntu+Mono" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+        if (!(function() {return ('registerElement' in document
+                && 'import' in document.createElement('link')
+                && 'content' in document.createElement('template'))})()) {
+            let s = "<script type=\"text\/javascript\" " +
+                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
+                    " > <\/script> "
+            document.write(s)
+        }
+    </script>
     <script src="../../Slim.js"></script>
     <script src="slim-logo.js"></script>
-
     <style>
         body {
             perspective: 1200px;
             width:100%;
             height:100%;
             font-family: monospace;
+            font-size: 1em;
             margin: 0;
         }
         html {
@@ -23,9 +33,29 @@
             height: 100%;
         }
 
+        .baloon {
+            position: absolute;
+            transform: rotate(65deg);
+            width: 3em;
+            height: 3em;
+            border-radius: 0.2em;
+            background-color: #A02B29;
+            opacity: 0.4;
+        }
+
+        .baloon.lg {
+            width: 5.5em;
+            height: 5.5em;
+        }
+
         slim-logo img {
             transition-property: transofrm;
             transition-duration: 500ms;
+        }
+
+        p, code {
+            font-size: 1.2em;
+            line-height: 1.5em;
         }
 
         h1, h2, h3 {
@@ -34,16 +64,21 @@
 
         h1 {
             color: #c02c33;
+            font-size: 3em;
         }
 
         h2 {
+            margin-top: 2em;
             color: #ff8507;
+            font-size: 3em;
         }
 
         h3 {
             margin-top: 0;
             display:block;
             width: 100%;
+            letter-spacing: -0.03em;
+            font-size: 3em;
         }
 
         div#container {
@@ -66,7 +101,7 @@
         }
 
         hr {
-            margin-top: 1em;
+            margin-top: 8em;
             margin-bottom: 1em;
             border-top: 1px solid #aaaaaa;
             border-bottom: none;
@@ -81,8 +116,9 @@
 <div id="container">
     <slim-logo></slim-logo>
     <h1>A better way for creating NATIVE web components</h1>
-    <p>With es6 and slim you could write native web components double-time with no hassle of using external libraries that affect your workflow</p>
+    <p>With es6 and slim.js you could write native web components double-time with no hassle of using external libraries that affect your workflow. When it comes to development of web components, slim.js is your new best friend.</p>
     <h2>Featuring</h2>
+
     <div>
         <h3>Text binding</h3>
         <code>&lt;span bind>Hello, <strong>[[myProperty]]</strong> /><br/>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Slim elements test</title>
+
+    <script src="../../Slim.js"></script>
+    <script src="../components/s-ui-base.js"></script>
+    <script src="../components/basic-elements.js"></script>
+    <script src="slim-ui-test.js"></script>
+</head>
+<body>
+
+
+    <slim-ui-test>
+        <s-hgroup>
+            <s-input focus="testFocus" blur="testBlur" placeholder="type anything"></s-input>
+            <s-button text="Hello" click="testClick" mouseenter="testMouseover"></s-button>
+            <div bind>[[myText]]</div>
+        </s-hgroup>
+    </slim-ui-test>
+
+
+</body>
+</html>
