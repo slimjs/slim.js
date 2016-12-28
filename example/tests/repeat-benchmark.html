@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        window.isChrome = false;
+        try {
+            isChrome = typeof window.chrome.webstore === 'object'
+        }
+        catch (err) {
+            isChrome = false;
+        }
+        if (!isChrome) {
+            let s = "<script type=\"text\/javascript\" " +
+                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
+                    " > <\/script> "
+            document.write(s)
+        }
+    </script>
+
+    <script src="../../Slim.js"></script>
+</head>
+<body>
+</body>
+    <benchmark-tester></benchmark-tester>
+
+<script>
+    Slim.tag('benchmark-tester', class extends Slim {
+
+        get template() {
+            return `<div slim-repeat="arr" bind>[[data]]></div>`
+        }
+
+        onCreated() {
+            console.log(new Date().getTime())
+            this.arr = []
+            while (this.arr.length < 1000) {
+                this.arr.push(Math.random())
+            }
+        }
+
+        update() {
+            super.update()
+            console.log(new Date().getTime())
+        }
+
+    })
+</script>
+</html>

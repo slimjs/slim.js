@@ -20,3 +20,25 @@ Slim.tag('slim-ui-test', class extends Slim {
     }
 
 })
+
+
+
+
+Slim.tag('editable-ui-test', class extends Slim {
+
+
+    get template() {
+        return '<div bind>Hello, [[myText]]</div><s-editable-input text="@myText"></s-editable-input>'
+    }
+
+    onCreated() {
+        this.myText = 'Moshe Vilner'
+        this.watch('myText', (e) => {
+            console.log(e)
+        })
+    }
+
+
+
+
+})

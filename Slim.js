@@ -88,6 +88,8 @@ class Slim extends HTMLElement {
             target: this,
             source: this
         }
+        this._bindings = this._bindings || {}
+        this._boundParent = this._boundParent || this
         this.__bind(descriptor)
     }
 

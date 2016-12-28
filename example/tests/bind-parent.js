@@ -2,7 +2,7 @@ Slim.tag('bind-parent', class extends Slim {
 
     get template() {
         return `
-<div calc="[calcMinus(myProp, urProp)]"><span minus="[calcMinus(myProp, urProp)]" bind>[[wProp]]</div>
+<div calc="[[calcMinus(myProp, urProp)]]"><span minus="[calcMinus(myProp, urProp)]" bind>[[wProp]]</div>
 <div slim-repeat="items" bind>[[data.label]] >>> [[data.value]]</div>
 <hr/>
 <bind-child slim-repeat="items" a-prop="[myProp]" b-prop="[urProp]"></bind-child>
