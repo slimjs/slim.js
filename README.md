@@ -17,8 +17,8 @@ creation -> initialization -> *onBeforeCreated* -> binding -> *onCreated* -> *on
 ### Data-Binding
 A property can be bound to an attribute, see example:
 ```
-<my-custom-tag child-attribute="[parentProperty]"></my-custom-tag>
-<my-custom-tag child-attribute="[someFunction(parentProperty)]"></my-custom-tag>
+<my-custom-tag child-attribute="[[parentProperty]]"></my-custom-tag>
+<my-custom-tag child-attribute="[[someFunction(parentProperty)]]"></my-custom-tag>
 ```
 slim injects a property getter/setter functions for *parentProperty* and updates automatically the child node on every update
 
@@ -35,7 +35,7 @@ slim injects a property getter/setter functions for *parentProperty* and updates
 
 ### Attributes
 ##### bind
-Enables property-to-text binding on an element
+Used to apply property-to-text binding on an element
 
 Usage:
 ```
@@ -59,7 +59,7 @@ Repeats and item from an array data source property in your element, and injects
 
 Usage:
 ```
-<div slim-repeat="items">[[data.title]]</div>
+<div slim-repeat="items" bind>[[data.title]]</div>
 ```
 Repeaters are also available for custom elements
 ```
@@ -69,10 +69,6 @@ And in your custom tag you could implement
 ```
 get template() {
   return `<div bind>[[data.someProperty]]</div>`
-}
-
-afterRender() {
-  alert(this.data)
 }
 ```
 
