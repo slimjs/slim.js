@@ -23,29 +23,16 @@
             width:100%;
             height:100%;
             font-family: monospace;
-            font-size: 1em;
-            margin: 0;
+            font-size: 0.8em;
+            margin: 0 auto;
+            box-sizing: content-box;
+            max-width: 80em;
         }
         html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-        }
-
-        .baloon {
-            position: absolute;
-            transform: rotate(65deg);
-            width: 3em;
-            height: 3em;
-            border-radius: 0.2em;
-            background-color: #A02B29;
-            opacity: 0.4;
-        }
-
-        .baloon.lg {
-            width: 5.5em;
-            height: 5.5em;
         }
 
         slim-logo img {
@@ -88,6 +75,7 @@
         code {
             display: block;
             position: relative;
+
             /*left: 2em;*/
         }
 
@@ -112,16 +100,16 @@
 
 </head>
 <body>
-<a href="https://github.com/eavichay/slim-web-components"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+<a href="https://github.com/eavichay/slim-web-components"><img style="position: fixed; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
 <div id="container">
     <slim-logo></slim-logo>
-    <h1>Web components plus the Magic!</h1>
+    <h1>Web components plus Magic!</h1>
     <p>With es6 and slim.js you could write less code. Native web components developed double-time with no hassle, no need for external libraries that affect your workflow. When it comes to development with web components, slim.js is your new best friend.</p>
     <h2>Featuring</h2>
 
     <div>
         <h3>Data binding</h3>
-        <code>&lt;span bind>Hello, <strong>[[myProperty]]</strong> /><br/>
+        <code>&lt;span <strong>bind</strong>>Hello, <strong>[[myProperty]]</strong> &lt;/span><br/>
         ...<br/>
         this.myProperty = 'slim.js'
         </code></pre>
@@ -160,14 +148,15 @@
     </div>
     <hr/>
     <div>
-        <h3>Better lifecycle</h3>
+        <h3>Improved lifecycle</h3>
         <code>onBeforeCreated / onCreated / beforeRender / render / afterRender / update ... </code>
     </div>
     <hr/>
     <div>
         <h2>Get slim.js</h2>
         <code>npm install slim-js<br/>
-        bower install slimjs</code>
+        bower install slimjs<br/>
+        <a href="https://github.com/eavichay/slim-web-components">Github</a></code>
     </div>
     <br/>
     <hr/>

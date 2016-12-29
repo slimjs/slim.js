@@ -1,7 +1,7 @@
 Slim.tag('slim-logo', class extends Slim {
 
 
-    get template() { return `<img slim-id="img" src="slim3.png" width="460" height="183" style="[[effect(cx,cy)]]" />`}
+    get template() { return `<img slim-id="img" src="slim2.png" width="350" height="130" style="[[effect(cx,cy)]]" />`}
 
     onCreated() {
         document.body.addEventListener('mousemove', e => {
