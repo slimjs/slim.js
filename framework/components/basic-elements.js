@@ -140,6 +140,16 @@ Slim.tag('s-resource', class extends Slim {
         this.isLoading = false
     }
 
+    handleError(err) {
+        let fnName = this.onerror || this.getAttribute('onerror')
+        if (typeof fnName === 'function') {
+            fnName(err)
+        } else if (typeof this._boundParent[fnName] === 'function') {
+            this._boundParent[fnName](err)
+        }
+        this.isLoading = false
+    }
+
     load() {
         this.isLoading = true
         if (this.url) {
@@ -154,6 +164,9 @@ Slim.tag('s-resource', class extends Slim {
                 .then( data => {
                     this.data = data
                     return this.data
+                })
+                .catch( err => {
+                    this.handleError(err)
                 })
         }
     }
