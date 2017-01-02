@@ -24,7 +24,7 @@ Slim.tag('s-button', class extends SlimUIBase {
 Slim.tag('s-input', class extends SlimUIBase {
 
     get template() {
-        return '<input slim-id="myControl" type=[[type]] placeholder=[[placeholder]] value=[[getText(text)]] />'
+        return '<s-input-model slim-id="model"></s-input-model><input slim-id="myControl" type=[[type]] placeholder=[[placeholder]] />'
     }
 
     getText(val) {
@@ -37,13 +37,19 @@ Slim.tag('s-input', class extends SlimUIBase {
     }
 
     onCreated() {
-        this.addEventListener('keyup', () => {
-            this.text = this.find('input').value
-        })
         this.type = this.getAttribute('type')
         this.placeholder = this.getAttribute('placeholder')
     }
 
+})
+
+Slim.tag('s-input-model', class extends SlimModel {
+    onCreated() {
+        this.view.myControl.addEventListener('keyup', () => {
+            this.view.text = this.view.myControl.value
+        })
+
+    }
 })
 
 
@@ -71,6 +77,91 @@ Slim.tag('s-vgroup', class extends HTMLElement {
         this.style.display = 'flex'
         this.style.flexDirection = 'column'
     }
+
+})
+
+
+Slim.tag('s-resource', class extends Slim {
+
+
+    get url() {
+        return this.getAttribute('url')
+    }
+
+    get format() {
+        return this.getAttribute('format') || 'text'
+    }
+
+    get interval() {
+        return parseInt(this.getAttribute('interval') || 0)
+    }
+
+    attributeChangedCallback() {
+        this.stopInterval()
+        this.startInterval()
+    }
+
+    startInterval() {
+        if (this.interval > 0) {
+            this.resourceInterval = setInterval( () => {
+                if (!this.isLoading) this.load()
+            }, this.interval)
+        }
+        this.load()
+    }
+
+    stopInterval() {
+        if (this.resourceInterval) {
+            clearInterval(this.resourceInterval)
+        }
+    }
+
+    onBeforeCreated() {
+        this.isLoading = false;
+    }
+
+    onAfterRender() {
+        this.stopInterval()
+        this.startInterval()
+    }
+
+    get data() {
+        return this._data
+    }
+
+    set data(value) {
+        this._data = value
+        let fnName = this.ondata || this.getAttribute('ondata')
+        if (typeof fnName === 'function') {
+            fnName(value)
+        } else if (typeof this._boundParent[fnName] === 'function') {
+            this._boundParent[fnName](value)
+        }
+        this.isLoading = false
+    }
+
+    load() {
+        this.isLoading = true
+        if (this.url) {
+            fetch(this.url)
+                .then(response => {
+                    if (this.format.toLowerCase() === 'json') {
+                        return response.json()
+                    } else {
+                        return response.text()
+                    }
+                })
+                .then( data => {
+                    this.data = data
+                    return this.data
+                })
+        }
+    }
+
+    removedCallback() {
+        this.stopInterval()
+    }
+
 
 })
 

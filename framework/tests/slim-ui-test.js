@@ -1,9 +1,17 @@
 Slim.tag('slim-ui-test', class extends Slim {
 
+    onBeforeCreated() {
+        this.myText = ''
+    }
+
     testMouseover(e) {
         this.find('s-button').counter = this.find('s-button').counter || 0
         this.find('s-button').counter++
         this.find('s-button').setAttribute('text', `Hello ${ this.find('s-button').counter }`)
+    }
+
+    testOnData(data) {
+        console.log(data)
     }
 
     testFocus(e) {

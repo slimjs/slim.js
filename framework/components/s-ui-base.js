@@ -28,3 +28,10 @@ class SlimUIBase extends Slim {
 
 
 }
+
+class SlimModel extends Slim {
+
+    get view() {
+        return this._boundParent
+    }
+}
