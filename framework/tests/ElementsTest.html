@@ -3,10 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Slim elements test</title>
+    <script>
+        if (!(function() {return 'fetch' in window})()) {
+            let s = "<script type=\"text\/javascript\" " +
+                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.1/fetch.min.js\"" +
+                    " > <\/script> "
+            document.write(s)
+        }
+    </script>
+    <script>
+        if (!(function() {return ('registerElement' in document
+                && 'import' in document.createElement('link')
+                && 'content' in document.createElement('template'))})()) {
+            let s = "<script type=\"text\/javascript\" " +
+                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
+                    " > <\/script> "
+            document.write(s)
+        }
+    </script>
 
     <script src="../../Slim.js"></script>
     <script src="../components/s-ui-base.js"></script>
     <script src="../components/basic-elements.js"></script>
+    <script src="../components/s-resource.js"></script>
+    <script src="../components/group.js"></script>
     <script src="slim-ui-test.js"></script>
 </head>
 <body>

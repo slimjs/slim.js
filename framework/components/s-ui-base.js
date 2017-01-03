@@ -11,19 +11,12 @@ class SlimUIBase extends Slim {
 
     attributeChangedCallback(attr, val) {
         if (this.hasOwnProperty(attr)) {
-            this[attr] = val
-        }
-    }
-
-    executeEvent(attr, e) {
-        let fnName = this.getAttribute(attr)
-        if (fnName && typeof this._boundParent[ fnName ] === 'function') {
-            this._boundParent[ fnName ](e)
+            this[Slim.__dashToCamel(attr)] = val
         }
     }
 
     handleEvent(e) {
-        this.executeEvent(e.type, e)
+        this.callAttribute(e.type, e)
     }
 
 

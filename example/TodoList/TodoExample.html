@@ -24,15 +24,72 @@
     <script src="../../Slim.js"></script>
 
     <style>
-    todo-item span[complete="true"] {
-        text-decoration: line-through;
-    }
+
+        body {
+            font-family: 'Verdana', sans-serif;
+        }
+
+        *:focus {
+            outline: none;
+        }
+
+        div#todo-container{
+            width: 30em;
+            margin: 0 auto;
+            border: 1px solid black;
+            padding: 1em;
+            box-sizing: border-box;
+        }
+
+        #add-todo, #todos-count {
+            display: flex;
+            flex-direction: row;
+            height: 2em;
+        }
+
+        #todos-count span {
+            flex: 1;
+            align-self: flex-end;
+        }
+
+        h6 {
+            width: 30em;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #add-todo input[slim-id="newTodo"] {
+            flex: 1;
+            border: 1px solid black;
+            border-right: none;
+        }
+
+        input[slim-id="btnNewTodo"], input[slim-id="btnClear"] {
+            border: 1px solid black;
+            border-radius: 0;
+        }
+
+        input[slim-id="btnNewTodo"] {
+            background-color: darkgreen;
+            color: white;
+        }
+
+        todo-item span[complete="true"] {
+            text-decoration: line-through;
+            background-color: gold;
+        }
+
+        code {
+            display: block;
+            background-color: whitesmoke;
+            padding: 0.5em;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Todo Example</h1>
     <todo-app></todo-app>
+    <h6>View the source to see how it works</h6>
 
 <script>
 
@@ -66,12 +123,16 @@
 
         get template() {
             return `<div id="todo-container">
-                    <input type="text" slim-id="newTodo" /><input type="button" slim-id="btnNewTodo" value="Add Todo" />
-                    <hr/>
-                    <todo-item slim-repeat="todos"></todo-item>
-                    <hr/>
-                    <div id="todos-count"><span bind>You have [[todos.length]] items</span><input type="button" slim-id="btnClear" value="Clear completed"></input></div>
-                    `
+<h1>slim.js Todo Example</h1>
+<div id="add-todo">
+    <input type="text" slim-id="newTodo" />
+    <input type="button" slim-id="btnNewTodo" value="Add Todo" />
+</div>
+<hr/>
+<todo-item slim-repeat="todos"></todo-item>
+<hr/>
+<div id="todos-count"><span bind>You have [[todos.length]] items</span><input type="button" slim-id="btnClear" value="Clear completed"></input></div>
+`
         }
 
         onBeforeCreated() {

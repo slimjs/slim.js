@@ -22,7 +22,6 @@ class Slim extends HTMLElement {
 
     static __moveChildren(source, target, activate) {
         while (source.children.length) {
-            let child = source.children[0]
             target.appendChild(source.children[0])
         }
         let children = Array.prototype.slice.call( target.querySelectorAll('*'))
@@ -91,6 +90,19 @@ class Slim extends HTMLElement {
         this._bindings = this._bindings || {}
         this._boundParent = this._boundParent || this
         this.__bind(descriptor)
+    }
+
+    callAttribute(attributeName, value) {
+        let fnName = this.getAttribute(attributeName)
+        if (fnName === null) return
+        if (typeof this[fnName] === 'function') {
+            this[fnName](value)
+        } else if (typeof this._boundParent[fnName] === 'function') {
+            this._boundParent[fnName](value)
+        } else if (this._boundParent && this._boundParent._boundParent && typeof this._boundParent._boundParent[fnName] === 'function') {
+            // safari, firefox
+            this._boundParent._boundParent[fnName](value)
+        }
     }
 
     __bind(descriptor) {
@@ -385,7 +397,6 @@ class SlimRepeater extends Slim {
             this.sourceData.forEach( (dataItem, index ) => {
                 let clone = this.sourceNode.cloneNode(true)
                 clone.removeAttribute('slim-repeat')
-                clone._boundParent = clone
                 clone.data = dataItem
                 clone.data_index = index
                 clone.data_source = this.sourceData
@@ -400,7 +411,6 @@ class SlimRepeater extends Slim {
                 clone.setAttribute('slim-repeat-index', index)
                 this.insertAdjacentHTML('beforeEnd', clone.outerHTML)
                 clone = this.find('*[slim-repeat-index="' + index.toString() + '"]')
-                clone._boundParent = clone
                 clone.data = dataItem
                 clone.data_index = index
                 clone.data_source = this.sourceData
@@ -412,14 +422,16 @@ class SlimRepeater extends Slim {
         for (let clone of this.clones) {
             clone.textContent = clone.sourceText
             clone.data = clone.data
-            clone._boundParent = clone
+            if (Slim.__prototypeDict[clone.localName] !== undefined || clone.isSlim) {
+                clone._boundParent = this._boundParent
+            }
+            else {
+                clone._boundParent = clone
+            }
         }
         this._executeBindings()
         Slim.__moveChildren(this._virtualDOM, this, true)
-
     }
 }
 Slim.tag('slim-repeat', SlimRepeater)
 window.SlimRepeater = SlimRepeater
-
-Slim.tag('slim-element', class extends Slim {})

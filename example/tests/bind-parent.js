@@ -5,10 +5,10 @@ Slim.tag('bind-parent', class extends Slim {
 <div calc="[[calcMinus(myProp, urProp)]]"><span minus="[calcMinus(myProp, urProp)]" bind>[[wProp]]</div>
 <div slim-repeat="items" bind>[[data.label]] >>> [[data.value]]</div>
 <hr/>
-<bind-child slim-repeat="items" a-prop="[myProp]" b-prop="[urProp]"></bind-child>
+<bind-child slim-repeat="items" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child>
 <br/>
 <hr/>
-<tree-list bind-wprop="[[wprop]]" slim-repeat="tree"></tree-list>
+<tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>
 `
     }
 
