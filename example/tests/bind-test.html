@@ -31,13 +31,59 @@
 <body>
 
     <script>
-//        Slim.plugin('create', e => {console.log('Created', e)})
-//        Slim.plugin('beforeRender', e => {console.log('Before Render', e)})
-//        Slim.plugin('afterRender', e => {console.log('After Render', e)})
+        Slim.tag('slim-confirm', class extends Slim {
+
+
+            get template() {
+                return `<div>
+<div><content></content></div>
+<div>${this.cancelTemplate}${this.confirmTemplate}</div>
+</div>`
+            }
+
+            get cancelTemplate() {
+                if (this.getAttribute('cancel')) {
+                    return `<button slim-id="btnCancel">${this.getAttribute('cancel')}</button>`
+                }
+                return ''
+            }
+
+            get confirmTemplate() {
+                if (this.getAttribute('confirm')) {
+                    return `<button slim-id="btnOK">${this.getAttribute('confirm')}</button>`
+                }
+                return ''
+            }
+
+            onAfterRender() {
+                if (this.btnOK) {
+                    this.btnOK.onclick = () => {
+                        this.callAttribute('onconfirm')
+                    }
+                }
+
+                if (this.btnCancel) {
+                    this.btnCancel.onclick = () => {
+                        this.callAttribute('oncancel')
+                    }
+                }
+            }
+
+        })
     </script>
 
 
-    <bind-parent></bind-parent>
+    <bind-parent>
+        <bind-child slim-repeat="items" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child>
+        <br/>
+        <hr/>
+        <tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>
+        <slim-confirm cancel="Cancel" confirm="OK" onconfirm="testOnConfirm" oncancel="testOnCancel">
+            <h3>Confirm reusable example</h3>
+            <div>Are you sure?</div>
+        </slim-confirm>
+    </bind-parent>
+
 
 <!--<event-bus-e1></event-bus-e1>-->
 <!--<event-bus-e2></event-bus-e2>-->

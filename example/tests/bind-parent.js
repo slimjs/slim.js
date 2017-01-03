@@ -2,14 +2,18 @@ Slim.tag('bind-parent', class extends Slim {
 
     get template() {
         return `
-<div calc="[[calcMinus(myProp, urProp)]]"><span minus="[calcMinus(myProp, urProp)]" bind>[[wProp]]</div>
-<div slim-repeat="items" bind>[[data.label]] >>> [[data.value]]</div>
-<hr/>
-<bind-child slim-repeat="items" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child>
-<br/>
-<hr/>
-<tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>
-`
+        <div calc="[[calcMinus(myProp, urProp)]]"><span minus="[calcMinus(myProp, urProp)]" bind>[[wProp]]</div>
+        <div slim-repeat="items" bind>[[data.label]] >>> [[data.value]]</div>
+        <hr/>
+        <content></content>`
+    }
+
+    testOnCancel() {
+        alert('cancel')
+    }
+
+    testOnConfirm() {
+        alert('ok')
     }
 
     onBeforeCreated() {
@@ -20,7 +24,8 @@ Slim.tag('bind-parent', class extends Slim {
             "alpha", "beta", "charlie", "delta", [
                 "echo", "foxtrot", "golf", "hotel", "juliet", [
                     "kilo", "lima", "mike", "november"
-                ]
+                ],
+                "opera"
             ]
         ]
         this.items = [ {label: 'item1', value: 1}]

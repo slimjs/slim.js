@@ -12,7 +12,7 @@ Slim.tag('bind-child', class extends Slim {
         this.onclick = ()=>{
             this.customRender = !this.customRender;
             if (this.customRender) {
-                this.render(`<div prop="[data.label]" bind>[[data.label]] : [[data.value]]</div>`)
+                this.render(`<div prop="[[data.label]]" bind>[[data.label]] : [[data.value]]</div>`)
             } else {
                 this.render()
             }

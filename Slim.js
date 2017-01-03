@@ -286,6 +286,12 @@ class Slim extends HTMLElement {
             }
         } else if (typeof($tpl) === 'string') {
             this._virtualDOM.innerHTML = $tpl
+            let virtualContent = this._virtualDOM.querySelector('content')
+            if (virtualContent) {
+                while (this.children.length) {
+                    virtualContent.appendChild( this.children[0] )
+                }
+            }
         }
 
         let allChildren = Array.prototype.slice.call( this._virtualDOM.querySelectorAll('*') )

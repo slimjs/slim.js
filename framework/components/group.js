@@ -3,7 +3,11 @@
  *
  * s-hgroup
  */
-Slim.tag('s-hgroup', class extends HTMLElement {
+Slim.tag('s-hgroup', class extends Slim {
+    get template() {
+        return `<content></content>`
+    }
+
     createdCallback() {
         this.style.display = 'flex'
         this.style.flexDirection = 'row'
@@ -16,7 +20,11 @@ Slim.tag('s-hgroup', class extends HTMLElement {
  *
  * s-vgroup
  */
-Slim.tag('s-vgroup', class extends HTMLElement {
+Slim.tag('s-vgroup', class extends Slim {
+
+    get template() {
+        return `<content></content>`
+    }
 
     createdCallback() {
         this.style.display = 'flex'
