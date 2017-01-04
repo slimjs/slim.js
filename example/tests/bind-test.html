@@ -36,9 +36,11 @@
 
             get template() {
                 return `<div>
-<div><content></content></div>
-<div>${this.cancelTemplate}${this.confirmTemplate}</div>
-</div>`
+                            <div>
+                                <content></content>
+                            </div>
+                            <div>${this.cancelTemplate}${this.confirmTemplate}</div>
+                        </div>`
             }
 
             get cancelTemplate() {

@@ -441,3 +441,9 @@ class SlimRepeater extends Slim {
 }
 Slim.tag('slim-repeat', SlimRepeater)
 window.SlimRepeater = SlimRepeater
+window.Slim = Slim
+
+if (module && module.exports) {
+    module.exports.Slim = Slim
+    module.exports.SlimRepeater = SlimRepeater
+}
