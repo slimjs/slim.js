@@ -268,7 +268,7 @@ class Slim extends HTMLElement {
 
 
     _executeBindings() {
-        this._boundChildren.forEach( child => {
+        this.findAll('[bind]').forEach( child => {
             if (child.sourceText) {
                 child.textContent = child.sourceText
             }
@@ -296,7 +296,7 @@ class Slim extends HTMLElement {
 
         let allChildren = Array.prototype.slice.call( this._virtualDOM.querySelectorAll('*') )
         for (let child of allChildren) {
-            child._boundParent = this
+            child._boundParent = child._boundParent || this
             this._boundChildren.push(child)
             if (child.getAttribute('slim-id')) {
                 child._boundParent[ Slim.__dashToCamel(child.getAttribute('slim-id')) ] = child
@@ -399,9 +399,11 @@ class SlimRepeater extends Slim {
         if (!this.sourceNode) return
         this.clones = []
         this.innerHTML = ''
+
         if (Slim.__isWCSupported) {
             this.sourceData.forEach( (dataItem, index ) => {
                 let clone = this.sourceNode.cloneNode(true)
+                // clone.innerHTML = this.sourceNode.innerHTML
                 clone.removeAttribute('slim-repeat')
                 clone.data = dataItem
                 clone.data_index = index
@@ -426,7 +428,6 @@ class SlimRepeater extends Slim {
         }
         this._captureBindings()
         for (let clone of this.clones) {
-            clone.textContent = clone.sourceText
             clone.data = clone.data
             if (Slim.__prototypeDict[clone.localName] !== undefined || clone.isSlim) {
                 clone._boundParent = this._boundParent
@@ -434,7 +435,11 @@ class SlimRepeater extends Slim {
             else {
                 clone._boundParent = clone
             }
+            Array.prototype.slice.call(clone.querySelectorAll('*')).forEach( element => {
+                element._boundParent = clone._boundParent
+            })
         }
+
         this._executeBindings()
         Slim.__moveChildren(this._virtualDOM, this, true)
     }
@@ -443,7 +448,7 @@ Slim.tag('slim-repeat', SlimRepeater)
 window.SlimRepeater = SlimRepeater
 window.Slim = Slim
 
-if (module && module.exports) {
+if (typeof module !== 'undefined' && module.exports) {
     module.exports.Slim = Slim
     module.exports.SlimRepeater = SlimRepeater
 }
