@@ -437,6 +437,9 @@ class SlimRepeater extends Slim {
             }
             Array.prototype.slice.call(clone.querySelectorAll('*')).forEach( element => {
                 element._boundParent = clone._boundParent
+                element.data = clone.data
+                element.data_index = clone.data_index
+                element.data_source = clone.data_source
             })
         }
 
