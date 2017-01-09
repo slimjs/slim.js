@@ -22,6 +22,19 @@ A property can be bound to an attribute, see example:
 ```
 slim injects a property getter/setter functions for *parentProperty* and updates automatically the child node on every update
 
+### Content inclusion
+```
+Slim.tag('my-form, class extends Slim {
+    get template() {
+        return '<form>
+        <content></content>
+        <input type="submit" value="OK" /></form>
+    }
+})
+...
+<my-form><input type="text" placeholder="Enter your name" /></my-form>
+```
+
 ### Interface / Lifecycle
 - get template() // return your HTML
 - onBeforeCreated() // before the binding happens
@@ -71,7 +84,12 @@ get template() {
   return `<div bind>[[data.someProperty]]</div>`
 }
 ```
-
+Repeaters support complex display trees, as all elements in the tree accept the data and the index
+```
+<li slim-repeat="items">
+    <div><span bind>[[data_index]]</span><my-custom-tag></my-custom-tag</div>
+</li>
+```
 ## Installation
 ```
 npm install slim-js
