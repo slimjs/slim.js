@@ -76,7 +76,7 @@
 
 
     <bind-parent>
-        <bind-child slim-repeat="items" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child>
+        <li slim-repeat="items"><bind-child a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
         <br/>
         <hr/>
         <tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>
