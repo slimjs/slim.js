@@ -242,7 +242,6 @@ class Slim extends HTMLElement {
     }
 
     initialize(forceNewVirtualDOM = false) {
-        this._executeByBindAttribute = true
         this._bindings = this._bindings || {}
         this._boundChildren = this._boundChildren || []
         this.alternateTemplate = this.alternateTemplate || null
@@ -279,15 +278,9 @@ class Slim extends HTMLElement {
 
 
     _executeBindings() {
-        let children
-        if (this._executeByBindAttribute == false) {
-            children = this._boundChildren
-        } else {
-            children = this.findAll('*[bind]')
-        }
-        children.forEach( child => {
-        // this._boundChildren.forEach( child => {
-            if (child.sourceText !== undefined) {
+        this._boundChildren.forEach( child => {
+            // this._boundChildren.forEach( child => {
+            if (child.hasAttribute('bind') && child.sourceText !== undefined) {
                 child.innerText = child.sourceText
             }
         })
@@ -382,7 +375,8 @@ Slim.__prototypeDict = {}
 Slim.__plugins = {
     'create': [],
     'beforeRender': [],
-    'afterRender': []
+    'afterRender': [],
+    'beforeDestroy': []
 }
 
 try {

@@ -34,10 +34,6 @@ Slim.tag('slim-ui-test', class extends Slim {
 
 Slim.tag('editable-ui-test', class extends Slim {
 
-    onBeforeCreated() {
-        this._executeByBindAttribute = false
-    }
-
     get template() {
         return '<div bind>Hello, [[myText]]</div><s-editable-input text="@myText"></s-editable-input>'
     }

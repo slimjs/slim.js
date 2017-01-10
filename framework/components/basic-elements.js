@@ -62,10 +62,6 @@ Slim.tag('s-editable-input', class extends Slim {
         return `<span #label bind>[[text]]</span><input #inp type="text" value=[[text]] />`
     }
 
-    onBeforeCreated() {
-        this._executeByBindAttribute = true
-    }
-
     onCreated() {
         this._boundProperty = this.getAttribute('text')
         if (this._boundProperty && this._boundProperty.indexOf('@' === 0)) {
