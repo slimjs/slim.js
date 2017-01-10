@@ -2,7 +2,8 @@ Slim.tag('bind-parent', class extends Slim {
 
     get template() {
         return `
-        <div calc="[[calcMinus(myProp, urProp)]]"><span minus="[calcMinus(myProp, urProp)]" bind>[[wProp]]</div>
+        <h1 bind>[[myTitle]]</h1>
+        <div calc="[[calcMinus(myProp, urProp)]]"><span minus="[[calcMinus(myProp, urProp)]]" bind>[[wProp]]</div>
         <div slim-repeat="items" bind>[[data.label]] >>> [[data.value]]</div>
         <hr/>
         <li slim-repeat="items"><div>Div</div><span bind>Label [[data.label]]</span></li>
@@ -19,6 +20,7 @@ Slim.tag('bind-parent', class extends Slim {
     }
 
     onBeforeCreated() {
+        this.myTitle = "Binding Test"
         this.myProp = 0
         this.urProp = 1
         this.wProp = this.myProp + this.urProp
@@ -41,6 +43,7 @@ Slim.tag('bind-parent', class extends Slim {
         setTimeout( () => {
             this.myProp = Math.random()
             this.urProp = Math.random()
+            this.wProp = this.myProp + this.urProp
             let l = parseInt(Math.random() * 5)
             let tmpItems = []
             for (let a = l; a >=0 ; a--) {
@@ -55,6 +58,7 @@ Slim.tag('bind-parent', class extends Slim {
         setTimeout( () => {
             this.myProp = Math.random()
             this.urProp = Math.random()
+            this.wProp = this.myProp + this.urProp
             let l = parseInt(Math.random() * 5)
             let tmpItems = []
             for (let a = l; a >=0 ; a--) {

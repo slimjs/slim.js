@@ -8,8 +8,8 @@ class Slim extends HTMLElement {
     }
 
     static plugin(phase, plugin) {
-        if (phase !== 'create' && phase !== 'beforeRender' && phase !== 'afterRender') {
-            throw "Supported phase can be create, beforeRender or afterRender only"
+        if (phase !== 'create' && phase !== 'beforeRender' && phase !== 'afterRender' && phase !== 'beforeDestroy') {
+            throw "Supported phase can be create, beforeDestroy, beforeRender or afterRender only"
         }
         Slim.__plugins[phase].push(plugin)
     }
@@ -125,14 +125,14 @@ class Slim extends HTMLElement {
                 if (!source.__lookupSetter__(prop)) source.__defineSetter__(prop, function(x) {
                     this._bindings[prop].value = x
                     if (descriptor.sourceText) {
-                        descriptor.target.textContent = descriptor.sourceText
+                        descriptor.target.innerText = descriptor.sourceText
                     }
                     this._executeBindings()
                 })
                 let executor
                 if (descriptor.type === 'P') {
                     executor = () => {
-                        let value = Slim.__lookup(source, prop).obj //this._bindings[prop].value
+                        let value = Slim.__lookup(source, prop).obj
                         descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value
                         descriptor.target.setAttribute( descriptor.attribute, value )
                     }
@@ -146,7 +146,7 @@ class Slim extends HTMLElement {
                 } else if (descriptor.type === 'T') {
                     executor = () => {
                         let source = descriptor.target._boundParent
-                        descriptor.target.textContent = descriptor.target.textContent.replace(`[[${prop}]]`, Slim.__lookup(source, prop).obj)
+                        descriptor.target.innerText = descriptor.target.innerText.replace(`[[${prop}]]`, Slim.__lookup(source, prop).obj)
                     }
                 } else if (descriptor.type === 'R') {
                     executor = () => {
@@ -236,7 +236,13 @@ class Slim extends HTMLElement {
         this.update()
     }
 
+    detachedCallback() {
+        Slim.__runPlugins('beforeDestroy', this)
+        this.onDestroy()
+    }
+
     initialize(forceNewVirtualDOM = false) {
+        this._executeByBindAttribute = true
         this._bindings = this._bindings || {}
         this._boundChildren = this._boundChildren || []
         this.alternateTemplate = this.alternateTemplate || null
@@ -249,6 +255,7 @@ class Slim extends HTMLElement {
     get isSlim() { return true }
     get template() { return null }
 
+    onDestroy() { /* abstract */ }
     onBeforeCreated() { /* abstract */ }
     onCreated() { /* abstract */}
     onBeforeRender() { /* abstract */ }
@@ -258,19 +265,30 @@ class Slim extends HTMLElement {
     }
 
     render(template) {
+        Slim.__runPlugins('beforeRender', this)
+        this.onBeforeRender()
         this.alternateTemplate = template
         this.initialize(true)
         this.innerHTML = ''
         this._captureBindings()
         Slim.__moveChildren( this._virtualDOM, this, true )
         this._executeBindings()
+        this.onAfterRender()
+        Slim.__runPlugins('afterRender', this)
     }
 
 
     _executeBindings() {
-        this.findAll('[bind]').forEach( child => {
-            if (child.sourceText) {
-                child.textContent = child.sourceText
+        let children
+        if (this._executeByBindAttribute == false) {
+            children = this._boundChildren
+        } else {
+            children = this.findAll('*[bind]')
+        }
+        children.forEach( child => {
+        // this._boundChildren.forEach( child => {
+            if (child.sourceText !== undefined) {
+                child.innerText = child.sourceText
             }
         })
         Object.keys(this._bindings).forEach( property => {
@@ -296,6 +314,9 @@ class Slim extends HTMLElement {
 
         let allChildren = Array.prototype.slice.call( this._virtualDOM.querySelectorAll('*') )
         for (let child of allChildren) {
+            if (child === this._virtualDOM) {
+                alert('fuck')
+            }
             child._boundParent = child._boundParent || this
             this._boundChildren.push(child)
             if (child.getAttribute('slim-id')) {
@@ -307,6 +328,10 @@ class Slim extends HTMLElement {
             if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
                 let desc = Slim.__processAttribute(child.attributes[i], child)
                 if (desc) descriptors.push(desc)
+                if (child.attributes[i].nodeName.indexOf('#') == '0') {
+                    let refName = child.attributes[i].nodeName.slice(1)
+                    this[refName] = child
+                }
             }
 
             descriptors = descriptors.sort( (a) => {
@@ -331,17 +356,8 @@ class Slim extends HTMLElement {
 
         allChildren = Array.prototype.slice.call( this._virtualDOM.querySelectorAll('*[bind]'))
 
-        const x = function getDescendantProp(obj, desc) {
-            var arr = desc.split(".");
-            var prop = arr[0]
-            while(arr.length && obj) {
-                obj = obj[prop = arr.shift()]
-            }
-            return {source: desc, prop:prop, obj:obj};
-        }
-
         for (let child of allChildren) {
-            let match = child.textContent.match(/\[\[([\w|.]+)\]\]/g)
+            let match = child.innerText.match(/\[\[([\w|.]+)\]\]/g)
             if (match) {
                 let properties = []
                 for (let i = 0; i < match.length; i++) {
@@ -352,9 +368,9 @@ class Slim extends HTMLElement {
                     type: 'T',
                     properties: properties,
                     target: child,
-                    sourceText: child.textContent
+                    sourceText: child.innerText
                 }
-                descriptor.target.sourceText = descriptor.sourceText
+                child.sourceText = child.innerText
                 this.__bind(descriptor)
             }
         }
@@ -400,32 +416,23 @@ class SlimRepeater extends Slim {
         this.clones = []
         this.innerHTML = ''
 
-        if (Slim.__isWCSupported) {
-            this.sourceData.forEach( (dataItem, index ) => {
-                let clone = this.sourceNode.cloneNode(true)
-                // clone.innerHTML = this.sourceNode.innerHTML
-                clone.removeAttribute('slim-repeat')
-                clone.data = dataItem
-                clone.data_index = index
-                clone.data_source = this.sourceData
-                clone.sourceText = clone.textContent
-                this.clones.push(clone)
-                this.insertAdjacentElement('beforeEnd', clone)
-            })
-        } else {
-            this.sourceData.forEach( (dataItem, index ) => {
-                let clone = this.sourceNode.cloneNode(true)
-                clone.removeAttribute('slim-repeat')
-                clone.setAttribute('slim-repeat-index', index)
+        this.sourceData.forEach( (dataItem, index) => {
+            let clone = this.sourceNode.cloneNode(true)
+            clone.removeAttribute('slim-repeat')
+            clone.setAttribute('slim-repeat-index', index)
+            if (!Slim.__isWCSupported) {
                 this.insertAdjacentHTML('beforeEnd', clone.outerHTML)
                 clone = this.find('*[slim-repeat-index="' + index.toString() + '"]')
-                clone.data = dataItem
-                clone.data_index = index
-                clone.data_source = this.sourceData
-                clone.sourceText = clone.textContent
-                this.clones.push(clone)
-            })
-        }
+            }
+            clone.data = dataItem
+            clone.data_index = index
+            clone.data_source = this.sourceData
+            clone.sourceText = clone.innerText
+            if (Slim.__isWCSupported) {
+                this.insertAdjacentElement('beforeEnd', clone)
+            }
+            this.clones.push(clone)
+        })
         this._captureBindings()
         for (let clone of this.clones) {
             clone.data = clone.data

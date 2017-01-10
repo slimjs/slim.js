@@ -59,15 +59,19 @@ Slim.tag('s-input-model', class extends SlimModel {
 Slim.tag('s-editable-input', class extends Slim {
 
     get template() {
-        return `<span slim-id="label" bind>[[text]]</span><input slim-id="inp" type="text" value=[[text]] />`
+        return `<span #label bind>[[text]]</span><input #inp type="text" value=[[text]] />`
+    }
+
+    onBeforeCreated() {
+        this._executeByBindAttribute = true
     }
 
     onCreated() {
         this._boundProperty = this.getAttribute('text')
         if (this._boundProperty && this._boundProperty.indexOf('@' === 0)) {
             this._boundProperty = this._boundProperty.replace('@', '')
-            this.text = this._boundParent[ this._boundProperty ]
         }
+        this.text = this._boundParent[ this._boundProperty ]
 
         this.style.position = 'relative'
         this.inp.style.display = 'none'
