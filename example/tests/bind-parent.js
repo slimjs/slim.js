@@ -41,6 +41,10 @@ Slim.tag('bind-parent', class extends Slim {
 
     onCreated() {
         setTimeout( () => {
+            this.items = window.myCustomList
+            console.log(this.items)
+        }, 1500)
+        setTimeout( () => {
             this.myProp = Math.random()
             this.urProp = Math.random()
             this.wProp = this.myProp + this.urProp
@@ -54,7 +58,7 @@ Slim.tag('bind-parent', class extends Slim {
             }
             this.items = tmpItems
             this.tree = this.tree
-        }, 1500)
+        }, 1000)
         setTimeout( () => {
             this.myProp = Math.random()
             this.urProp = Math.random()
