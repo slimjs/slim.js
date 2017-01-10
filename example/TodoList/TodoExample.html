@@ -19,6 +19,9 @@
             document.write(s)
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.15.4/sinon.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Nixie+One|Ubuntu+Mono" rel="stylesheet">
 
     <script src="../../Slim.js"></script>
@@ -90,8 +93,15 @@
 
     <todo-app></todo-app>
     <h6>View the source to see how it works</h6>
+    <button id="start-tests" onclick="startTests()">Start Tests</button>
+    <div id="mocha"></div>
 
 <script>
+
+    function startTests() {
+        document.querySelector('#start-tests').remove()
+        mocha.run()
+    }
 
     class Todo {
         constructor(text) {
@@ -171,6 +181,62 @@
             }
         }
     })
+
+    mocha.setup('bdd')
+
+    describe('Todo', function() {
+
+        beforeEach( function(done) {
+            setTimeout(done, 150)
+        })
+
+        it('Should add a todo', function() {
+            document.querySelector('div#add-todo input').value = "New Todo"
+            document.querySelector('div#add-todo input[type="button"]').onclick()
+            chai.assert(document.querySelectorAll('todo-item').length === 3)
+            let newTodoItemElement = document.querySelectorAll('todo-item')[2].querySelector('span[complete]')
+            chai.assert(newTodoItemElement !== null)
+            chai.assert(newTodoItemElement.getAttribute('complete') === 'false')
+        })
+
+        it('Should mark todo as complete', function() {
+            let newTodoItemElement = document.querySelectorAll('todo-item')[2]
+            newTodoItemElement.querySelector('input[type="checkbox"]').click()
+            newTodoItemElement = document.querySelectorAll('todo-item')[2].querySelector('span[complete]')
+            chai.assert(newTodoItemElement.getAttribute('complete') === 'true')
+        })
+
+        it('Should clear completed todos', function() {
+            document.querySelector('#todos-count > input[type="button"]').click()
+            chai.assert(document.querySelectorAll('todo-item').length === 2)
+        })
+
+        describe('Should clear multiple completed todos', function() {
+
+            before(function() {
+                document.querySelector('div#add-todo input').value = "New Todo 1"
+                document.querySelector('div#add-todo input[type="button"]').onclick()
+                document.querySelector('div#add-todo input').value = "New Todo 2"
+                document.querySelector('div#add-todo input[type="button"]').onclick()
+                document.querySelector('div#add-todo input').value = "New Todo 3"
+                document.querySelector('div#add-todo input[type="button"]').onclick()
+            })
+
+            it('Should mark multiple todos as complete', function() {
+                document.querySelector('#todo-container > slim-repeat > todo-item:nth-child(3) > div > input[type="checkbox"]').click()
+                document.querySelector('#todo-container > slim-repeat > todo-item:nth-child(4) > div > input[type="checkbox"]').click()
+                document.querySelector('#todo-container > slim-repeat > todo-item:nth-child(5) > div > input[type="checkbox"]').click()
+                chai.assert(document.querySelectorAll('span[complete="true"]').length === 3)
+            })
+
+            it('Should clear all completed todos', function() {
+                document.querySelector('#todos-count > input[type="button"]').click()
+                chai.assert(document.querySelectorAll('span[complete="true"]').length === 0)
+                chai.assert(document.querySelectorAll('span[complete]').length === 2)
+            })
+        })
+    })
+
 
 </script>
 </body>

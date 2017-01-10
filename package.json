@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eavichay/slim-web-components.git"
+    "url": "git+https://github.com/eavichay/slim.js.git"
   },
   "author": "Avichay Eyal <eavichay@gmail.com>",
   "license": "MIT",
