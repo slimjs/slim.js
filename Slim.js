@@ -1,4 +1,4 @@
-console.log('SlimJS v2.2.5')
+console.log('SlimJS v2.2.6')
 
 class Slim extends HTMLElement {
 
@@ -478,7 +478,7 @@ window.Slim = Slim
     Array.prototype.registerSlimRepeater = function(repeater) {
         this.registeredSlimRepeaters = this.registeredSlimRepeaters || []
 
-        if (this.registeredSlimRepeaters.indexOf(repeater < 0)) {
+        if (this.registeredSlimRepeaters.indexOf(repeater) < 0) {
             this.registeredSlimRepeaters.push(repeater)
         }
     }
