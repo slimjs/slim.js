@@ -1,4 +1,4 @@
-console.log('SlimJS v2.2.4')
+console.log('SlimJS v2.2.5')
 
 class Slim extends HTMLElement {
 
@@ -405,10 +405,16 @@ class SlimRepeater extends Slim {
         return false
     }
 
+    onDestroy() {
+        this.sourceData.unregisterSlimRepeater(this)
+    }
+
     renderList() {
         if (!this.sourceNode) return
         this.clones = []
         this.innerHTML = ''
+
+        this.sourceData.registerSlimRepeater(this)
 
         this.sourceData.forEach( (dataItem, index) => {
             let clone = this.sourceNode.cloneNode(true)
@@ -452,7 +458,41 @@ Slim.tag('slim-repeat', SlimRepeater)
 window.SlimRepeater = SlimRepeater
 window.Slim = Slim
 
+;(function() {
+
+    const originals = {};
+    ['push','pop','shift', 'unshift', 'splice', 'sort', 'reverse'].forEach( function(method) {
+        originals[method] = Array.prototype[method]
+        Array.prototype[method] = function() {
+            let result = originals[method].apply(this, arguments)
+            if (this.registeredSlimRepeaters) {
+                this.registeredSlimRepeaters.forEach( repeater => {
+                    repeater.renderList()
+                })
+            }
+            return result
+        }
+    })
+
+
+    Array.prototype.registerSlimRepeater = function(repeater) {
+        this.registeredSlimRepeaters = this.registeredSlimRepeaters || []
+
+        if (this.registeredSlimRepeaters.indexOf(repeater < 0)) {
+            this.registeredSlimRepeaters.push(repeater)
+        }
+    }
+
+    Array.prototype.unregisterSlimRepeater = function(repeater) {
+        if (this.registeredSlimRepeaters && this.registeredSlimRepeaters.indexOf(repeater) >= 0) {
+            this.registeredSlimRepeaters.splice( this.registeredSlimRepeaters.indexOf(repeater), 1)
+        }
+    }
+
+})();
+
 if (typeof module !== 'undefined' && module.exports) {
     module.exports.Slim = Slim
     module.exports.SlimRepeater = SlimRepeater
 }
+
