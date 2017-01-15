@@ -90,6 +90,12 @@ Repeaters support complex display trees, as all elements in the tree accept the 
     <div><span bind>[[data_index]]</span><my-custom-tag></my-custom-tag</div>
 </li>
 ```
+In case you wish a different property injected than "data", use *slim-repeat-as* attribute. Example:
+```
+<li slim-repeat="items" slim-repeat-as="item">
+    <span bind>[[item.title]]</span>
+</li>
+```
 ## Installation
 ```
 npm install slim-js

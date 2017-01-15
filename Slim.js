@@ -60,6 +60,7 @@ class Slim extends HTMLElement {
         repeater._boundParent = descriptor.source
         descriptor.target.parentNode.removeChild(descriptor.target)
         repeater.setAttribute('source', descriptor.properties[0])
+        repeater.setAttribute('target-attr', descriptor.targetAttribute)
         descriptor.repeater = repeater
     }
 
@@ -166,6 +167,7 @@ class Slim extends HTMLElement {
         return {
             type: 'R',
             target: child,
+            targetAttribute: child.getAttribute('slim-repeat-as') ? child.getAttribute('slim-repeat-as') : 'data',
             attribute: attribute.nodeName,
             properties: [ attribute.nodeValue ],
             source: child._boundParent
@@ -410,6 +412,7 @@ class SlimRepeater extends Slim {
     }
 
     renderList() {
+        let targetPropName = this.getAttribute('target-attr')
         if (!this.sourceNode) return
         this.clones = []
         this.innerHTML = ''
@@ -419,12 +422,13 @@ class SlimRepeater extends Slim {
         this.sourceData.forEach( (dataItem, index) => {
             let clone = this.sourceNode.cloneNode(true)
             clone.removeAttribute('slim-repeat')
+            clone.removeAttribute('slim-repeat-as')
             clone.setAttribute('slim-repeat-index', index)
             if (!Slim.__isWCSupported) {
                 this.insertAdjacentHTML('beforeEnd', clone.outerHTML)
                 clone = this.find('*[slim-repeat-index="' + index.toString() + '"]')
             }
-            clone.data = dataItem
+            clone[targetPropName] = dataItem
             clone.data_index = index
             clone.data_source = this.sourceData
             clone.sourceText = clone.innerText
@@ -435,7 +439,7 @@ class SlimRepeater extends Slim {
         })
         this._captureBindings()
         for (let clone of this.clones) {
-            clone.data = clone.data
+            clone[targetPropName] = clone[targetPropName]
             if (Slim.__prototypeDict[clone.localName] !== undefined || clone.isSlim) {
                 clone._boundParent = this._boundParent
             }
@@ -444,7 +448,7 @@ class SlimRepeater extends Slim {
             }
             Array.prototype.slice.call(clone.querySelectorAll('*')).forEach( element => {
                 element._boundParent = clone._boundParent
-                element.data = clone.data
+                element[targetPropName] = clone[targetPropName]
                 element.data_index = clone.data_index
                 element.data_source = clone.data_source
             })

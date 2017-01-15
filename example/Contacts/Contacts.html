@@ -144,7 +144,7 @@
 
                     <!-- pay attention how repeater works in slim -->
                     <div class="row">
-                    <slim-contact-view slim-repeat="model.contacts"></slim-contact-view>
+                    <slim-contact-view slim-repeat="model.contacts" slim-repeat-as="contact"></slim-contact-view>
                     </div>
                     `
     }
@@ -185,32 +185,32 @@ Slim.tag('slim-contact-view', class SlimContactView extends Slim {
         return `
                     <div class="row contact-entry">
                     <div class="col-xs-1"><input type="button" slim-id="btnRemove" class="btn btn-xs btn-danger" value="X" /> </div>
-                    <div class="col-xs-4"><slim-editable-input text="[[data.first]]" slim-id="inpFirst"></slim-editable-input> <slim-editable-input text="[[data.last]]" slim-id="inpLast"></slim-editable-input></div>
+                    <div class="col-xs-4"><slim-editable-input text="[[contact.first]]" slim-id="inpFirst"></slim-editable-input> <slim-editable-input text="[[contact.last]]" slim-id="inpLast"></slim-editable-input></div>
                     <div class="col-xs-3"><slim-editable-input slim-id="inpEmail"></slim-editable-input></div>
                     <div class="col-xs-4"><slim-phones slim-id="phones"></slim-phones></div>
                     </div>`
     }
 
     onCreated() {
-        this.inpEmail.text = this.data.email
+        this.inpEmail.text = this.contact.email
         this.inpEmail.onchange = () => {
-            this.data.email = this.inpEmail.text
+            this.contact.email = this.inpEmail.text
         }
         this.inpFirst.onchange = () => {
-            this.data.first = this.inpFirst.text
+            this.contact.first = this.inpFirst.text
         }
 
         this.inpLast.onchange = () => {
-            this.data.last = this.inpLast.text
+            this.contact.last = this.inpLast.text
         }
 
         this.btnRemove.onclick = () => {
             let e = new Event('removeContact', {bubbles:true})
-            e.value = this.data
+            e.value = this.contact
             this.dispatchEvent(e)
         }
 
-        this.phones.data = this.data.phones
+        this.phones.data = this.contact.phones
     }
 
 
