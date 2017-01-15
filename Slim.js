@@ -1,4 +1,4 @@
-console.log('SlimJS v2.2.6')
+console.log('SlimJS v2.3.0')
 
 class Slim extends HTMLElement {
 
