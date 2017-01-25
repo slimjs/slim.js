@@ -27,6 +27,7 @@ Data updates are propagated downwards from parents to children.
 Events bubble up.
 
 A *bound parent* is the parent that declares a child (nested or direct) in it's template
+
 ```
 class MyComponent extends Slim {
     get template() {
@@ -40,7 +41,9 @@ class MyComponent extends Slim {
 }
 Slim.tag('my-tag', MyComponent)
 ```
+
 Attribute binding can also be processed via a function
+
 ```
 get templpate() {
     return `<h1 class=[[myMethod(myValue)]]>Hello, slim</h1>`
@@ -56,6 +59,7 @@ myMethod(value) {
 ```
 <my-todo slim-repeat="todos" slim-repeat-as="todo">
 ```
+
 This will repeatedly create several <my-tag> elements and inject to each a property named "todo" with the value from the
 source array "todos" on the *bound parent* element.
 
