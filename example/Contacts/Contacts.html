@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" />
     <script>
         if (!(function() {return ('registerElement' in document
                 && 'import' in document.createElement('link')
@@ -16,7 +17,7 @@
     <script src="../../Slim.js"></script>
 </head>
 <body>
-
+<slim-app></slim-app>
 
 <script>
     class ContactsModel {
@@ -261,6 +262,7 @@ Slim.tag('slim-editable-input', class extends Slim {
     }
 
     onCreated() {
+        this.style.position = 'relative'
         this.inp.style.display = 'none'
         this.inp.style.position = 'absolute'
         this.inp.style.left = '0'
@@ -281,6 +283,6 @@ Slim.tag('slim-editable-input', class extends Slim {
 
 </script>
 
-    <slim-app></slim-app>
+
 </body>
 </html>

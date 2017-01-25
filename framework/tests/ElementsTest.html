@@ -27,13 +27,14 @@
     <script src="../components/basic-elements.js"></script>
     <script src="../components/s-resource.js"></script>
     <script src="../components/group.js"></script>
+    <script src="../components/s-table.js"></script>
     <script src="slim-ui-test.js"></script>
 </head>
 <body>
 
 
     <slim-ui-test>
-        <s-resource url="https://cdn.rawgit.com/angular/angular-phonecat/master/app/phones/dell-streak-7.json" ondata="testOnData" format="json"></s-resource>
+        <!--<s-resource url="https://cdn.rawgit.com/angular/angular-phonecat/master/app/phones/dell-streak-7.json" ondata="testOnData" format="json"></s-resource>-->
         <s-hgroup>
             <s-input focus="testFocus" blur="testBlur" placeholder="type anything"></s-input>
             <s-button text="Hello" click="testClick" mouseenter="testMouseover"></s-button>
@@ -44,6 +45,18 @@
 
     <editable-ui-test>
     </editable-ui-test>
+
+    <s-table id="test-table"></s-table>
+    <script>
+        const tableData = [
+            {name: 'john', age: 25},
+            {name: 'jane', age: 28, gender: 'female'},
+            {age: 39, gender: 'male'},
+            {name: 'avichay', age: 39, gender: 'male'}
+        ];
+
+        document.querySelector('s-table').data = tableData
+    </script>
 
 
 </body>
