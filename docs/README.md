@@ -31,12 +31,11 @@ A *bound parent* is the parent that declares a child (nested or direct) in it's 
 ```
 class MyComponent extends Slim {
     get template() {
-        return `<h1 class=[[myClass]] bind>[[myTitle]]</h1>`
+        return `<h1 class=[[myClass]]>Hello, slim</h1>`
     }
     
     onBeforeCreated() {
         this.myClass = 'big-header'
-        this.myTitle = 'Hello, slim.js'
     }
 }
 Slim.tag('my-tag', MyComponent)
@@ -54,6 +53,20 @@ myMethod(value) {
   // return something
 }
 ```
+
+Text bindings also possible using the *bind* attribute
+
+```
+get template() {
+    return `<h1 bind>[[title]]</h1>
+}
+
+onBeforeCreated() {
+    this.title = 'Hello, slim.js!'
+}
+```
+
+*bind* attribute should be used on finite children, that contains only text nodes
 
 ### Repeaters
 ```
