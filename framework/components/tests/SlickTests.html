@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Slick Elements Test</title>
+
+    <script src="../../../Slim.js"></script>
+    <link rel="import" href="../slick/s-button.html" />
+    <link rel="import" href="../slick/s-input.html" />
+
+</head>
+<body>
+
+    <tester-x></tester-x>
+
+    <script>
+
+        Slim.tag('tester-x', class extends Slim {
+
+            get template() {
+                return `
+    <div>
+        <span>Button</span>
+        <s-button mouseenter="testEvent" click="testButtonClick" text="[[buttonLabel]]" />
+    </div>
+    <div>
+        <span>Input</span>
+        <s-input change="testEvent" enterkey="testEnterKey" text="default text"></s-input>
+    </div>
+    <div>
+        <select #my_select>
+            <option slim-repeat="myOptions" slim-repeat-adjacent value="[[data.value]]" bind>[[data.label]]</option>
+        </select>
+    </div>`
+            }
+
+            onBeforeCreated() {
+                this.buttonLabel = "Hello, Button";
+                this.myOptions = [
+                    {label: '123', value: '321'},
+                    {label: '456', value: '654'}
+                ];
+            }
+
+            onCreated() {
+                this.my_select.value = null
+                this.my_select.onchange = () => {
+                    console.log( this.my_select.value )
+                }
+            }
+
+            testEnterKey(e) {
+                console.log(e.value)
+            }
+
+            testButtonClick(e) {
+                console.log('Click')
+            }
+
+            testEvent(e) {
+                console.log(e.type, e.target)
+            }
+
+        })
+
+    </script>
+
+</body>
+</html>

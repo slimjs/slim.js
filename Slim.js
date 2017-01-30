@@ -1,10 +1,24 @@
-console.log('SlimJS v2.3.0')
+console.log('SlimJS v2.3.1')
 
 class Slim extends HTMLElement {
 
     static tag(tag, clazz) {
         Slim.__prototypeDict[tag] = clazz
         document.registerElement(tag, clazz)
+    }
+
+    static getTag(clazz) {
+        for (let tag in Slim.__prototypeDict) {
+            if (Slim.__prototypeDict[tag] === clazz)
+                return tag
+        }
+    }
+
+    static get interactionEventNames() {
+        return ['click','mouseover','mouseout','mousemove','mouseenter','mousedown','mouseup','dblclick','contextmenu','wheel',
+            'mouseleave','select','pointerlockchange','pointerlockerror','focus','blur',
+            'animationstart','animationend','animationiteration','reset','submit','resize','scroll',
+            'keydown','keypress','keyup', 'change']
     }
 
     static plugin(phase, plugin) {
@@ -59,6 +73,7 @@ class Slim extends HTMLElement {
         }
         repeater._boundParent = descriptor.source
         descriptor.target.parentNode.removeChild(descriptor.target)
+        repeater._isAdjacentRepeater = descriptor.repeatAdjacent
         repeater.setAttribute('source', descriptor.properties[0])
         repeater.setAttribute('target-attr', descriptor.targetAttribute)
         descriptor.repeater = repeater
@@ -103,6 +118,8 @@ class Slim extends HTMLElement {
         } else if (this._boundParent && this._boundParent._boundParent && typeof this._boundParent._boundParent[fnName] === 'function') {
             // safari, firefox
             this._boundParent._boundParent[fnName](value)
+        } else {
+            throw "Unable to call attribute-bound method: " + fnName + ' on bound parent ' + this._boundParent.outerHTML + ' with value ' + value
         }
     }
 
@@ -133,16 +150,20 @@ class Slim extends HTMLElement {
                 let executor
                 if (descriptor.type === 'P') {
                     executor = () => {
-                        let value = Slim.__lookup(source, prop).obj
-                        descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value
-                        descriptor.target.setAttribute( descriptor.attribute, value )
+                        if (!descriptor.target.hasAttribute('slim-repeat')) {
+                            let value = Slim.__lookup(source, prop).obj || Slim.__lookup(descriptor.target, prop).obj
+                            descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value
+                            descriptor.target.setAttribute( descriptor.attribute, value )
+                        }
                     }
                 } else if (descriptor.type === 'M') {
                     executor = () => {
-                        let value = source[ descriptor.method ].apply( source,
-                            descriptor.properties.map( prop => { return source[prop] }))
-                        descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value
-                        descriptor.target.setAttribute( descriptor.attribute, value )
+                        if (!descriptor.target.hasAttribute('slim-repeat')) {
+                            let value = source[ descriptor.method ].apply( source,
+                                descriptor.properties.map( prop => { return source[prop] }))
+                            descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value
+                            descriptor.target.setAttribute( descriptor.attribute, value )
+                        }
                     }
                 } else if (descriptor.type === 'T') {
                     executor = () => {
@@ -168,6 +189,7 @@ class Slim extends HTMLElement {
             type: 'R',
             target: child,
             targetAttribute: child.getAttribute('slim-repeat-as') ? child.getAttribute('slim-repeat-as') : 'data',
+            repeatAdjacent: child.hasAttribute('slim-repeat-adjacent'),
             attribute: attribute.nodeName,
             properties: [ attribute.nodeValue ],
             source: child._boundParent
@@ -222,6 +244,14 @@ class Slim extends HTMLElement {
         return true
     }
 
+    get rootElement() {
+        if (this.useShadow) {
+            this.__shadowRoot = this.__shadowRoot || this.createShadowRoot()
+            return this.__shadowRoot
+        }
+        return this
+    }
+
     createdCallback(force = false) {
         this.initialize()
         if (this.isVirtual && !force) return
@@ -232,7 +262,7 @@ class Slim extends HTMLElement {
         this.__onCreatedComplete = true
         this.onBeforeRender()
         Slim.__runPlugins('beforeRender', this)
-        Slim.__moveChildren( this._virtualDOM, this, true )
+        Slim.__moveChildren( this._virtualDOM, this.rootElement, true )
         this.onAfterRender()
         Slim.__runPlugins('afterRender', this)
         this.update()
@@ -244,6 +274,10 @@ class Slim extends HTMLElement {
     }
 
     initialize(forceNewVirtualDOM = false) {
+        if (!this.__eventsInitialized && (Slim.autoAttachInteractionEvents || this.hasAttribute('interactive'))) Slim.interactionEventNames.forEach(eventType => {
+            this.addEventListener(eventType, e => { this.handleEvent(e) })
+        })
+        this.__eventsInitialized = true;
         this._bindings = this._bindings || {}
         this._boundChildren = this._boundChildren || []
         this.alternateTemplate = this.alternateTemplate || null
@@ -255,6 +289,14 @@ class Slim extends HTMLElement {
 
     get isSlim() { return true }
     get template() { return null }
+
+    handleEvent(e) {
+        if (this.hasAttribute('on' + e.type)) {
+            this.callAttribute('on' + e.type, e)
+        } else if (this.hasAttribute(e.type)) {
+            this.callAttribute(e.type, e)
+        }
+    }
 
     onDestroy() { /* abstract */ }
     onBeforeCreated() { /* abstract */ }
@@ -309,9 +351,7 @@ class Slim extends HTMLElement {
 
         let allChildren = Array.prototype.slice.call( this._virtualDOM.querySelectorAll('*') )
         for (let child of allChildren) {
-            if (child === this._virtualDOM) {
-                alert('fuck')
-            }
+            child._sourceOuterHTML = child.outerHTML
             child._boundParent = child._boundParent || this
             this._boundChildren.push(child)
             if (child.getAttribute('slim-id')) {
@@ -323,6 +363,7 @@ class Slim extends HTMLElement {
             if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
                 let desc = Slim.__processAttribute(child.attributes[i], child)
                 if (desc) descriptors.push(desc)
+                child[Slim.__dashToCamel(child.attributes[i].nodeName)] = child.attributes[i].nodeValue
                 if (child.attributes[i].nodeName.indexOf('#') == '0') {
                     let refName = child.attributes[i].nodeName.slice(1)
                     this[refName] = child
@@ -353,6 +394,9 @@ class Slim extends HTMLElement {
 
         for (let child of allChildren) {
             let match = child.innerText.match(/\[\[([\w|.]+)\]\]/g)
+            if (match && child.children.length > 0) {
+                throw 'Bind Error: Illegal bind attribute use on element type ' + child.localName + ' with nested children.\n' + child.outerHTML;
+            }
             if (match) {
                 let properties = []
                 for (let i = 0; i < match.length; i++) {
@@ -396,7 +440,7 @@ class SlimRepeater extends Slim {
     get sourceData() {
         try {
             let lookup = Slim.__lookup(this._boundParent, this.getAttribute('source'))
-            return lookup.obj || [] //this._boundParent[ this.getAttribute('source') ]
+            return lookup.obj || []
         }
         catch (err) {
             return []
@@ -418,7 +462,6 @@ class SlimRepeater extends Slim {
         this.innerHTML = ''
 
         this.sourceData.registerSlimRepeater(this)
-
         this.sourceData.forEach( (dataItem, index) => {
             let clone = this.sourceNode.cloneNode(true)
             clone.removeAttribute('slim-repeat')
@@ -453,12 +496,17 @@ class SlimRepeater extends Slim {
                 element.data_source = clone.data_source
             })
         }
-
+        
         this._executeBindings()
-        Slim.__moveChildren(this._virtualDOM, this, true)
+        if (this._isAdjacentRepeater) {
+            Slim.__moveChildren(this._virtualDOM, this.parentNode, true)
+        } else {
+            Slim.__moveChildren(this._virtualDOM, this, true)
+        }
     }
 }
 Slim.tag('slim-repeat', SlimRepeater)
+
 window.SlimRepeater = SlimRepeater
 window.Slim = Slim
 

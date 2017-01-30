@@ -1,0 +1,41 @@
+<script>
+    class SlickTextInput extends Slim {
+
+        get useShadow() { return true }
+
+        get value() {
+            return this.component.value
+        }
+
+        get template() {
+            return `<input #component role="input-text" value="[[text]]" />`
+        }
+
+        createdCallback(x) {
+            this.setAttribute('interactive', '')
+            super.createdCallback(x)
+        }
+
+        onCreated() {
+            this.component.onchange = e => { this.callAttribute('change', e)}
+            this.component.onselect = e => { this.callAttribute('select', e)}
+            this.component.onkeydown = e => {
+                this.callAttribute('select', e)
+                if (e.which === 13) {
+                    e.value = this.component.value
+                    this.callAttribute('enterkey', e)
+                }
+            }
+        }
+
+        update() {
+            this.text = this.getAttribute('text')
+            super.update()
+        }
+    }
+
+    Slim.tag('s-input', SlickTextInput)
+</script>
+
+<style>
+</style>

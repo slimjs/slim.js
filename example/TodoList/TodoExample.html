@@ -25,6 +25,8 @@
     <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Nixie+One|Ubuntu+Mono" rel="stylesheet">
 
     <script src="../../Slim.js"></script>
+    <link rel="import" href="../../framework/components/slick/s-button.html" />
+    <link rel="import" href="../../framework/components/slick/s-input.html" />
 
     <style>
 
@@ -50,7 +52,7 @@
             height: 2em;
         }
 
-        #todos-count span {
+        #todos-count > span {
             flex: 1;
             align-self: flex-end;
         }
@@ -128,20 +130,24 @@
 
     })
 
-    Slim.tag('todo-app', class extends Slim {
+        Slim.tag('todo-app', class extends Slim {
 
 
         get template() {
             return `<div id="todo-container">
 <h1>slim.js Todo Example</h1>
 <div id="add-todo">
-    <input type="text" slim-id="newTodo" />
-    <input type="button" slim-id="btnNewTodo" value="Add Todo" />
+    <s-input change="handleNewTodoKeyUp" select="handleNewTodoKeyUp"/>
+    <s-button auto-role="add-item" click="checkAndAddTodo" text="Add Todo" />
+    <!--<input type="button" slim-id="btnNewTodo" value="Add Todo" />-->
 </div>
 <hr/>
 <todo-item slim-repeat="todos"></todo-item>
 <hr/>
-<div id="todos-count"><span bind>You have [[todos.length]] items</span><input type="button" slim-id="btnClear" value="Clear completed"></input></div>
+<div id="todos-count">
+    <span bind>You have [[todos.length]] items</span>
+    <s-button auto-role="clear-completed-items" click="clearCompleted" text="Clear completed" />
+</div>
 `
         }
 
@@ -152,6 +158,10 @@
             ]
         }
 
+        handleNewTodoKeyUp(e) {
+                console.log(e)
+        }
+
         addTodo(value) {
             this.todos.push( new Todo(value) )
             this.newTodo.value = ''
@@ -159,20 +169,21 @@
             this.newTodo.focus()
         }
 
+        clearCompleted() {
+            this.todos = this.todos.filter( todo => {
+                return todo.complete === false
+            })
+        }
+
         onCreated() {
-            this.btnClear.onclick = () => {
-                this.todos = this.todos.filter( todo => {
-                    return todo.complete === false
-                })
-            }
-            this.btnNewTodo.onclick = () => {
-                this.checkAndAddTodo()
-            }
-            this.newTodo.onkeyup = (e) => {
-                if (e.which === 13) {
-                    this.checkAndAddTodo()
-                }
-            }
+//            this.btnNewTodo.onclick = () => {
+//                this.checkAndAddTodo()
+//            }
+//            this.newTodo.onkeyup = (e) => {
+//                if (e.which === 13) {
+//                    this.checkAndAddTodo()
+//                }
+//            }
         }
 
         checkAndAddTodo() {
@@ -192,7 +203,7 @@
 
         it('Should add a todo', function() {
             document.querySelector('div#add-todo input').value = "New Todo"
-            document.querySelector('div#add-todo input[type="button"]').onclick()
+            document.querySelector('[auto-role="add-item"]').click()
             chai.assert(document.querySelectorAll('todo-item').length === 3)
             let newTodoItemElement = document.querySelectorAll('todo-item')[2].querySelector('span[complete]')
             chai.assert(newTodoItemElement !== null)
@@ -215,7 +226,7 @@
 
             before(function() {
                 document.querySelector('div#add-todo input').value = "New Todo 1"
-                document.querySelector('div#add-todo input[type="button"]').onclick()
+                document.querySelector('[auto-role="add-item"]').click()
                 document.querySelector('div#add-todo input').value = "New Todo 2"
                 document.querySelector('div#add-todo input[type="button"]').onclick()
                 document.querySelector('div#add-todo input').value = "New Todo 3"
@@ -230,7 +241,7 @@
             })
 
             it('Should clear all completed todos', function() {
-                document.querySelector('#todos-count > input[type="button"]').click()
+                document.querySelector('[auto-role="clear-completed-items"]').click()
                 chai.assert(document.querySelectorAll('span[complete="true"]').length === 0)
                 chai.assert(document.querySelectorAll('span[complete]').length === 2)
             })

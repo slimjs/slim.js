@@ -254,8 +254,7 @@ Slim.tag('slim-phone', class extends Slim {
     }
 })
 
-
-Slim.tag('slim-editable-input', class extends Slim {
+class SlimEditableInput extends Slim {
 
     get template() {
         return `<span slim-id="label" bind>[[text]]</span><input slim-id="inp" type="text" value=[[text]] />`
@@ -279,7 +278,11 @@ Slim.tag('slim-editable-input', class extends Slim {
         }
     }
 
-})
+}
+Slim.tag('slim-editable-input', SlimEditableInput)
+
+
+    console.log( Slim.getTag( SlimEditableInput ))
 
 </script>
 

@@ -1,0 +1,39 @@
+<script>
+    class SlickButton extends Slim {
+
+        get useShadow() { return true }
+
+        get template() {
+            return `<span #component role="button-label" bind>[[text]]</span>`
+        }
+
+        createdCallback(x) {
+            this.setAttribute('interactive', '')
+            super.createdCallback(x)
+        }
+
+        onCreated() {
+            this.click = this.component.click
+        }
+
+        update() {
+            this.text = this.getAttribute('text')
+            super.update()
+        }
+    }
+
+    Slim.tag('s-button', SlickButton)
+</script>
+
+<style>
+    s-button {
+        cursor: pointer;
+        border: 1px solid;
+        display: inline-flex;
+    }
+
+    s-button /deep/ span[role="button-label"] {
+        display: inline-flex;
+        align-self: center;
+    }
+</style>
