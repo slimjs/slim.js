@@ -2,8 +2,21 @@
 
     class SlickSelect extends Slim {
 
+        get value() {
+            return this.my_select.value
+        }
+
         get template() {
-            return ``
+            return `<select #my_select><option slim-repeat-adjacent slim-repeat="myOptions" value="[[data.value]]" bind>[[data.label]]</option></select>`
+        }
+
+        update() {
+            this.myOptions = this._boundParent[ this.getAttribute('options') ]
+            this.render()
+            this.my_select.onchange = e => {
+                e.value = this.my_select.value
+                this.callAttribute('change', e)
+            }
         }
 
     }

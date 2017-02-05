@@ -7,6 +7,7 @@
     <script src="../../../Slim.js"></script>
     <link rel="import" href="../slick/s-button.html" />
     <link rel="import" href="../slick/s-input.html" />
+    <link rel="import" href="../slick/s-select.html" />
 
 </head>
 <body>
@@ -19,19 +20,23 @@
 
             get template() {
                 return `
-    <div>
-        <span>Button</span>
-        <s-button mouseenter="testEvent" click="testButtonClick" text="[[buttonLabel]]" />
-    </div>
-    <div>
-        <span>Input</span>
-        <s-input change="testEvent" enterkey="testEnterKey" text="default text"></s-input>
-    </div>
-    <div>
-        <select #my_select>
-            <option slim-repeat="myOptions" slim-repeat-adjacent value="[[data.value]]" bind>[[data.label]]</option>
-        </select>
-    </div>`
+                        <div>
+                            <span>Button</span>
+                            <s-button mouseenter="testEvent" click="testButtonClick" text="[[buttonLabel]]" />
+                        </div>
+                        <div>
+                            <span>Input</span>
+                            <s-input change="testEvent" enterkey="testEnterKey" text="default text"></s-input>
+                        </div>
+                        <div>
+                            <select #my_select>
+                                <option slim-repeat="myOptions" slim-repeat-adjacent value="[[data.value]]" bind>[[data.label]]</option>
+                            </select>
+                        </div>
+                        <hr/>
+                        <div>
+                            <s-select #my_random_select change="testSelectChange" options="myRandomOptions" />
+                        </div>`
             }
 
             onBeforeCreated() {
@@ -40,13 +45,27 @@
                     {label: '123', value: '321'},
                     {label: '456', value: '654'}
                 ];
+                this.myRandomOptions = []
+                setTimeout( () => {
+                    this.myRandomOptions = [
+                        {label: Math.random(), value: Math.random()},
+                        {label: Math.random(), value: Math.random()},
+                        {label: Math.random(), value: Math.random()}
+                    ]
+                    this.my_random_select.update()
+                }, 1000)
             }
+
 
             onCreated() {
                 this.my_select.value = null
                 this.my_select.onchange = () => {
                     console.log( this.my_select.value )
                 }
+            }
+
+            testSelectChange(e) {
+                console.log(this.my_random_select.value)
             }
 
             testEnterKey(e) {

@@ -4,7 +4,7 @@
         get useShadow() { return true }
 
         get template() {
-            return `<span #component role="button-label" bind>[[text]]</span>`
+            return `<button #component role="button-label" bind>[[text]]</button>`
         }
 
         createdCallback(x) {
@@ -26,14 +26,4 @@
 </script>
 
 <style>
-    s-button {
-        cursor: pointer;
-        border: 1px solid;
-        display: inline-flex;
-    }
-
-    s-button /deep/ span[role="button-label"] {
-        display: inline-flex;
-        align-self: center;
-    }
 </style>
