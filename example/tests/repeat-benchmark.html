@@ -29,10 +29,10 @@
     Slim.tag('benchmark-tester', class extends Slim {
 
         get template() {
-            return `<div slim-repeat="arr" bind>[[data]]></div>`
+            return `<div slim-repeat="arr" bind>[[data]]</div>`
         }
 
-        onCreated() {
+        onAfterRender() {
             console.log(new Date().getTime())
             this.arr = []
             while (this.arr.length < 1000) {

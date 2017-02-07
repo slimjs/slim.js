@@ -1,0 +1,37 @@
+<script>
+    Slim.tag('nav-menu', class extends Slim {
+
+        get template() {
+            return `<span slim-repeat="items" slim-repeat-as="item" interactive bind>[[item]]</span>`
+        }
+
+        onBeforeCreated() {
+            this.items = ['Dashboard', 'Charts', 'Tables', 'Forms', 'UI Elements'];
+        }
+
+        onAfterRender() {
+            this.onclick = event => {
+                this.callAttribute('navigate', event.target.innerText);
+                };
+        }
+
+    })
+</script>
+<style>
+    nav-menu {
+        display: inline-flex;
+        flex-direction: column;
+        flex-direction: column;
+        padding: 0;
+    }
+
+    nav-menu span {
+        display: flex;
+        cursor: pointer;
+    }
+
+    nav-menu span:hover {
+        background: black;
+        color: white;
+    }
+</style>

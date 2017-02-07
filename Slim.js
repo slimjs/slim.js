@@ -22,8 +22,8 @@ class Slim extends HTMLElement {
     }
 
     static plugin(phase, plugin) {
-        if (phase !== 'create' && phase !== 'beforeRender' && phase !== 'afterRender' && phase !== 'beforeDestroy') {
-            throw "Supported phase can be create, beforeDestroy, beforeRender or afterRender only"
+        if (phase !== 'create' && phase !== 'beforeRender' && phase !== 'afterRender' && phase !== 'beforeRemove') {
+            throw "Supported phase can be create, beforeRemove, beforeRender or afterRender only"
         }
         Slim.__plugins[phase].push(plugin)
     }
@@ -109,8 +109,14 @@ class Slim extends HTMLElement {
     }
 
     callAttribute(attributeName, value) {
+        if (!this._boundParent) {
+            throw 'Unable to call attribute-bound method when no bound parent available';
+        }
         let fnName = this.getAttribute(attributeName)
-        if (fnName === null) return
+        if (fnName === null) {
+            console.warn && console.warn('Unable to call null attribute-bound method on bound parent ' + this._boundParent.outerHTML)
+            return;
+        }
         if (typeof this[fnName] === 'function') {
             this[fnName](value)
         } else if (typeof this._boundParent[fnName] === 'function') {
@@ -269,8 +275,8 @@ class Slim extends HTMLElement {
     }
 
     detachedCallback() {
-        Slim.__runPlugins('beforeDestroy', this)
-        this.onDestroy()
+        Slim.__runPlugins('beforeRemove', this)
+        this.onRemoved()
     }
 
     initialize(forceNewVirtualDOM = false) {
@@ -298,13 +304,23 @@ class Slim extends HTMLElement {
         }
     }
 
-    onDestroy() { /* abstract */ }
+    attachedCallback() {
+        this.onAdded();
+    }
+
+    onAdded() { /* abstract */ }
+    onRemoved() { /* abstract */ }
     onBeforeCreated() { /* abstract */ }
     onCreated() { /* abstract */}
     onBeforeRender() { /* abstract */ }
     onAfterRender() { /* abstract */ }
+    onBeforeUpdate() { /* abstract */ }
+    onAfterUpdate() { /* abstract */ }
+
     update() {
+        this.onBeforeUpdate()
         this._executeBindings()
+        this.onAfterUpdate()
     }
 
     render(template) {
@@ -344,6 +360,7 @@ class Slim extends HTMLElement {
             let virtualContent = this._virtualDOM.querySelector('content')
             if (virtualContent) {
                 while (this.children.length) {
+                    this.children[0]._boundParent = this.children[0]._boundParent || this
                     virtualContent.appendChild( this.children[0] )
                 }
             }
@@ -422,7 +439,7 @@ Slim.__plugins = {
     'create': [],
     'beforeRender': [],
     'afterRender': [],
-    'beforeDestroy': []
+    'beforeRemove': []
 }
 
 try {
@@ -451,7 +468,7 @@ class SlimRepeater extends Slim {
         return false
     }
 
-    onDestroy() {
+    onRemoved() {
         this.sourceData.unregisterSlimRepeater(this)
     }
 

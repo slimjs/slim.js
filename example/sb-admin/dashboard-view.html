@@ -1,0 +1,35 @@
+<script>
+    Slim.tag('dashboard-view', class extends Slim {
+        get template () {
+            return `
+<div>
+    <notification-box text="26 Comments" interactive color="#880000" icon-class="fa fa-comments fa-2x"></notification-box>
+    <notification-box text="15 New Users" interactive color="#008800" icon-class="fa fa-id-badge fa-2x"></notification-box>
+    <notification-box text="3 Notifications" interactive color="#000088" icon-class="fa fa-bell-o fa-2x"></notification-box>
+</div>
+<div>
+    <notification-box text="7 Projects" interactive color="#888800" icon-class="fa fa-flask fa-3x"></notification-box>
+    <notification-box text="8 Open Tasks" interactive color="#888888" text-color="black" icon-class="fa fa-tasks fa-3x"></notification-box>
+    <notification-box text="3 Notifications" interactive color="#008888" icon-class="fa fa-support fa-3x"></notification-box>
+</div>
+`;
+        }
+
+        handleClick() {
+            alert('click');
+        }
+    })
+</script>
+
+<style>
+    dashboard-view {
+        display: flex;
+        flex-direction: column;
+    }
+
+    dashboard-view > div {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+</style>
