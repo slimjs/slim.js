@@ -9,7 +9,7 @@ It uses javascript's inheritance mechanism to boost up HTML elements with superp
 No! It's a slim code layer that adds superpowers to HTML elements using it's native class inheritance.
 
 ## Custom Tags
-```
+```js
 class MyComponent extends Slim {
     get template() {
         return `<h1>Hello, slim.js</h1>`
@@ -28,7 +28,7 @@ Events bubble up.
 
 A *bound parent* is the parent that declares a child (nested or direct) in it's template
 
-```
+```js
 class MyComponent extends Slim {
     get template() {
         return `<h1 class=[[myClass]]>Hello, slim</h1>`
@@ -43,7 +43,7 @@ Slim.tag('my-tag', MyComponent)
 
 Attribute binding can also be processed via a function
 
-```
+```js
 get templpate() {
     return `<h1 class=[[myMethod(myValue)]]>Hello, slim</h1>`
 }
@@ -56,7 +56,7 @@ myMethod(value) {
 
 Text bindings also possible using the *bind* attribute
 
-```
+```js
 get template() {
     return `<h1 bind>[[title]]</h1>
 }
@@ -69,7 +69,7 @@ onBeforeCreated() {
 *bind* attribute should be used on finite children, that contains only text nodes
 
 ### Repeaters
-```
+```html
 <my-todo slim-repeat="todos" slim-repeat-as="todo">
 ```
 
