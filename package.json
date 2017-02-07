@@ -1,6 +1,6 @@
 {
   "name": "slim-js",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Slim web components infrastructure",
   "main": "Slim.js",
   "scripts": {
