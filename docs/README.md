@@ -102,3 +102,4 @@ A Slim element has a rich lifecycle that can be accessed with ease:
 
 ## Examples
 - [Creating a reusable component](./creating_a_reusable_component_example.md)
+- [Using content tags](./using_content_tag.md)
