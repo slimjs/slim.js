@@ -18,7 +18,9 @@ First, we create a new file notification-box.html
     }
 </style>
 ```
+
 Our template will look like this
+
 ```js
     get template() {
         return `
@@ -26,7 +28,9 @@ Our template will look like this
         <span bind>[[myText]]</span>`;
     }
 ```
+
 Using the *onBeforeUpdate* hook to set the values:
+
 ```js
     onBeforeUpdate() {
         this.myText = this.getAttribute('text');
