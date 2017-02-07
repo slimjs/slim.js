@@ -99,3 +99,6 @@ A Slim element has a rich lifecycle that can be accessed with ease:
 
 ## Tools free
 - add Slim.js to your project and your'e good to go
+
+## Examples
+- [Creating a reusable component](./creating_a_reusable_component_example.md)
