@@ -43,7 +43,9 @@ Usage of the element in another template or in a HTML wrapper:
 # Data Binding
 Slim.js supports one-way data binding to inner text, attributes, directly or via a parsing methods.
 
-## Example
+## Examples
+
+### Text-property binding
 
 Text binding is used with the *bind* attribute
 
@@ -62,6 +64,7 @@ Slim.tag('my-greeter', class extends Slim {
 > Slim.js creates a runtime getter/setter function for the property *greetee*, and with every change the component will
 > automatically render itself with the new result.
 
+### Attribute-property Binding
 Attribute binding is done in a same manner, only the bind attribute is not required.
 
 ```js
@@ -75,3 +78,24 @@ Slim.tag('my-custom-tag', class extends Slim {
     }
 });
 ```
+
+### Attribute-method-property binding
+You could wrap a binding with a parsing method, thus enforcing parser method to run every change in the property
+
+```js
+Slim.tag('my-custom-tag', class extends Slim {
+    get template() {
+        return '<my-greeter name="[[toUpper(person)]]"></my-greeter>'
+    }
+    
+    onBeforeUpdate() {
+        this.person = 'John doe';
+    }
+    
+    toUpper(value) {
+        return value.toUpperCase();
+    } 
+});
+```
+
+Read next: [Using \<content> tag](./using_content_tag.md)
