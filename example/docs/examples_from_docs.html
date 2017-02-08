@@ -96,5 +96,36 @@
         }
     });
 </script>
+
+<hr/>
+
+<parent-tag></parent-tag>
+<script>
+    Slim.tag('parent-tag', class extends Slim {
+        get template() {
+            return `<child-tag slim-id="myChild" trigger="myMethod"></child-tag>`
+        }
+
+        onBeforeUpdate() {
+            this.myChild.message = 'click me';
+        }
+
+        myMethod(value) {
+            // invoked!
+            alert(value);
+        }
+    })
+
+    Slim.tag('child-tag', class extends Slim {
+        get template() {
+            return '<span bind>[[message]]</span>'
+        }
+        onCreated() {
+            this.onclick = () => {
+                this.callAttribute('trigger', 'Hello, slim.js!');
+            }
+        }
+    })
+</script>
 </body>
 </html>
