@@ -1,3 +1,4 @@
+![hello, slim.js](https://raw.githubusercontent.com/eavichay/slim.js/master/example/webpage/slim2.png)
 # Hello, slim.js
 
 ## Slim is an elegant library for web components
