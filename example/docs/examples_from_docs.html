@@ -80,5 +80,21 @@
     Slim.tag('notification-box', NotificationBox);
 </script>
 
+
+<hr/>
+
+
+<my-greeter></my-greeter>
+<script>
+    Slim.tag('my-greeter', class extends Slim {
+        get template() {
+            return '<span bind>Hello, [[person]]';
+        }
+
+        onBeforeUpdate() {
+            this.person = 'slim.js';
+        }
+    });
+</script>
 </body>
 </html>
