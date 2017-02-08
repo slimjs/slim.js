@@ -8,82 +8,26 @@ It uses javascript's inheritance mechanism to boost up HTML elements with superp
 ### Is this another framework
 No! It's a slim code layer that adds superpowers to HTML elements using it's native class inheritance.
 
-## Custom Tags
-```js
-class MyComponent extends Slim {
-    get template() {
-        return `<h1>Hello, slim.js</h1>`
-    }
-}
-Slim.tag('my-tag', MyComponent)
-```
-
 # Guide
 [Read the guide](/guide.md)
 
-## Binding
-Slim.js creates custom getters and setters during runtime whenever it finds a bindable property.
-Altering the value of the property triggers a method that re-renders the template or alters the
-attribute it is bound to. Simple.
+# Component's Lifecycle
+The lifecycle containes the following abstract hooks
 
-Data updates are propagated downwards from parents to children.
-Events bubble up.
+- onBeforeCreated()
+- onCreated()
+- onBeforeRender()
+- onAfterRender()
+- onBeforeUpdate()
+- onAfterUpdate()
 
-A *bound parent* is the parent that declares a child (nested or direct) in it's template
+also attachment and detachment from the DOM tree invokes
+- onAdded()
+- onRemoved()
 
-```js
-class MyComponent extends Slim {
-    get template() {
-        return `<h1 class=[[myClass]]>Hello, slim</h1>`
-    }
-    
-    onBeforeCreated() {
-        this.myClass = 'big-header'
-    }
-}
-Slim.tag('my-tag', MyComponent)
-```
+native attributeChangedCallback is also supported.
 
-Attribute binding can also be processed via a function
-
-```js
-get templpate() {
-    return `<h1 class=[[myMethod(myValue)]]>Hello, slim</h1>`
-}
-
-myMethod(value) {
-  // do something with value
-  // return something
-}
-```
-
-Text bindings also possible using the *bind* attribute
-
-```js
-get template() {
-    return `<h1 bind>[[title]]</h1>
-}
-
-onBeforeCreated() {
-    this.title = 'Hello, slim.js!'
-}
-```
-
-*bind* attribute should be used on finite children, that contains only text nodes
-
-### Repeaters
-```html
-<my-todo slim-repeat="todos" slim-repeat-as="todo">
-```
-
-This will repeatedly create several <my-tag> elements and inject to each a property named "todo" with the value from the
-source array "todos" on the *bound parent* element.
-
-Repeaters do not process attribute bindings and it is recommended to use repeaters on Slim elements in order to keep the
-data flow chained correctly.
-
-### Lifecycle
-A Slim element has a rich lifecycle that can be accessed with ease:
+This is the component's full lifecycle:
 - element declared on the DOM
 - Initialization
 - onBeforeCreated()*
@@ -93,6 +37,9 @@ A Slim element has a rich lifecycle that can be accessed with ease:
 - element renders
 - render
 - onAfterRender()*
+- onBeforeUpdate()*
+- update()
+- onAfterUpdate()*
 
 \* empty methods that can be implemented when inheriting a slim element.
 
@@ -105,5 +52,4 @@ A Slim element has a rich lifecycle that can be accessed with ease:
 
 ## Examples
 - [Creating a reusable component](./creating_a_reusable_component_example.md)
-- [Using content tags](./using_content_tag.md)
-- [Repeaters](./using_repeaters.md)
+- [Developer's Guide](./guide.md)
