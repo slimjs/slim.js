@@ -22,12 +22,14 @@ The lifecycle containes the following abstract hooks
 - onAfterUpdate()
 
 also attachment and detachment from the DOM tree invokes
+
 - onAdded()
 - onRemoved()
 
 native attributeChangedCallback is also supported.
 
 This is the component's full lifecycle:
+
 - element declared on the DOM
 - Initialization
 - onBeforeCreated()*
