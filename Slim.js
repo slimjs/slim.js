@@ -280,7 +280,7 @@ class Slim extends HTMLElement {
     }
 
     initialize(forceNewVirtualDOM = false) {
-        if (!this.__eventsInitialized && (Slim.autoAttachInteractionEvents || this.hasAttribute('interactive'))) Slim.interactionEventNames.forEach(eventType => {
+        if (!this.__eventsInitialized && (Slim.autoAttachInteractionEvents || this.isInteractive || this.hasAttribute('interactive'))) Slim.interactionEventNames.forEach(eventType => {
             this.addEventListener(eventType, e => { this.handleEvent(e) })
         })
         this.__eventsInitialized = true;
@@ -295,6 +295,7 @@ class Slim extends HTMLElement {
 
     get isSlim() { return true }
     get template() { return null }
+    get isInteractive() { return false }
 
     handleEvent(e) {
         if (this.hasAttribute('on' + e.type)) {

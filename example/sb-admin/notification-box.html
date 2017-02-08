@@ -1,5 +1,8 @@
 <script>
     class NotificationBox extends Slim {
+
+        get isInteractive() { return true }
+
         get template() {
             return `<i class="[[myIconClass]]"></i><span class="notification-box-text" bind>[[myText]]</span>`;
         }
