@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +27,7 @@
             font-size: 0.8em;
             margin: 0 auto;
             box-sizing: content-box;
+            max-width: 80em;
         }
         html {
             margin: 0;
@@ -121,23 +123,6 @@
             border-top: none;
             padding: 1em;
         }
-
-        slim-logo {
-            display: flex;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        slim-logo div {
-            display: flex;
-            align-items: flex-end;
-        }
-
-        slim-logo span {
-            font-size: 6em;
-            padding-left: 0.5em;
-            font-family: "Nixie One", Sans-serif;
-        }
     </style>
 
     <script src="slim-tabs.js"></script>
@@ -147,11 +132,12 @@
 <body>
 <a href="https://github.com/eavichay/slim-web-components"><img style="position: fixed; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
 <div id="container">
-    <slim-logo><span>Hello, slim.js</span></slim-logo>
+    <slim-logo></slim-logo>
     <h1>Native Web Components, write less code, no black magic!</h1>
     <p>With es6 classes and slim.js you write less code. Class inheritance for native web components with no hassle, no need for external libraries that affect your workflow. When it comes to development with web components, slim.js is your new best friend.</p>
+    <h2>Documentation</h2>
+    <p><a href="https://eavichay.github.io/slim.js/">Read the developer's guide</a></p>
     <h2>Featuring</h2>
-
     <div>
         <slim-tabs tabs="Data Binding,Attribute Binding,Method Binding,Repeaters,Plugins">
             <div class="tabs">
@@ -205,8 +191,8 @@
     <div>
         <h2>Get slim.js</h2>
         <code>npm install slim-js<br/>
-        bower install slimjs<br/>
-        <a href="https://github.com/eavichay/slim-web-components">Github</a></code>
+            bower install slimjs<br/>
+            <a href="https://github.com/eavichay/slim-web-components">Github</a></code>
     </div>
     <br/>
     <hr/>

@@ -1,20 +1,11 @@
 Slim.tag('slim-states', class extends Slim {
 
 
-    get currentState() {
-        return this.getAttribute('current-state')
-    }
-
-    set currentState(value) {
-        this.setAttribute('current-state', value)
-        this.renderChildren()
-    }
-
-    renderChildren() {
+    update() {
         let currentChildren = Array.prototype.slice.call( this.children )
         for (let i = currentChildren.length - 1; i >= 0; i--) {
             let child = currentChildren[i]
-            if (child.getAttribute('state') !== this.currentState) {
+            if (child.getAttribute('state') !== this.getAttribute('current-state')) {
                 this.hiddenChildren.appendChild(child)
             }
         }
@@ -22,7 +13,7 @@ Slim.tag('slim-states', class extends Slim {
         currentChildren = Array.prototype.slice.call( this.hiddenChildren.children )
         for (let i = currentChildren.length - 1; i >= 0; i--) {
             let child = currentChildren[i]
-            if (child.getAttribute('state') === this.currentState) {
+            if (child.getAttribute('state') === this.getAttribute('current-state')) {
                 this.appendChild(child)
             }
         }
@@ -30,10 +21,6 @@ Slim.tag('slim-states', class extends Slim {
 
     onBeforeCreated() {
         this.hiddenChildren = document.createElement('virtual')
-    }
-
-    onAfterRender() {
-        this.renderChildren()
     }
 
 

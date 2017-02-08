@@ -5,7 +5,8 @@ Slim.tag('slim-tabs', class extends Slim {
     }
 
     select(value) {
-        this.states.currentState = value
+        this.states.setAttribute('current-state', value);
+        this.states.update();
     }
 
 })
