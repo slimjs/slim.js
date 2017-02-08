@@ -50,3 +50,5 @@ And in the HTML (or wrapping template)
     <span bind>Hello, [[someProperty]]</span>
 </my-tag>
 ```
+
+Read next: [Using repeaters](./using_repeaters.md)
