@@ -18,6 +18,9 @@ class MyComponent extends Slim {
 Slim.tag('my-tag', MyComponent)
 ```
 
+# Guide
+[Read the guide](/guide.md)
+
 ## Binding
 Slim.js creates custom getters and setters during runtime whenever it finds a bindable property.
 Altering the value of the property triggers a method that re-renders the template or alters the
