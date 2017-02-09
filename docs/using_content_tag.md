@@ -51,4 +51,4 @@ And in the HTML (or wrapping template)
 </my-tag>
 ```
 
-Read next: [Using repeaters](./using_repeaters.md)
+## Read next: [Using repeaters](./using_repeaters.md)

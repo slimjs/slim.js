@@ -33,4 +33,4 @@ get template() {
 
 Changes in the array will immediately enforce re-rendering of a repeater.
 
-Read next: [Method-attribute invocation using callAttribute](./method_attribute_invocation.md)
+## Read next: [Method-attribute invocation using callAttribute](./method_attribute_invocation.md)

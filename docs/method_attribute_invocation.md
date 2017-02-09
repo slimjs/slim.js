@@ -32,4 +32,4 @@ Slim.tag('child-tag', class extends Slim {
 Call attribute supports a payload optional parameter to be dispatched into the requested method.
 This enables bubbling up events or dispatching events from children to their bound parents.
 
-Read next: [Using slim-id for direct child access](./using_slim_id.md)
+## Read next: [Using slim-id for direct child access](./using_slim_id.md)
