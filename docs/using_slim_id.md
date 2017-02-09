@@ -35,3 +35,4 @@ Slim.tag('child-tag', class extends Slim {
 > There is a shorthand for slim-id using the # character, though html native behavior allows only small caps.
 > Example usage: <child-tag #my_child></child-tag>
 
+Read next: [Interactivity](./using_is_interactive.md)
