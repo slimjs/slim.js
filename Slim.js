@@ -1,4 +1,4 @@
-console.log('SlimJS v2.3.3')
+console.log('SlimJS v2.3.4')
 
 class Slim extends HTMLElement {
 
@@ -124,8 +124,13 @@ class Slim extends HTMLElement {
         } else if (this._boundParent && this._boundParent._boundParent && typeof this._boundParent._boundParent[fnName] === 'function') {
             // safari, firefox
             this._boundParent._boundParent[fnName](value)
+        } else if (this._boundRepeaterParent && typeof this._boundRepeaterParent[fnName] === 'function') {
+            this._boundRepeaterParent[fnName](value)
         } else {
             throw "Unable to call attribute-bound method: " + fnName + ' on bound parent ' + this._boundParent.outerHTML + ' with value ' + value
+        }
+        if (this.isInteractive || Slim.autoAttachInteractionEvents || this.getAttribute('interactive')) {
+            this.update()
         }
     }
 
@@ -501,6 +506,7 @@ class SlimRepeater extends Slim {
         this._captureBindings()
         for (let clone of this.clones) {
             clone[targetPropName] = clone[targetPropName]
+            clone._boundRepeaterParent = this._boundParent
             if (Slim.__prototypeDict[clone.localName] !== undefined || clone.isSlim) {
                 clone._boundParent = this._boundParent
             }
@@ -509,6 +515,7 @@ class SlimRepeater extends Slim {
             }
             Array.prototype.slice.call(clone.querySelectorAll('*')).forEach( element => {
                 element._boundParent = clone._boundParent
+                element._boundRepeaterParent = this._boundParent
                 element[targetPropName] = clone[targetPropName]
                 element.data_index = clone.data_index
                 element.data_source = clone.data_source
