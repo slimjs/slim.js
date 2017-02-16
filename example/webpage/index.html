@@ -6,17 +6,10 @@
     <title>Hello, slim.js</title>
     <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Nixie+One|Ubuntu+Mono" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script>
-        if (!(function() {return ('registerElement' in document
-                && 'import' in document.createElement('link')
-                && 'content' in document.createElement('template'))})()) {
-            let s = "<script type=\"text\/javascript\" " +
-                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
-                    " > <\/script> "
-            document.write(s)
-        }
-    </script>
     <script src="../../Slim.js"></script>
+    <script>
+        Slim.polyfill('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents-lite.min.js');
+    </script>
     <script src="slim-logo.js"></script>
     <style>
         body {

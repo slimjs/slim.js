@@ -3,26 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script>
-        var isChrome;
-        try {
-            isChrome = typeof window.chrome.webstore === 'object'
-        }
-        catch (err) {
-            isChrome = false;
-        }
-        if (!isChrome) {
-            let s = "<script type=\"text\/javascript\" " +
-                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
-                    " > <\/script> "
-            document.write(s)
-        }
-    </script>
     <script src="../../Slim.js"></script>
+    <script>
+        Slim.polyfill('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents-lite.min.js');
+    </script>
 </head>
 <body>
-
-<todo-list></todo-list>
 
 <style>
     todo-item {
@@ -55,7 +41,7 @@
     Slim.tag('todo-list', class extends Slim {
         get template() {
             return `<div>
-                        <input input="handleInput" type="text" #new_todo /><input type="button" click="addTodo" value="Add" #add_todo />
+                        <input type="text" #new_todo /><input type="button" click="addTodo" value="Add" #add_todo />
                     </div>
                     <div>
                         <ul>
@@ -65,11 +51,9 @@
                         </ul>
                     </div>
                     <div>
-                        <input type="button" value="Clear completed" #clear/>
+                        <input type="button" value="Clear completed" click="clearComplete"/>
                     </div>`
         }
-
-        handleInput(e) { console.log(e); }
 
         toggle(event) {
             event.currentTarget.todo.done = !event.currentTarget.todo.done;
@@ -80,10 +64,8 @@
             this.new_todo.value = '';
         }
 
-        onAfterRender() {
-            this.clear.onclick = () => {
-                this.todos = this.todos.filter( todo => { return !todo.done })
-            }
+        clearComplete() {
+            this.todos = this.todos.filter( todo => { return !todo.done })
         }
 
         onCreated() {
@@ -94,5 +76,7 @@
         }
     });
 </script>
+
+<todo-list></todo-list>
 </body>
 </html>
