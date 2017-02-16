@@ -55,7 +55,7 @@
     Slim.tag('todo-list', class extends Slim {
         get template() {
             return `<div>
-                        <input type="text" #new_todo /><input type="button" value="Add" #add_todo />
+                        <input input="handleInput" type="text" #new_todo /><input type="button" click="addTodo" value="Add" #add_todo />
                     </div>
                     <div>
                         <ul>
@@ -69,15 +69,18 @@
                     </div>`
         }
 
+        handleInput(e) { console.log(e); }
+
         toggle(event) {
             event.currentTarget.todo.done = !event.currentTarget.todo.done;
         }
 
+        addTodo() {
+            this.todos.push({text: this.new_todo.value});
+            this.new_todo.value = '';
+        }
+
         onAfterRender() {
-            this.add_todo.onclick = () => {
-                this.todos.push({text: this.new_todo.value});
-                this.new_todo.value = '';
-            }
             this.clear.onclick = () => {
                 this.todos = this.todos.filter( todo => { return !todo.done })
             }

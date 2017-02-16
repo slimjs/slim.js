@@ -17,6 +17,7 @@ class Slim extends HTMLElement {
     static get interactionEventNames() {
         return ['click','mouseover','mouseout','mousemove','mouseenter','mousedown','mouseup','dblclick','contextmenu','wheel',
             'mouseleave','select','pointerlockchange','pointerlockerror','focus','blur',
+            'input', 'error', 'invalid',
             'animationstart','animationend','animationiteration','reset','submit','resize','scroll',
             'keydown','keypress','keyup', 'change']
     }
@@ -129,7 +130,7 @@ class Slim extends HTMLElement {
         } else {
             throw "Unable to call attribute-bound method: " + fnName + ' on bound parent ' + this._boundParent.outerHTML + ' with value ' + value
         }
-        if (this.isInteractive || Slim.autoAttachInteractionEvents || this.getAttribute('interactive')) {
+        if (typeof this.update === 'function' && (this.isInteractive || Slim.autoAttachInteractionEvents || this.getAttribute('interactive'))) {
             this.update()
         }
     }
@@ -284,10 +285,14 @@ class Slim extends HTMLElement {
         this.onRemoved()
     }
 
-    initialize(forceNewVirtualDOM = false) {
+    _initInteractiveEvents() {
         if (!this.__eventsInitialized && (Slim.autoAttachInteractionEvents || this.isInteractive || this.hasAttribute('interactive'))) Slim.interactionEventNames.forEach(eventType => {
             this.addEventListener(eventType, e => { this.handleEvent(e) })
         })
+    }
+
+    initialize(forceNewVirtualDOM = false) {
+        this._initInteractiveEvents();
         this.__eventsInitialized = true;
         this._bindings = this._bindings || {}
         this._boundChildren = this._boundChildren || []
@@ -384,6 +389,12 @@ class Slim extends HTMLElement {
             if (slimID) this[slimID] = child
             let descriptors = []
             if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
+                if (!child.isSlim && Slim.interactionEventNames.indexOf(child.attributes[i].nodeName) >= 0) {
+                    child.isInteractive = true;
+                    child.addEventListener(child.attributes[i].nodeName, e => { child.handleEvent(e) })
+                    child.handleEvent = this.handleEvent.bind(child);
+                    child.callAttribute = this.callAttribute.bind(child);
+                }
                 let desc = Slim.__processAttribute(child.attributes[i], child)
                 if (desc) descriptors.push(desc)
                 child[Slim.__dashToCamel(child.attributes[i].nodeName)] = child.attributes[i].nodeValue

@@ -11,7 +11,7 @@
         }
 
         update() {
-            this.myOptions = this._boundParent[ this.getAttribute('options') ]
+            this.myOptions = this._boundParent[ this.getAttribute('options') ] || []
             this.render()
             this.my_select.onchange = e => {
                 e.value = this.my_select.value
