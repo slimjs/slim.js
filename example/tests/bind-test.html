@@ -19,6 +19,21 @@
 <body>
 
     <script>
+        Slim.registerCustomAttribute( (attr, child) => {
+            if (attr.nodeName === 'bg') {
+                return {
+                    type: 'C',
+                    executor: () => {
+                        child.style.backgroundColor = '#' + parseInt(64 * child.getAttribute('bg'), 16);
+                    },
+                    properties: ['bg'],
+                    target: child
+                }
+            }
+        });
+    </script>
+
+    <script>
         window.myCustomList = [
             {label: 1, value: '123'},
             {label: 2, value: '456'},
@@ -74,7 +89,7 @@
 
 
     <bind-parent>
-        <li slim-repeat="items"><span bind>[[data_index]]</span><bind-child a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
+        <li bg="[[data_index]]" slim-repeat="items"><span bind>[[data_index]]</span><bind-child a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
         <br/>
         <hr/>
         <tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>
