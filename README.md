@@ -1,103 +1,59 @@
+![hello, slim.js](https://raw.githubusercontent.com/eavichay/slim.js/master/example/webpage/slim2.png)
+
 # Hello, slim.js
 
-MVVM infrastructure for rapid development of native web components using markup and code-behind.
-Supports data-binding, repeaters, plugins.
+## Slim is an elegant library for web components
 
-## Custom components
-Usage:
-```
-Slim.tag('my-tag', class extends Slim {
-})
-```
+Slim.js is a lightning fast library for development of native web-components. No black magic.
+It uses javascript's inheritance mechanism to boost up HTML elements with superpowers. 
 
-## Component Lifecycle
-Native element's lifecycle are extended in slim to the following
-creation -> initialization -> *onBeforeCreated* -> binding -> *onCreated* -> *onBeforeRender* -> first render -> *onAfterRender* -> *update*
+### Is this another framework
+No! It's a slim code layer that adds superpowers to HTML elements using it's native class inheritance.
 
-### Data-Binding
-A property can be bound to an attribute, see example:
-```
-<my-custom-tag child-attribute="[[parentProperty]]"></my-custom-tag>
-<my-custom-tag child-attribute="[[someFunction(parentProperty)]]"></my-custom-tag>
-```
-slim injects a property getter/setter functions for *parentProperty* and updates automatically the child node on every update
+# Guide
+[Read the guide](/guide.md)
 
-### Content inclusion
-```
-Slim.tag('my-form, class extends Slim {
-    get template() {
-        return '<form>
-        <content></content>
-        <input type="submit" value="OK" /></form>
-    }
-})
-...
-<my-form><input type="text" placeholder="Enter your name" /></my-form>
-```
+# Component's Lifecycle
+The lifecycle containes the following abstract hooks
 
-### Interface / Lifecycle
-- get template() // return your HTML
-- onBeforeCreated() // before the binding happens
-- onCreated() // after the generation of the tree
-- onBeforeRender() // before the virtual DOM becomes real DOM
-- onAfterRender() // after you have a DOM
+- onBeforeCreated()
+- onCreated()
+- onBeforeRender()
+- onAfterRender()
+- onBeforeUpdate()
+- onAfterUpdate()
 
-### Methods
-- render(&lt;HTML&gt; | undefined) // empty will reset to your original template
-- update() // flushes update down the tree
+also attachment and detachment from the DOM tree invokes
 
-### Attributes
-##### bind
-Used to apply property-to-text binding on an element
+- onAdded()
+- onRemoved()
 
-Usage:
-```
-<div bind>[[myProperty]]</div>
-```
+native attributeChangedCallback is also supported.
 
-##### slim-id
-Creates the name as a reference directly in your component
+This is the component's full lifecycle:
 
-Usage:
-```
-<div slim-id="myContent" />
-...
-afterRender() {
-  this.myContent.textContent = 'Hello, slim.js'
-}
-```
+- element declared on the DOM
+- Initialization
+- onBeforeCreated()*
+- element creation + data binding
+- onCreated()*
+- onBeforeRender()*
+- element renders
+- render
+- onAfterRender()*
+- onBeforeUpdate()*
+- update()
+- onAfterUpdate()*
 
-##### slim-repeat
-Repeats and item from an array data source property in your element, and injects the result as "data" property in every cloned element
+\* empty methods that can be implemented when inheriting a slim element.
 
-Usage:
-```
-<div slim-repeat="items" bind>[[data.title]]</div>
-```
-Repeaters are also available for custom elements
-```
-<my-custom-tag slim-repeat="items"></my-custom-tag>
-```
-And in your custom tag you could implement
-```
-get template() {
-  return `<div bind>[[data.someProperty]]</div>`
-}
-```
-Repeaters support complex display trees, as all elements in the tree accept the data and the index
-```
-<li slim-repeat="items">
-    <div><span bind>[[data_index]]</span><my-custom-tag></my-custom-tag</div>
-</li>
-```
-In case you wish a different property injected than "data", use *slim-repeat-as* attribute. Example:
-```
-<li slim-repeat="items" slim-repeat-as="item">
-    <span bind>[[item.title]]</span>
-</li>
-```
-## Installation
-```
-npm install slim-js
-bower install slim.js
-```
+## Standards compilant
+- es6
+- no transpiling or compilation required
+
+## Tools free
+- add Slim.js to your project and your'e good to go
+
+## Examples
+- [Creating a reusable component](./docs/creating_a_reusable_component_example.md)
+- [Developer's Guide](./docs/guide.md)
