@@ -11,7 +11,7 @@ It uses javascript's inheritance mechanism to boost up HTML elements with superp
 No! It's a slim code layer that adds superpowers to HTML elements using it's native class inheritance.
 
 # Guide
-[Read the guide](/guide.md)
+[Read the guide](./docs/guide.md)
 
 # Component's Lifecycle
 The lifecycle containes the following abstract hooks
