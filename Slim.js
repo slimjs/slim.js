@@ -29,7 +29,7 @@ class Slim extends HTMLElement {
     }
 
     static plugin(phase, plugin) {
-        if (['create','beforeRender','beforeRemove','afterRender'].indexOf(phase) !== -1) {
+        if (['create','beforeRender','beforeRemove','afterRender'].indexOf(phase) === -1) {
             throw "Supported phase can be create, beforeRemove, beforeRender or afterRender only"
         }
         Slim.__plugins[phase].push(plugin)
