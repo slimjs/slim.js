@@ -35,6 +35,10 @@ class Slim extends HTMLElement {
         Slim.__plugins[phase].push(plugin)
     }
 
+    static registerCustomAttribute(fn) {
+        Slim.__customAttributeProcessors.push(fn);
+    }
+
     static __runPlugins(phase, element) {
         Slim.__plugins[phase].forEach( fn => {
             fn(element)
@@ -169,7 +173,11 @@ class Slim extends HTMLElement {
                     this._executeBindings()
                 })
                 let executor
-                if (descriptor.type === 'P') {
+                if (descriptor.type === 'C') {
+                    executor = () => {
+                        descriptor.executor()
+                    }
+                } else if (descriptor.type === 'P') {
                     executor = () => {
                         if (!descriptor.target.hasAttribute('slim-repeat')) {
                             let value = Slim.__lookup(source, prop).obj || Slim.__lookup(descriptor.target, prop).obj
@@ -215,6 +223,10 @@ class Slim extends HTMLElement {
             properties: [ attribute.nodeValue ],
             source: child._boundParent
         }
+    }
+
+    static __processAttributeCustom(attribute, child, customAttributeProcessor) {
+        return customAttributeProcessor(attribute, child)
     }
 
     static __processAttribute(attribute, child) {
@@ -406,6 +418,10 @@ class Slim extends HTMLElement {
                 }
                 let desc = Slim.__processAttribute(child.attributes[i], child)
                 if (desc) descriptors.push(desc)
+                Slim.__customAttributeProcessors.forEach( attrProcessor => {
+                    desc = Slim.__processAttributeCustom( child.attributes[i], child, attrProcessor );
+                    if (desc) descriptors.push(desc);
+                })
                 child[Slim.__dashToCamel(child.attributes[i].nodeName)] = child.attributes[i].nodeValue
                 if (child.attributes[i].nodeName.indexOf('#') == '0') {
                     let refName = child.attributes[i].nodeName.slice(1)
@@ -421,7 +437,7 @@ class Slim extends HTMLElement {
 
             descriptors.forEach(
                 descriptor => {
-                    if (descriptor.type === 'P' || descriptor.type === 'M') {
+                    if (descriptor.type === 'P' || descriptor.type === 'M' || descriptor.type === 'C') {
                         this.__bind(descriptor)
                     } else if (descriptor.type === 'I') {
                         Slim.__inject(descriptor)
@@ -460,6 +476,7 @@ class Slim extends HTMLElement {
 
 }
 
+Slim.__customAttributeProcessors = []
 Slim.__prototypeDict = {}
 Slim.__plugins = {
     'create': [],
