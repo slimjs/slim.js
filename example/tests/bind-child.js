@@ -1,7 +1,7 @@
 Slim.tag('bind-child', class extends Slim {
 
     get template() {
-        return `<div #myDiv bind>[[data.label]] Click for value [[updateCount]] / [[renderCount]]</div>`
+        return `<div #myDiv bind click="count">[[data.label]] Click for value [[updateCount]] / [[renderCount]]</div>`
     }
 
     onBeforeCreated() {
@@ -20,16 +20,17 @@ Slim.tag('bind-child', class extends Slim {
         super.render(tpl)
     }
 
+    count() {
+        this.customRender = !this.customRender;
+        if (this.customRender) {
+            this.render(`<div #mydiv prop="[[data.label]]" bind>[[data.label]] : [[data.value]] - [[updateCount]] / [[renderCount]]</div>`)
+        } else {
+            this.render()
+        }
+    }
+
     onAfterRender() {
         this.mydiv.style.color = 'red'
-        this.onclick = ()=>{
-            this.customRender = !this.customRender;
-            if (this.customRender) {
-                this.render(`<div #mydiv prop="[[data.label]]" bind>[[data.label]] : [[data.value]] - [[updateCount]] / [[renderCount]]</div>`)
-            } else {
-                this.render()
-            }
-        }
     }
 
 })
