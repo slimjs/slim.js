@@ -29,10 +29,10 @@ Our template will look like this
     }
 ```
 
-Using the *onBeforeUpdate* hook to set the values:
+Using the *onBeforeRender* hook to set the values:
 
 ```js
-    onBeforeUpdate() {
+    onBeforeRender() {
         this.myText = this.getAttribute('text');
         this.myIconClass = this.getAttribute('icon-class');
         this.style.color = this.getAttribute('text-color') || 'white';
