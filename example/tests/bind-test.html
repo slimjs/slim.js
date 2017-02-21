@@ -12,25 +12,26 @@
     <script src="bind-child.js"></script>
     <script src="treeList.js"></script>
     <script src="../../plugins/SlimDependencyInjection.js"></script>
-    <script src="../../components/event-bus.js"></script>
-    <script src="event-bus-e1.js"></script>
+    <!--<script src="../../components/event-bus.js"></script>-->
+    <!--<script src="event-bus-e1.js"></script>-->
 
 </head>
 <body>
 
     <script>
-        Slim.registerCustomAttribute( (attr, child) => {
-            if (attr.nodeName === 'bg') {
-                return {
-                    type: 'C',
-                    executor: () => {
-                        child.style.backgroundColor = '#' + parseInt(64 * child.getAttribute('bg'), 16);
-                    },
-                    properties: ['bg'],
-                    target: child
-                }
-            }
-        });
+//        Slim.registerCustomAttribute( (attr, child) => {
+//            if (attr.nodeName === 'bg') {
+//                return {
+//                    type: 'C',
+//                    executor: () => {
+//                        child.style.backgroundColor = '#' + parseInt(64 * child.getAttribute('bg'), 16);
+//                    },
+//                    properties: ['bg'],
+//                    source: child._boundParent,
+//                    target: child
+//                }
+//            }
+//        });
     </script>
 
     <script>
@@ -89,7 +90,7 @@
 
 
     <bind-parent>
-        <li bg="[[data_index]]" slim-repeat="items"><span bind>[[data_index]]</span><bind-child a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
+        <li slim-repeat="items"><span bind>[[data_index]]</span><bind-child bg="[[data_index]]" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
         <br/>
         <hr/>
         <tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>

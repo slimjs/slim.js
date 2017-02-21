@@ -3,30 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>slim.js - TodoExample</title>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.slim.js"></script>
+    <script src="../../Slim.js"></script>
     <script>
-        var isChrome;
-        try {
-            isChrome = typeof window.chrome.webstore === 'object'
-        }
-        catch (err) {
-            isChrome = false;
-        }
-        if (!isChrome) {
-            let s = "<script type=\"text\/javascript\" " +
-                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
-                    " > <\/script> "
-            document.write(s)
-        }
+    Slim.polyfill('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents-lite.min.js');
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.15.4/sinon.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Libre+Baskerville|Nixie+One|Ubuntu+Mono" rel="stylesheet">
 
-    <script src="../../Slim.js"></script>
     <link rel="import" href="../../framework/components/slick/s-button.html" />
-    <link rel="import" href="../../framework/components/slick/s-input.html" />
 
     <style>
 
@@ -137,8 +124,8 @@
             return `<div id="todo-container">
 <h1>slim.js Todo Example</h1>
 <div id="add-todo">
-    <s-input change="handleNewTodoKeyUp" select="handleNewTodoKeyUp"/>
-    <s-button auto-role="add-item" click="checkAndAddTodo" text="Add Todo" />
+    <input slim-id="newTodo" type="text"/>
+    <button auto-role="add-item" click="checkAndAddTodo">Add Todo</button>
     <!--<input type="button" slim-id="btnNewTodo" value="Add Todo" />-->
 </div>
 <hr/>
@@ -158,10 +145,6 @@
             ]
         }
 
-        handleNewTodoKeyUp(e) {
-                console.log(e)
-        }
-
         addTodo(value) {
             this.todos.push( new Todo(value) )
             this.newTodo.value = ''
@@ -173,17 +156,6 @@
             this.todos = this.todos.filter( todo => {
                 return todo.complete === false
             })
-        }
-
-        onCreated() {
-//            this.btnNewTodo.onclick = () => {
-//                this.checkAndAddTodo()
-//            }
-//            this.newTodo.onkeyup = (e) => {
-//                if (e.which === 13) {
-//                    this.checkAndAddTodo()
-//                }
-//            }
         }
 
         checkAndAddTodo() {
@@ -202,10 +174,10 @@
         })
 
         it('Should add a todo', function() {
-            document.querySelector('div#add-todo input').value = "New Todo"
-            document.querySelector('[auto-role="add-item"]').click()
-            chai.assert(document.querySelectorAll('todo-item').length === 3)
-            let newTodoItemElement = document.querySelectorAll('todo-item')[2].querySelector('span[complete]')
+            $('div#add-todo input')[0].value = "New Todo"
+            $('[auto-role="add-item"]').click()
+            chai.assert($('todo-item').length === 3)
+            let newTodoItemElement = $('todo-item')[2].find('span[complete]')
             chai.assert(newTodoItemElement !== null)
             chai.assert(newTodoItemElement.getAttribute('complete') === 'false')
         })
