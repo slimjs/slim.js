@@ -571,8 +571,8 @@ Slim.__initRepeater = function() {
     Slim.tag('slim-repeat', SlimRepeater)
 
     window.SlimRepeater = SlimRepeater
-    window.Slim = Slim
 }
+window.Slim = Slim
 ;(function() {
 
     const originals = {};
@@ -608,6 +608,5 @@ Slim.__initRepeater = function() {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports.Slim = Slim
-    module.exports.SlimRepeater = SlimRepeater
 }
 
