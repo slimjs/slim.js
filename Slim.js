@@ -1,10 +1,9 @@
-console.log('SlimJS v2.3.5')
+console.log('SlimJS v2.3.6')
 
 class Slim extends HTMLElement {
 
     static polyfill(url) {
         if (Slim.__isWCSupported) return;
-        let e = document.createElement('script');
         document.write('<script src="' + url + '"></script>');
     }
 
@@ -157,7 +156,8 @@ class Slim extends HTMLElement {
                 } else {
                     rootProp = prop
                 }
-                let source = descriptor.target._boundParent
+                let source = descriptor.target._boundParent || descriptor.parentNode
+                source._bindings = source._bindings || {}
                 source._bindings[rootProp] = source._bindings[rootProp] || {
                         value: source[rootProp],
                         executors: []
@@ -313,9 +313,9 @@ class Slim extends HTMLElement {
     }
 
     initialize(forceNewVirtualDOM = false) {
+        this._bindings = this._bindings || {}
         this._initInteractiveEvents();
         this.__eventsInitialized = true;
-        this._bindings = this._bindings || {}
         this._boundChildren = this._boundChildren || []
         this.alternateTemplate = this.alternateTemplate || null
         if (forceNewVirtualDOM) {
@@ -571,8 +571,8 @@ Slim.__initRepeater = function() {
     Slim.tag('slim-repeat', SlimRepeater)
 
     window.SlimRepeater = SlimRepeater
-    window.Slim = Slim
 }
+window.Slim = Slim
 ;(function() {
 
     const originals = {};
@@ -608,6 +608,5 @@ Slim.__initRepeater = function() {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports.Slim = Slim
-    module.exports.SlimRepeater = SlimRepeater
 }
 

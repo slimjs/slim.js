@@ -118,12 +118,11 @@
 
     Slim.tag('child-tag', class extends Slim {
         get template() {
-            return '<span bind>[[message]]</span>'
+            return '<span bind click="myClick">[[message]]</span>'
         }
-        onCreated() {
-            this.onclick = () => {
-                this.callAttribute('trigger', 'Hello, slim.js!');
-            }
+
+        myClick() {
+            this.callAttribute('trigger', 'Hello, slim.js!');
         }
     })
 </script>
