@@ -1,4 +1,4 @@
-console.log('SlimJS v2.3.7')
+console.log('SlimJS v2.3.8')
 
 class Slim extends HTMLElement {
 
@@ -101,11 +101,11 @@ class Slim extends HTMLElement {
     }
 
     find(selector) {
-        return this.querySelector(selector)
+        return this.querySelector(selector);
     }
 
     findAll(selector) {
-        return Array.prototype.slice.call(this.querySelectorAll(selector))
+        return Array.prototype.slice.call( this.querySelectorAll(selector) );
     }
 
     watch(prop, executor) {
@@ -170,7 +170,7 @@ class Slim extends HTMLElement {
                     if (descriptor.sourceText) {
                         descriptor.target.innerText = descriptor.sourceText
                     }
-                    this._executeBindings()
+                    this._executeBindings(prop)
                 })
                 let executor
                 if (descriptor.type === 'C') {
@@ -208,6 +208,7 @@ class Slim extends HTMLElement {
                         descriptor.executor(Slim.__lookup(source, prop).obj)
                     }
                 }
+                executor.descriptor = descriptor;
                 source._bindings[rootProp].executors.push( executor )
             }
         )
@@ -286,12 +287,12 @@ class Slim extends HTMLElement {
     }
 
     createdCallback(force = false) {
+        this.onBeforeCreated();
         this.initialize()
         if (this.isVirtual && !force) return
-        if (!this.__onCreatedComplete) this.onBeforeCreated()
         this._captureBindings()
         Slim.__runPlugins('create', this)
-        if (!this.__onCreatedComplete) this.onCreated()
+        this.onCreated()
         this.__onCreatedComplete = true
         this.onBeforeRender()
         Slim.__runPlugins('beforeRender', this)
@@ -362,22 +363,37 @@ class Slim extends HTMLElement {
         this.initialize(true)
         this.innerHTML = ''
         this._captureBindings()
-        Slim.__moveChildren( this._virtualDOM, this, true )
         this._executeBindings()
+        Slim.__moveChildren( this._virtualDOM, this, true )
         this.onAfterRender()
         Slim.__runPlugins('afterRender', this)
     }
 
 
-    _executeBindings() {
+    _executeBindings(prop) {
+        // reset bound texts
         this._boundChildren.forEach( child => {
             // this._boundChildren.forEach( child => {
             if (child.hasAttribute('bind') && child.sourceText !== undefined) {
                 child.innerText = child.sourceText
             }
         })
+
+        // execute specific binding or all
+        const properties = prop ? [ prop ] : Object.keys(this._bindings)
+        properties.forEach( property => {
+            this._bindings[property].executors.forEach( fn => {
+                if (fn.descriptor.type !== 'T') fn()
+            } )
+        })
+
+        // execute text bindings always
         Object.keys(this._bindings).forEach( property => {
-            this._bindings[property].executors.forEach( fn => { fn() } )
+            this._bindings[property].executors.forEach( fn => {
+                if (fn.descriptor.type === 'T') {
+                    fn();
+                }
+            })
         })
     }
 
@@ -516,6 +532,19 @@ Slim.__initRepeater = function() {
             this.sourceData.unregisterSlimRepeater(this)
         }
 
+        registerForRender() {
+            if (this.pendingRender) return;
+            this.pendingRender = true;
+                setTimeout( () => {
+                this.checkoutRender();
+            }, 0);
+        }
+
+        checkoutRender() {
+            this.pendingRender = false;
+            this.renderList();
+        }
+
         renderList() {
             let targetPropName = this.getAttribute('target-attr')
             if (!this.sourceNode) return
@@ -582,7 +611,7 @@ window.Slim = Slim
             let result = originals[method].apply(this, arguments)
             if (this.registeredSlimRepeaters) {
                 this.registeredSlimRepeaters.forEach( repeater => {
-                    repeater.renderList()
+                    repeater.registerForRender();
                 })
             }
             return result

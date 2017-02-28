@@ -3,23 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script>
-        window.isChrome = false;
-        try {
-            isChrome = typeof window.chrome.webstore === 'object'
-        }
-        catch (err) {
-            isChrome = false;
-        }
-        if (!isChrome) {
-            let s = "<script type=\"text\/javascript\" " +
-                    "src=\"https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents.min.js\"" +
-                    " > <\/script> "
-            document.write(s)
-        }
-    </script>
-
     <script src="../../Slim.js"></script>
+    <script>
+        Slim.polyfill('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.23/webcomponents-lite.min.js');
+    </script>
 </head>
 <body>
 </body>
