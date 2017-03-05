@@ -364,7 +364,7 @@ class Slim extends HTMLElement {
         this.innerHTML = ''
         this._captureBindings()
         this._executeBindings()
-        Slim.__moveChildren( this._virtualDOM, this, true )
+        Slim.__moveChildren( this._virtualDOM, this.rootElement, true )
         this.onAfterRender()
         Slim.__runPlugins('afterRender', this)
     }
