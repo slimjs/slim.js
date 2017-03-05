@@ -98,4 +98,4 @@ Slim.tag('my-custom-tag', class extends Slim {
 });
 ```
 
-## Read next: [Using \<content> tag](./using_content_tag.md)
+## Read next: [Using \<slim-content> tag](./using_content_tag.md)

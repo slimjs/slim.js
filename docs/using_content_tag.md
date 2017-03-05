@@ -1,7 +1,7 @@
-# Using \<content> tag
+# Using \<slim-content> tag
 
 A slim element can accept a DOM tree and wrap it with it's own template.
-To do so, it uses the \<content> tag inside it's template.
+To do so, it uses the \<slim-content> tag inside it's template.
 
 ### Example
 
@@ -9,7 +9,7 @@ To do so, it uses the \<content> tag inside it's template.
 Slim.tag('my-tag', class extends Slim {
     get template() {
         return `<h1>Title before</h1>
-                <content></content>
+                <slim-content></slim-content>
                 <p>This comes after</p>`;
     }
 })
@@ -33,7 +33,7 @@ thus data binding and interactivity works as if the content is declared inside t
 Slim.tag('my-tag', class extends Slim {
     get template() {
         return `<p>before</p>
-                <content></content>
+                <slim-content></slim-content>
                 <p>after</p>`;
     }
     

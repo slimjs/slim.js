@@ -8,7 +8,7 @@ Slim.tag('bind-parent', class extends Slim {
         <hr/>
         <li slim-repeat="items"><div>Div</div><span bind>Label [[data.label]]</span></li>
         <hr/>
-        <content></content>`
+        <slim-content></slim-content>`
     }
 
     testOnCancel() {

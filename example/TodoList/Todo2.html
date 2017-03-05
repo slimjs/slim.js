@@ -11,21 +11,22 @@
 <body>
 
 <style>
-    todo-item {
+    todo-list::shadow todo-item {
         cursor: pointer;
     }
 
-    todo-item .done {
+    todo-list::shadow todo-item::shadow span.done {
         text-decoration: line-through;
     }
 
-    todo-list ul {
+    todo-list::shadow ul {
         list-style-type: none;
     }
 </style>
 
 <script>
     Slim.tag('todo-item', class extends Slim {
+        get useShadow() { return true; }
         get template() {
             return `<span class="[[getDoneClass(todo)]]" bind>[[todo.text]]</span>`;
         }
@@ -39,6 +40,7 @@
     });
 
     Slim.tag('todo-list', class extends Slim {
+        get useShadow() { return true;}
         get template() {
             return `<div>
                         <input type="text" #new_todo /><input type="button" click="addTodo" value="Add" #add_todo />
