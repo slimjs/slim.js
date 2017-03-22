@@ -7,9 +7,15 @@ class Slim extends HTMLElement {
         document.write('<script src="' + url + '"></script>');
     }
 
-    static tag(tag, clazz) {
+    static tag(tag, clazzOrTemplate, clazz) {
+        if (clazz === undefined) {
+            clazz = clazzOrTemplate;
+        } else {
+            Slim.__templateDict[tag] = clazzOrTemplate;
+        }
         Slim.__prototypeDict[tag] = clazz;
-        document.registerElement(tag, clazz)
+        // window.customElements.define(tag, clazz);
+        document.registerElement(tag, clazz);
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -101,6 +107,11 @@ class Slim extends HTMLElement {
     //noinspection JSUnusedGlobalSymbols
     static __camelToDash(camel) {
         return camel.replace(/([A-Z])/g, '-$1').toLowerCase();
+    }
+
+    constructor() {
+        super();
+        this.createdCallback();
     }
 
     find(selector) {
@@ -294,10 +305,10 @@ class Slim extends HTMLElement {
         return this
     }
 
-    createdCallback(force = false) {
-        this.onBeforeCreated();
+    createdCallback() {
+        if (this.isVirtual) return;
         this.initialize();
-        if (this.isVirtual && !force) return;
+        this.onBeforeCreated();
         this._captureBindings();
         Slim.__runPlugins('create', this);
         this.onCreated();
@@ -324,9 +335,9 @@ class Slim extends HTMLElement {
 
     initialize(forceNewVirtualDOM = false) {
         this._bindings = this._bindings || {};
+        this._boundChildren = this._boundChildren || [];
         this._initInteractiveEvents();
         this.__eventsInitialized = true;
-        this._boundChildren = this._boundChildren || [];
         this.alternateTemplate = this.alternateTemplate || null;
         if (forceNewVirtualDOM) {
             this._virtualDOM = document.createElement('slim-root')
@@ -335,7 +346,9 @@ class Slim extends HTMLElement {
     }
 
     get isSlim() { return true }
-    get template() { return null }
+    get template() {
+        return (Slim.__templateDict[ this.nodeName.toLowerCase()]) || null;
+    }
     get isInteractive() { return false }
 
     handleEvent(e) {
@@ -344,6 +357,14 @@ class Slim extends HTMLElement {
         } else if (this.hasAttribute(e.type)) {
             this.callAttribute(e.type, e)
         }
+    }
+
+    connectedCallback() {
+        this.attachedCallback();
+    }
+
+    disconnectedCallback() {
+        this.detachedCallback();
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -504,6 +525,7 @@ class Slim extends HTMLElement {
 
 Slim.__customAttributeProcessors = [];
 Slim.__prototypeDict = {};
+Slim.__templateDict = {};
 Slim.__plugins = {
     'create': [],
     'beforeRender': [],
@@ -635,7 +657,13 @@ window.Slim = Slim
 
 
     Array.prototype.registerSlimRepeater = function(repeater) {
-        this.registeredSlimRepeaters = this.registeredSlimRepeaters || [];
+        if (this.registeredSlimRepeaters === undefined) {
+            Object.defineProperty(this, 'registeredSlimRepeaters', {
+                enumerable: false,
+                configurable: false,
+                value: []
+            });
+        }
 
         if (this.registeredSlimRepeaters.indexOf(repeater) < 0) {
             this.registeredSlimRepeaters.push(repeater)
