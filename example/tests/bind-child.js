@@ -24,7 +24,13 @@ Slim.tag('bind-child', class extends Slim {
         this.customRender = !this.customRender;
         if (this.customRender) {
             this.render(`<div #mydiv prop="[[data.label]]" bind click="count">[[data.label]] : [[data.value]] - [[updateCount]] / [[renderCount]]</div>`)
+            this.aProp = undefined;
+            const t = setTimeout( () => {
+                this.count();
+                clearTimeout(t);
+            }, 250 );
         } else {
+            this.aProp = true;
             this.render()
         }
     }

@@ -18,7 +18,12 @@ Slim.tag(
         alert('ok')
     }
 
+    testClick(e) {
+        console.log(e);
+    }
+
     onBeforeCreated() {
+        this.myUndefined = undefined;
         this.myTitle = "Binding Test"
         this.myProp = 0
         this.urProp = 1

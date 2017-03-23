@@ -265,6 +265,18 @@ class Slim extends HTMLElement {
         };
     }
 
+    static extract(target, expression) {
+        const rxInject = Slim.rxInject.exec(expression);
+        const rxProp = Slim.rxProp.exec(expression);
+        const rxMethod = Slim.rxMethod.exec(expression);
+
+        if (rxProp) {
+            return target[rxProp[1]]
+        } else if (rxMethod) {
+            return target[ rxMethod[1] ].apply( target, rxMethod[3].replace(' ','').split(',') );
+        }
+    }
+
     static __processAttribute(attribute, child) {
         if (attribute.nodeName === 'slim-repeat') {
             return Slim.__processRepeater(attribute, child)
@@ -274,9 +286,9 @@ class Slim extends HTMLElement {
             return Slim.__processCustomAttribute(attribute, child);
         }
 
-        const rxInject = /\{(.+[^(\((.+)\))])\}/.exec(attribute.nodeValue);
-        const rxProp = /\[\[(.+[^(\((.+)\))])\]\]/.exec(attribute.nodeValue);
-        const rxMethod = /\[\[(.+)(\((.+)\)){1}\]\]/.exec(attribute.nodeValue);
+        const rxInject = Slim.rxInject.exec(attribute.nodeValue);
+        const rxProp = Slim.rxProp.exec(attribute.nodeValue);
+        const rxMethod = Slim.rxMethod.exec(attribute.nodeValue);
 
         if (rxMethod) {
             return {
@@ -496,7 +508,8 @@ class Slim extends HTMLElement {
 
             descriptors = descriptors.sort( (a) => {
                 if (a.type === 'I') { return -1 }
-                else if (a.type === 'R') return 1;
+                else if (a.type === 'R') return 1
+                else if (a.type === 'C') return 2
                 return 0
             });
 
@@ -541,6 +554,9 @@ class Slim extends HTMLElement {
 
 }
 
+Slim.rxInject = /\{(.+[^(\((.+)\))])\}/
+Slim.rxProp = /\[\[(.+[^(\((.+)\))])\]\]/
+Slim.rxMethod = /\[\[(.+)(\((.+)\)){1}\]\]/
 Slim.__customAttributeProcessors = {};
 Slim.__prototypeDict = {};
 Slim.__templateDict = {};

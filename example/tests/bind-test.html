@@ -19,11 +19,17 @@
 <body>
 
     <script>
-        Slim.registerCustomAttribute("slim-console-log", (child, value) => {
-            if (!child.isSlim) return;
-            child.watch(value, (newValue) => {
-                console.log(newValue);
-            });
+        Slim.registerCustomAttribute("slim-show", (element, value) => {
+            if (!element.isSlim) {
+                const result = Slim.extract(element._boundParent, value);
+                console.log(element, value, result);
+                element.style.display = String(value) !== 'undefined' ? "initial" : "none";
+                return;
+            }
+            element.watch(value, (newValue) => {
+                element.style.display = String(newValue) !== 'undefined' ? "initial" : "none";
+                console.log(newValue, element.style.display);
+            })
         });
     </script>
 
@@ -83,12 +89,12 @@
 
 
     <bind-parent>
-        <li slim-repeat="items"><span bind>[[data_index]]</span><bind-child slim-console-log="aProp" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
+        <li slim-repeat="items"><span bind>[[data_index]]</span><bind-child interactive click="testClick" slim-show="aProp" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
         <br/>
         <hr/>
         <tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>
         <slim-confirm cancel="Cancel" confirm="OK" onconfirm="testOnConfirm" oncancel="testOnCancel">
-            <h3>Confirm reusable example</h3>
+            <h3 slim-show="[[urProp]]">Confirm reusable example</h3>
             <div>Are you sure?</div>
         </slim-confirm>
     </bind-parent>
