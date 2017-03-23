@@ -1,5 +1,3 @@
-console.log('SlimJS v2.3.9');
-
 class Slim extends HTMLElement {
 
     static polyfill(url) {
@@ -184,7 +182,7 @@ class Slim extends HTMLElement {
                 } else {
                     rootProp = prop
                 }
-                let source = descriptor.target._boundParent || descriptor.parentNode;
+                let source = descriptor.source || descriptor.target._boundParent || descriptor.parentNode;
                 source._bindings = source._bindings || {};
                 source._bindings[rootProp] = source._bindings[rootProp] || {
                         value: source[rootProp],

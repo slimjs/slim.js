@@ -19,22 +19,12 @@
 <body>
 
     <script>
-        Slim.registerCustomAttribute("bg", (child, value) => {
-            console.log(child, value, child[value]);
+        Slim.registerCustomAttribute("slim-console-log", (child, value) => {
+            if (!child.isSlim) return;
+            child.watch(value, (newValue) => {
+                console.log(newValue);
+            });
         });
-//        Slim.registerCustomAttribute( (attr, child) => {
-//            if (attr.nodeName === 'bg') {
-//                return {
-//                    type: 'C',
-//                    executor: () => {
-//                        child.style.backgroundColor = '#' + parseInt(64 * child.getAttribute('bg'), 16);
-//                    },
-//                    properties: ['bg'],
-//                    source: child._boundParent,
-//                    target: child
-//                }
-//            }
-//        });
     </script>
 
     <script>
@@ -93,7 +83,7 @@
 
 
     <bind-parent>
-        <li slim-repeat="items" bg="data"><span bind>[[data_index]]</span><bind-child a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
+        <li slim-repeat="items"><span bind>[[data_index]]</span><bind-child slim-console-log="aProp" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
         <br/>
         <hr/>
         <tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>
