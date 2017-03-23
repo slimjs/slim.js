@@ -1,7 +1,7 @@
 {
   "name": "slimjs",
   "main": "Slim.js",
-  "version": "2.3.8",
+  "version": "2.4.0",
   "ignore": [
     "example",
     "components",
