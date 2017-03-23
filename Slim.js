@@ -342,7 +342,10 @@ class Slim extends HTMLElement {
     }
 
     createdCallback() {
+        // __createdCallbackRunOnce is required for babel louzy transpiling
         if (this.isVirtual) return;
+        if (this.__createdCallbackRunOnce) return;
+        this.__createdCallbackRunOnce = true;
         this.initialize();
         this.onBeforeCreated();
         this._captureBindings();
@@ -435,6 +438,7 @@ class Slim extends HTMLElement {
 
 
     _executeBindings(prop) {
+        if (!this._bindings) return;
         // reset bound texts
         this._boundChildren.forEach( child => {
             // this._boundChildren.forEach( child => {
@@ -466,14 +470,16 @@ class Slim extends HTMLElement {
         let $tpl = this.alternateTemplate || this.template;
         if (!$tpl) {
             while (this.children.length) {
-                this._virtualDOM.appendChild( this.children[0] )
+                // TODO: find why this line is needed for babel!!!
+                self._virtualDOM = this._virtualDOM || document.createElement('slim-root')
+                self._virtualDOM.appendChild( this.children[0] )
             }
         } else if (typeof($tpl) === 'string') {
             this._virtualDOM.innerHTML = $tpl;
             let virtualContent = this._virtualDOM.querySelector('slim-content');
             if (virtualContent) {
-                while (this.children.length) {
-                    this.children[0]._boundParent = this.children[0]._boundParent || this;
+                while (self.children.length) {
+                    self.children[0]._boundParent = this.children[0]._boundParent || this;
                     virtualContent.appendChild( this.children[0] )
                 }
             }
@@ -483,7 +489,9 @@ class Slim extends HTMLElement {
         for (let child of allChildren) {
             child._sourceOuterHTML = child.outerHTML;
             child._boundParent = child._boundParent || this;
-            this._boundChildren.push(child);
+            self._boundChildren = this._boundChildren || [];
+            self._boundChildren.push(child);
+            self._boundChildren.push(child);
             if (child.getAttribute('slim-id')) {
                 child._boundParent[ Slim.__dashToCamel(child.getAttribute('slim-id')) ] = child
             }
