@@ -1,4 +1,4 @@
-console.log('SlimJS v2.3.8');
+console.log('SlimJS v2.3.9');
 
 class Slim extends HTMLElement {
 
@@ -42,14 +42,27 @@ class Slim extends HTMLElement {
     }
 
     //noinspection JSUnusedGlobalSymbols
-    static registerCustomAttribute(fn) {
-        Slim.__customAttributeProcessors.push(fn);
+    static registerCustomAttribute(attr, fn) {
+        Slim.__customAttributeProcessors[attr] = Slim.__customAttributeProcessors[attr] || [];
+        Slim.__customAttributeProcessors[attr].push(fn);
     }
 
     static __runPlugins(phase, element) {
         Slim.__plugins[phase].forEach( fn => {
             fn(element)
         })
+    }
+
+    static __moveChildrenBefore(source, target, activate) {
+        while (source.children.length) {
+            target.parentNode.insertBefore(source.children[0], target)
+        }
+        let children = Array.prototype.slice.call( target.querySelectorAll('*'));
+        for (let child of children) {
+            if (activate && child.isSlim) {
+                child.createdCallback()
+            }
+        }
     }
 
     static __moveChildren(source, target, activate) {
@@ -59,7 +72,7 @@ class Slim extends HTMLElement {
         let children = Array.prototype.slice.call( target.querySelectorAll('*'));
         for (let child of children) {
             if (activate && child.isSlim) {
-                child.createdCallback(true)
+                child.createdCallback()
             }
         }
     }
@@ -241,13 +254,26 @@ class Slim extends HTMLElement {
         }
     }
 
-    static __processAttributeCustom(attribute, child, customAttributeProcessor) {
-        return customAttributeProcessor(attribute, child)
+    static __processCustomAttribute(attribute, child) {
+        return {
+            type: "C",
+            target: child,
+            properties: [attribute.nodeValue],
+            executor: () => {
+                Slim.__customAttributeProcessors[attribute.nodeName].forEach( customAttrProcessor => {
+                    customAttrProcessor(child, attribute.nodeValue);
+                });
+            }
+        };
     }
 
     static __processAttribute(attribute, child) {
         if (attribute.nodeName === 'slim-repeat') {
             return Slim.__processRepeater(attribute, child)
+        }
+
+        if (Slim.__customAttributeProcessors[attribute.nodeName]) {
+            return Slim.__processCustomAttribute(attribute, child);
         }
 
         const rxInject = /\{(.+[^(\((.+)\))])\}/.exec(attribute.nodeValue);
@@ -333,15 +359,12 @@ class Slim extends HTMLElement {
         })
     }
 
-    initialize(forceNewVirtualDOM = false) {
+    initialize() {
         this._bindings = this._bindings || {};
         this._boundChildren = this._boundChildren || [];
         this._initInteractiveEvents();
         this.__eventsInitialized = true;
         this.alternateTemplate = this.alternateTemplate || null;
-        if (forceNewVirtualDOM) {
-            this._virtualDOM = document.createElement('slim-root')
-        }
         this._virtualDOM = this._virtualDOM || document.createElement('slim-root')
     }
 
@@ -391,7 +414,7 @@ class Slim extends HTMLElement {
         Slim.__runPlugins('beforeRender', this);
         this.onBeforeRender();
         this.alternateTemplate = template;
-        this.initialize(true);
+        this.initialize();
         this.rootElement.innerHTML = '';
         this._captureBindings();
         this._executeBindings();
@@ -429,6 +452,7 @@ class Slim extends HTMLElement {
     }
 
     _captureBindings() {
+        const self = this;
         let $tpl = this.alternateTemplate || this.template;
         if (!$tpl) {
             while (this.children.length) {
@@ -459,16 +483,12 @@ class Slim extends HTMLElement {
             if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
                 if (!child.isSlim && Slim.interactionEventNames.indexOf(child.attributes[i].nodeName) >= 0) {
                     child.isInteractive = true;
-                    child.addEventListener(child.attributes[i].nodeName, e => { child.handleEvent(e) });
-                    child.handleEvent = this.handleEvent.bind(child);
-                    child.callAttribute = this.callAttribute.bind(child);
+                    child.handleEvent = self.handleEvent.bind(child);
+                    child.callAttribute = self.callAttribute.bind(child);
+                    child.addEventListener(child.attributes[i].nodeName, child.handleEvent);
                 }
                 let desc = Slim.__processAttribute(child.attributes[i], child);
                 if (desc) descriptors.push(desc);
-                Slim.__customAttributeProcessors.forEach( attrProcessor => {
-                    desc = Slim.__processAttributeCustom( child.attributes[i], child, attrProcessor );
-                    if (desc) descriptors.push(desc);
-                });
                 child[Slim.__dashToCamel(child.attributes[i].nodeName)] = child.attributes[i].nodeValue;
                 if (child.attributes[i].nodeName.indexOf('#') == '0') {
                     let refName = child.attributes[i].nodeName.slice(1);
@@ -523,7 +543,7 @@ class Slim extends HTMLElement {
 
 }
 
-Slim.__customAttributeProcessors = [];
+Slim.__customAttributeProcessors = {};
 Slim.__prototypeDict = {};
 Slim.__templateDict = {};
 Slim.__plugins = {
@@ -560,10 +580,6 @@ Slim.__initRepeater = function() {
             }
         }
 
-        get isVirtual() {
-            return false
-        }
-
         onRemoved() {
             this.sourceData.unregisterSlimRepeater(this)
         }
@@ -571,7 +587,7 @@ Slim.__initRepeater = function() {
         registerForRender() {
             if (this.pendingRender) return;
             this.pendingRender = true;
-                setTimeout( () => {
+            setTimeout( () => {
                 this.checkoutRender();
             }, 0);
         }
@@ -584,9 +600,11 @@ Slim.__initRepeater = function() {
         renderList() {
             let targetPropName = this.getAttribute('target-attr');
             if (!this.sourceNode) return;
+            this.clones && this.clones.forEach( clone => {
+                clone.remove();
+            });
             this.clones = [];
             //noinspection JSUnusedGlobalSymbols
-            this.innerHTML = '';
 
             this.sourceData.registerSlimRepeater(this);
             this.sourceData.forEach( (dataItem, index) => {
@@ -628,7 +646,7 @@ Slim.__initRepeater = function() {
 
             this._executeBindings();
             if (this._isAdjacentRepeater) {
-                Slim.__moveChildren(this._virtualDOM, this.parentNode, true)
+                Slim.__moveChildrenBefore(this._virtualDOM, this, true)
             } else {
                 Slim.__moveChildren(this._virtualDOM, this, true)
             }

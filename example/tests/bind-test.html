@@ -19,6 +19,9 @@
 <body>
 
     <script>
+        Slim.registerCustomAttribute("bg", (child, value) => {
+            console.log(child, value, child[value]);
+        });
 //        Slim.registerCustomAttribute( (attr, child) => {
 //            if (attr.nodeName === 'bg') {
 //                return {
@@ -90,7 +93,7 @@
 
 
     <bind-parent>
-        <li slim-repeat="items"><span bind>[[data_index]]</span><bind-child bg="[[data_index]]" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
+        <li slim-repeat="items" bg="data"><span bind>[[data_index]]</span><bind-child a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
         <br/>
         <hr/>
         <tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>

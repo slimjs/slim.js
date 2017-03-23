@@ -1,15 +1,14 @@
-Slim.tag('bind-parent', class extends Slim {
-
-    get template() {
-        return `
+Slim.tag(
+    'bind-parent',
+    `
         <h1 bind>[[myTitle]]</h1>
         <div calc="[[calcMinus(myProp, urProp)]]"><span minus="[[calcMinus(myProp, urProp)]]" bind>[[wProp]]</div>
         <div slim-repeat="items" prop-repeat="[[data.value]]" bind>[[data.label]] >>> [[data.value]]</div>
         <hr/>
         <li slim-repeat="items"><div>Div</div><span bind>Label [[data.label]]</span></li>
         <hr/>
-        <slim-content></slim-content>`
-    }
+        <slim-content></slim-content>`,
+    class extends Slim {
 
     testOnCancel() {
         alert('cancel')
@@ -75,4 +74,4 @@ Slim.tag('bind-parent', class extends Slim {
         }, 500)
     }
 
-})
+});
