@@ -1,0 +1,42 @@
+<html>
+    <head>
+    </head>
+    <script src="../../Slim.js"></script>
+    <body>
+        <repeat-tester></repeat-tester>
+        <script>
+            Slim.tag('repeat-tester',
+            `
+            <ul>
+                <li slim-repeat="items" slim-repeat-as="item" active="[[isActive(item)]]"  bind click="handleItemSelect">[[item.label]]</li>
+            </ul>
+            `,
+            class extends Slim {
+                onBeforeCreated() {
+                    this.items = [
+                        {label: 'item 1', value: 1},
+                        {label: 'item 2', value: 2},
+                        {label: 'item 3', value: 3},
+                    ];
+
+                    this.current = this.items[0];
+
+                    setTimeout( () => {
+                        this.items.push( {label: 'item 4', value: 4});
+                    }, 1000);
+                }
+
+                isActive(item) {
+                    console.log(item);
+                    return item === this.current;
+                }
+
+                handleItemSelect(e) {
+                    this.current = e.target.item;
+                    console.log(this.current);
+                    this.update();
+                }
+            });
+        </script>
+    </body>
+</html>

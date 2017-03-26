@@ -206,7 +206,8 @@ class Slim extends HTMLElement {
                 } else if (descriptor.type === 'P') {
                     executor = () => {
                         if (!descriptor.target.hasAttribute('slim-repeat')) {
-                            let value = Slim.__lookup(source, prop).obj || Slim.__lookup(descriptor.target, prop).obj;
+                            let sourceRef = descriptor.target._boundRepeaterParent;
+                            let value = Slim.__lookup((sourceRef || source), prop).obj || Slim.__lookup(descriptor.target, prop).obj;
                             descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value;
                             descriptor.target.setAttribute( descriptor.attribute, value )
                         }
@@ -214,8 +215,9 @@ class Slim extends HTMLElement {
                 } else if (descriptor.type === 'M') {
                     executor = () => {
                         if (!descriptor.target.hasAttribute('slim-repeat')) {
-                            let value = source[ descriptor.method ].apply( source,
-                                descriptor.properties.map( prop => { return source[prop] }));
+                            let sourceRef = descriptor.target._boundRepeaterParent || source;
+                            let value = sourceRef[ descriptor.method ].apply( sourceRef,
+                                descriptor.properties.map( prop => { return (descriptor.target || sourceRef)[prop] }));
                             descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value;
                             descriptor.target.setAttribute( descriptor.attribute, value )
                         }
