@@ -217,7 +217,7 @@ class Slim extends HTMLElement {
                         if (!descriptor.target.hasAttribute('slim-repeat')) {
                             let sourceRef = descriptor.target._boundRepeaterParent || source;
                             let value = sourceRef[ descriptor.method ].apply( sourceRef,
-                                descriptor.properties.map( prop => { return (descriptor.target || sourceRef)[prop] }));
+                                descriptor.properties.map( prop => { return descriptor.target[prop] || sourceRef[prop] }));
                             descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value;
                             descriptor.target.setAttribute( descriptor.attribute, value )
                         }
@@ -661,10 +661,10 @@ Slim.__initRepeater = function() {
                 }
                 Array.prototype.slice.call(clone.querySelectorAll('*')).forEach( element => {
                     element._boundParent = clone._boundParent;
-                    element._boundRepeaterParent = this._boundParent;
+                    element._boundRepeaterParent = clone._boundRepeaterParent;
                     element[targetPropName] = clone[targetPropName];
                     element.data_index = clone.data_index;
-                    element.data_source = clone.data_source
+                    element.data_source = clone.data_source;
                 })
             }
 

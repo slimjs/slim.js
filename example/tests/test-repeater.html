@@ -2,13 +2,16 @@
     <head>
     </head>
     <script src="../../Slim.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js"></script>
     <body>
         <repeat-tester></repeat-tester>
         <script>
             Slim.tag('repeat-tester',
             `
             <ul>
-                <li slim-repeat="items" slim-repeat-as="item" active="[[isActive(item)]]"  bind click="handleItemSelect">[[item.label]]</li>
+                <li slim-repeat="items" slim-repeat-as="item" click="handleItemSelect">
+                    <span active="[[isActive(item)]]" bind>[[item.label]]</span>
+                </li>
             </ul>
             `,
             class extends Slim {
@@ -27,7 +30,6 @@
                 }
 
                 isActive(item) {
-                    console.log(item);
                     return item === this.current;
                 }
 

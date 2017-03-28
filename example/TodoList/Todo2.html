@@ -25,18 +25,18 @@
 </style>
 
 <script>
-    Slim.tag('todo-item', class extends Slim {
-        get useShadow() { return true; }
-        get template() {
-            return `<span class="[[getDoneClass(todo)]]" bind>[[todo.text]]</span>`;
-        }
+    Slim.tag('todo-item',
+        `<span class="[[getDoneClass(todo)]]" bind>[[todo.text]]</span>`,
 
-        get isInteractive() { return true;}
+        class extends Slim {
+            get useShadow() { return true; }
 
-        getDoneClass(todo) {
-            if (todo.done) return 'done'
-            return ''
-        }
+            get isInteractive() { return true;}
+
+            getDoneClass(todo) {
+                if (todo.done) return 'done'
+                return ''
+            }
     });
 
     Slim.tag('todo-list', class extends Slim {
@@ -47,8 +47,8 @@
                     </div>
                     <div>
                         <ul>
+                            <todo-item slim-repeat="todos" slim-repeat-as="todo" click="toggle"></todo-item>
                             <li slim-repeat="todos" slim-repeat-as="todo">
-                                <todo-item click="toggle"></todo-item>
                             </li>
                         </ul>
                     </div>
