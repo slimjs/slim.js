@@ -247,7 +247,7 @@ class Slim extends HTMLElement {
             type: 'R',
             target: child,
             targetAttribute: child.getAttribute('slim-repeat-as') ? child.getAttribute('slim-repeat-as') : 'data',
-            repeatAdjacent: child.hasAttribute('slim-repeat-adjacent'),
+            repeatAdjacent: child.hasAttribute('slim-repeat-adjacent') || child.localName === 'option',
             attribute: attribute.nodeName,
             properties: [ attribute.nodeValue ],
             source: child._boundParent

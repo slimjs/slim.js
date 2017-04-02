@@ -8,6 +8,9 @@
         <script>
             Slim.tag('repeat-tester',
             `
+            <select>
+                <option slim-repeat="items" value="[[data.value]]" bind>[[data.label]]</option>
+            </select>
             <ul>
                 <li slim-repeat="items" slim-repeat-as="item" click="handleItemSelect">
                     <span active="[[isActive(item)]]" bind>[[item.label]]</span>
@@ -16,6 +19,7 @@
             `,
             class extends Slim {
                 onBeforeCreated() {
+                    window.unit = this;
                     this.items = [
                         {label: 'item 1', value: 1},
                         {label: 'item 2', value: 2},
