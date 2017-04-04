@@ -196,7 +196,10 @@ class Slim extends HTMLElement {
                     if (descriptor.sourceText) {
                         descriptor.target.innerText = descriptor.sourceText
                     }
-                    this._executeBindings(prop)
+                    this._executeBindings(prop);
+                    if (typeof this[prop + 'Changed'] === 'function') {
+                        this[prop + 'Changed'](x);
+                    }
                 });
                 let executor;
                 if (descriptor.type === 'C') {

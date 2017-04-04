@@ -2,14 +2,13 @@
     <head>
     </head>
     <script src="../../Slim.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js"></script>
     <body>
         <repeat-tester></repeat-tester>
         <script>
             Slim.tag('repeat-tester',
             `
-            <select>
-                <option slim-repeat="items" value="[[data.value]]" bind>[[data.label]]</option>
+            <select change="handleChange">
+                <option slim-repeat="items" slim-repeat-as="item" value="[[item.value]]" bind>[[item.label]]</option>
             </select>
             <ul>
                 <li slim-repeat="items" slim-repeat-as="item" click="handleItemSelect">
@@ -31,6 +30,10 @@
                     setTimeout( () => {
                         this.items.push( {label: 'item 4', value: 4});
                     }, 1000);
+                }
+
+                handleChange(e) {
+                    console.log(e.target.selectedOptions[0].item);
                 }
 
                 isActive(item) {
