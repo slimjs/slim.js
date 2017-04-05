@@ -4,6 +4,7 @@
   "description": "Superpower Web Components",
   "main": "Slim.js",
   "scripts": {
+    "prepublish": "uglifyjs Slim.js -o Slim.min.js",
     "start": "uglifyjs Slim.js -o ./bin/Slim.min.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
