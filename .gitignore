@@ -10,6 +10,8 @@ pids
 
 # Binary
 .bin
+bin
+reports
 
 Slim.min.js
 

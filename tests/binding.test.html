@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="../Slim.js"></script>
+    <title></title>
+</head>
+<body>
+    <test-binding></test-binding>
+
+    <script>
+        Slim.tag('test-binding',
+        `<h1 bind click="changeName">Hello, [[myName]]</h1>`,
+        class extends Slim {
+            onCreated() {
+                this.myName = "eavichay";
+            }
+
+            changeName() {
+                this.myName = 'slim.js';
+            }
+        });
+    </script>
+</body>
+</html>
