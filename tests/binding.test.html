@@ -10,10 +10,18 @@
 
     <script>
         Slim.tag('test-binding',
-        `<h1 bind click="changeName">Hello, [[myName]]</h1>`,
+        `
+        <h1 click="changeName" bind>Hello, [[myName]]</h1>
+        <div id="check-prop" attr="[[myName]]">Test Div</div>
+        <div id="check-method" attr="[[rev(myName)]]">Test Div</div>
+        `,
         class extends Slim {
-            onCreated() {
+            onBeforeCreated() {
                 this.myName = "eavichay";
+            }
+
+            rev(what) {
+                return what.split('').reverse().join('');
             }
 
             changeName() {
