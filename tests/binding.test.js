@@ -1,10 +1,12 @@
 module.exports = {
-    beforeEach: function(browser) {
+    beforeEach: function(browser, done) {
         browser.deleteCookies().url('http://localhost:8000/tests/binding.test.html');
+        global.staticServer.start(done);
     },
 
     afterEach: function(browser, done) {
         browser.deleteCookies().end(done);
+        global.staticServer.stop();
     },
 
     binding: function(browser) {

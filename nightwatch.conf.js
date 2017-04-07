@@ -1,8 +1,11 @@
-global.targetServer = process.env.targetServer || 'http://localhost:9000';
-global.user = process.env.user || 'admin';
-global.password = process.env.password || 'e8admin';
-global.isPhysical = !!process.env.physical ;
-
+global.targetServer = process.env.targetServer || 'http://localhost:8000';
+const StaticServer = require('static-server');
+global.staticServer = new StaticServer({
+    rootPath: '.',
+    port: 8000,
+    host: '127.0.0.1',
+    cors: '*'
+});
 
 
 global.generateHASH = function() {
@@ -20,7 +23,6 @@ global.testHash = global.generateHASH();
 var seleniumJar = require('selenium-server-standalone-jar');
 
 module.exports = {
-  "src_folders" : ['scenarios'],
   "output_folder" : "reports",
   "custom_commands_path" : "",
   "custom_assertions_path" : "",
@@ -55,7 +57,8 @@ module.exports = {
         "desiredCapabilities": {
           "browserName": "chrome",
           "javascriptEnabled": true,
-          "acceptSslCerts": true
+          "acceptSslCerts": true,
+          "headless": true
         }
     },
     "dev": {

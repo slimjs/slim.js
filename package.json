@@ -7,7 +7,8 @@
     "prepublish": "uglifyjs Slim.js -o Slim.min.js",
     "start": "uglifyjs Slim.js -o ./bin/Slim.min.js",
     "pretest": "node prepare-test.js",
-    "test": "./node_modules/nightwatch/bin/nightwatch -- tests"
+    "test": "./node_modules/nightwatch/bin/nightwatch -- tests",
+    "server": "python -m SimpleHTTPServer 8000"
   },
   "repository": {
     "type": "git",
@@ -25,10 +26,11 @@
     "binding"
   ],
   "devDependencies": {
-    "uglify-js-harmony": "^2.6.2",
     "nightwatch": "0.9.8",
     "phantomjs-prebuilt": "^2.1.13",
     "selenium-download": "^2.0.7",
-    "selenium-server-standalone-jar": "^3.0.1"
+    "selenium-server-standalone-jar": "^3.0.1",
+    "static-server": "^2.0.4",
+    "uglify-js-harmony": "^2.6.2"
   }
 }
