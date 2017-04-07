@@ -85,6 +85,9 @@ module.exports = {
     "chrome": {
       "desiredCapabilities": {
         "browserName": "chrome",
+        "chromeOptions" : {
+          "args" : ["--headless"]
+        },
         "javascriptEnabled": true // set to false to test progressive enhancement
       }
     }
