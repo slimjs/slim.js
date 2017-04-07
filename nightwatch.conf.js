@@ -55,7 +55,7 @@ module.exports = {
           "waitForConditionTimeout": 25000,
         },
         "desiredCapabilities": {
-          "browserName": "chrome",
+          "browserName": "phantomjs",
           "javascriptEnabled": true,
           "acceptSslCerts": true,
           "headless": true
