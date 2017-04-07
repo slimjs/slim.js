@@ -3,10 +3,10 @@ before_install:
  - export DISPLAY=:99.0
  - sh -e /etc/init.d/xvfb start
  - sudo apt-get update
- - sudo apt-get install -y libappindicator1 fonts-liberation libfontconfig1 libstdc++6 lsb-base
- - sudo apt-get upgrade -y fonts-liberation libfontconfig1 libstdc++6 lsb-base
- - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
- - sudo dpkg -i -f google-chrome*.deb
+# - sudo apt-get install -y libappindicator1 fonts-liberation libfontconfig1 libstdc++6 lsb-base
+# - sudo apt-get upgrade -y -f fonts-liberation libfontconfig1 libstdc++6 lsb-base
+# - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+# - sudo dpkg -i -f -y google-chrome*.deb
 language: node_js
 node_js:
   - "6"
