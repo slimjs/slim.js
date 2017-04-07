@@ -15,6 +15,7 @@
         `
         <ul>
             <li slim-repeat="items" bind>[[data.label]]</li>
+            <repeater-child slim-repeat="items" slim-repeat-as="item"></repeater-child>
         </ul>
         `,
 
@@ -22,16 +23,18 @@
             onBeforeCreated() {
                 window.unit = this;
                 this.items = [
-                    { label: "item 0" },
-                    { label: "item 1" },
-                    { label: "item 2" }
+                    { label: "item 0", text: "text 0" },
+                    { label: "item 1", text: "text 1" },
+                    { label: "item 2", text: "text 2" }
                 ];
             }
 
             addOne() {
-                this.items.push( { label: "item " + this.items.length });
+                this.items.push( { label: "item " + this.items.length, text: "text 3" });
             }
-        })
+        });
+
+        Slim.tag('repeater-child', '<span prop="[[item.label]] "bind>[[item.text]]</span>', class extends Slim {});
     </script>
 </body>
 </html>
