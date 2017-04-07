@@ -6,8 +6,7 @@ before_install:
  - sudo apt-get install -y libappindicator1 fonts-liberation libfontconfig1 libstdc++6 lsb-base
  - sudo apt-get upgrade -y libappindicator1 fonts-liberation libfontconfig1 libstdc++6 lsb-base
  - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
- - sudo dpkg -i google-chrome*.deb
+ - sudo dpkg -i -f google-chrome*.deb
 language: node_js
 node_js:
-  - "iojs"
   - "6"
