@@ -1,5 +1,6 @@
 ![hello, slim.js](https://raw.githubusercontent.com/eavichay/slim.js/master/example/webpage/slim2.png)
 
+[![Build Status](https://semaphoreci.com/api/v1/eavichay/slim-js/branches/master/badge.svg)](https://semaphoreci.com/eavichay/slim-js)
 # Hello, slim.js
 
 ## Slim is an elegant library for web components
