@@ -10,7 +10,9 @@ module.exports = {
     },
 
     binding: function(browser) {
-        browser.waitForElementVisible('h1');
+        browser.waitForElementPresent('body');
+        browser.waitForElementPresent('test-binding');
+        browser.waitForElementPresent('h1');
         browser.assert.containsText('h1', 'Hello, eavichay');
         browser.assert.attributeEquals('#check-prop', 'attr', 'eavichay');
         browser.assert.attributeEquals('#check-method', 'attr', 'yahcivae');
