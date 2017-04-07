@@ -4,7 +4,7 @@
   "description": "Superpower Web Components",
   "main": "Slim.min.js",
   "scripts": {
-    "prepublish": "npm test && uglifyjs Slim.js -o Slim.min.js",
+    "prepublish": "uglifyjs Slim.js -o Slim.min.js",
     "start": "uglifyjs Slim.js -o ./bin/Slim.min.js",
     "pretest": "node prepare-test.js",
     "test": "./node_modules/nightwatch/bin/nightwatch -- tests",
