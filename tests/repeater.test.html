@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../Slim.js"></script>
+</head>
+<body>
+    <repeater-test>
+    </repeater-test>
+
+    <script>
+        Slim.tag(`repeater-test`,
+
+        `
+        <ul>
+            <li slim-repeat="items" bind>[[data.label]]</li>
+        </ul>
+        `,
+
+        class extends Slim {
+            onBeforeCreated() {
+                window.unit = this;
+                this.items = [
+                    { label: "item 0" },
+                    { label: "item 1" },
+                    { label: "item 2" }
+                ];
+            }
+
+            addOne() {
+                this.items.push( { label: "item " + this.items.length });
+            }
+        })
+    </script>
+</body>
+</html>
