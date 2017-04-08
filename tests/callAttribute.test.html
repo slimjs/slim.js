@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../Slim.js"></script>
+</head>
+<body>
+    <parent-node>
+    </parent-node>
+
+    <script>
+        Slim.tag('parent-node',
+        `
+        <div bind>[[myMessage]]</div>
+        <child-node delegate="onDelegate"></child-node>
+        `,
+        class extends Slim {
+            onBeforeCreated() {
+                this.myMessage = "Waiting";
+            }
+            onDelegate(newMessage) {
+                this.myMessage = newMessage;
+            }
+        });
+
+        Slim.tag('child-node',
+        '',
+        class extends Slim {
+            onBeforeCreated() {
+                window.unit = this;
+            }
+            doIt(message) {
+                this.callAttribute('delegate', message);
+            }
+        });
+    </script>
+</body>
+</html>
