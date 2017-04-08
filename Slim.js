@@ -1,10 +1,30 @@
 class Slim extends HTMLElement {
 
+    /**
+     * Auto-detect if the browser supports web-components. If it does not,
+     * it will add a script tag with the required url.
+     * Best practice to call polyfill in <head> section of the HTML
+     * @example
+     *      <head>
+     *          <script src="./path/to/slim/Slim.min.js></script>
+     *          <script>
+     *              Slim.polyfill('./path/to/web-components-polyfill.js');
+     *          </script>
+     *      </head>
+     * @param url
+     */
     static polyfill(url) {
         if (Slim.__isWCSupported) return;
         document.write('<script src="' + url + '"></script>');
     }
 
+    /**
+     * Declares a slim component
+     *
+     * @param {String} tag html tag name
+     * @param {String|class|function} clazzOrTemplate the template string or the class itself
+     * @param {class|function} clazz if not given as second argument, mandatory after the template
+     */
     static tag(tag, clazzOrTemplate, clazz) {
         if (clazz === undefined) {
             clazz = clazzOrTemplate;
@@ -17,6 +37,11 @@ class Slim extends HTMLElement {
     }
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     *
+     * @param {class|function} clazz returns the tag declared for a given class or constructor
+     * @returns {string}
+     */
     static getTag(clazz) {
         for (let tag in Slim.__prototypeDict) {
             if (Slim.__prototypeDict[tag] === clazz)
@@ -24,6 +49,10 @@ class Slim extends HTMLElement {
         }
     }
 
+    /**
+     * Supported HTML events built-in on slim components
+     * @returns {Array<String>}
+     */
     static get interactionEventNames() {
         return ['click','mouseover','mouseout','mousemove','mouseenter','mousedown','mouseup','dblclick','contextmenu','wheel',
             'mouseleave','select','pointerlockchange','pointerlockerror','focus','blur',
@@ -32,6 +61,12 @@ class Slim extends HTMLElement {
             'keydown','keypress','keyup', 'change']
     }
 
+    /**
+     * Aspect oriented functions to handle lifecycle phases of elements. The plugin function should gets the element as an argument.
+     * This is used to extend elements' capabilities or data injections across the application
+     * @param {String} phase
+     * @param {function} plugin
+     */
     static plugin(phase, plugin) {
         if (['create','beforeRender','beforeRemove','afterRender'].indexOf(phase) === -1) {
             throw "Supported phase can be create, beforeRemove, beforeRender or afterRender only"
@@ -40,17 +75,34 @@ class Slim extends HTMLElement {
     }
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * This is used to extend Slim. All custom attributes handlers would recieve the function and the value of the attribute when relevant.
+     * @param {String} attr attribute name
+     * @param {function} fn
+     */
     static registerCustomAttribute(attr, fn) {
         Slim.__customAttributeProcessors[attr] = Slim.__customAttributeProcessors[attr] || [];
         Slim.__customAttributeProcessors[attr].push(fn);
     }
 
+    /**
+     * @param phase
+     * @param element
+     * @private
+     */
     static __runPlugins(phase, element) {
         Slim.__plugins[phase].forEach( fn => {
             fn(element)
         })
     }
 
+    /**
+     *
+     * @param source
+     * @param target
+     * @param activate
+     * @private
+     */
     static __moveChildrenBefore(source, target, activate) {
         while (source.children.length) {
             target.parentNode.insertBefore(source.children[0], target)
@@ -63,6 +115,13 @@ class Slim extends HTMLElement {
         }
     }
 
+    /**
+     *
+     * @param source
+     * @param target
+     * @param activate
+     * @private
+     */
     static __moveChildren(source, target, activate) {
         while (source.children.length) {
             target.appendChild(source.children[0])
@@ -75,6 +134,13 @@ class Slim extends HTMLElement {
         }
     }
 
+    /**
+     *
+     * @param obj
+     * @param desc
+     * @returns {{source: *, prop: *, obj: *}}
+     * @private
+     */
     static __lookup(obj, desc) {
         let arr = desc.split(".");
         let prop = arr[0];
@@ -84,6 +150,11 @@ class Slim extends HTMLElement {
         return {source: desc, prop:prop, obj:obj};
     }
 
+    /**
+     *
+     * @param descriptor
+     * @private
+     */
     static __createRepeater(descriptor) {
         if (Slim.__prototypeDict['slim-repeat'] === undefined) {
             Slim.__initRepeater();
@@ -111,11 +182,23 @@ class Slim extends HTMLElement {
         descriptor.repeater = repeater
     }
 
+    /**
+     *
+     * @param dash
+     * @returns {XML|void|string|*}
+     * @private
+     */
     static __dashToCamel(dash) {
         return dash.indexOf('-') < 0 ? dash : dash.replace(/-[a-z]/g, m => {return m[1].toUpperCase()})
     }
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     *
+     * @param camel
+     * @returns {string}
+     * @private
+     */
     static __camelToDash(camel) {
         return camel.replace(/([A-Z])/g, '-$1').toLowerCase();
     }
@@ -147,6 +230,12 @@ class Slim extends HTMLElement {
         this.__bind(descriptor)
     }
 
+    /**
+     * Function delegation in the DOM chain is supported by this function. All slim components are capable of triggering
+     * delegated methods using callAttribute and send any payload as they define in their API.
+     * @param {String} attributeName
+     * @param {any} value
+     */
     callAttribute(attributeName, value) {
         if (!this._boundParent) {
             throw 'Unable to call attribute-bound method when no bound parent available';
@@ -173,6 +262,11 @@ class Slim extends HTMLElement {
         }
     }
 
+    /**
+     *
+     * @param descriptor
+     * @private
+     */
     __bind(descriptor) {
         descriptor.properties.forEach(
             prop => {
@@ -245,6 +339,13 @@ class Slim extends HTMLElement {
         )
     }
 
+    /**
+     *
+     * @param attribute
+     * @param child
+     * @returns {{type: string, target: *, targetAttribute: *, repeatAdjacent: boolean, attribute: string, properties: [*], source: (*|Slim)}}
+     * @private
+     */
     static __processRepeater(attribute, child) {
         return {
             type: 'R',
@@ -257,6 +358,13 @@ class Slim extends HTMLElement {
         }
     }
 
+    /**
+     *
+     * @param attribute
+     * @param child
+     * @returns {{type: string, target: *, properties: [*], executor: (function())}}
+     * @private
+     */
     static __processCustomAttribute(attribute, child) {
         return {
             type: "C",
@@ -270,6 +378,12 @@ class Slim extends HTMLElement {
         };
     }
 
+    /**
+     * Extracts a value by using dot-notation from a target
+     * @param target
+     * @param expression
+     * @returns {*}
+     */
     static extract(target, expression) {
         const rxInject = Slim.rxInject.exec(expression);
         const rxProp = Slim.rxProp.exec(expression);
@@ -282,6 +396,13 @@ class Slim extends HTMLElement {
         }
     }
 
+    /**
+     *
+     * @param attribute
+     * @param child
+     * @returns {*}
+     * @private
+     */
     static __processAttribute(attribute, child) {
         if (attribute.nodeName === 'slim-repeat') {
             return Slim.__processRepeater(attribute, child)
@@ -320,6 +441,10 @@ class Slim extends HTMLElement {
         }
     }
 
+    /**
+     * Checks if the element is actually placed on the DOM or is a template element only
+     * @returns {boolean}
+     */
     get isVirtual() {
         let node = this;
         while (node) {
@@ -334,10 +459,18 @@ class Slim extends HTMLElement {
         return true
     }
 
+    /**
+     * By default, Slim components does not use shadow dom. Override and return true if you wish to use shadow dom.
+     * @returns {boolean}
+     */
     get useShadow() {
         return false;
     }
 
+    /**
+     * Returns the element or it's shadow root, depends on the result from useShadow()
+     * @returns {*}
+     */
     get rootElement() {
         if (this.useShadow) {
             this.__shadowRoot = this.__shadowRoot || this.createShadowRoot();
@@ -346,6 +479,9 @@ class Slim extends HTMLElement {
         return this
     }
 
+    /**
+     * Part of the standard web-component lifecycle. Overriding it is not recommended.
+     */
     createdCallback() {
         // __createdCallbackRunOnce is required for babel louzy transpiling
         if (this.isVirtual) return;
@@ -366,17 +502,27 @@ class Slim extends HTMLElement {
     }
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * Part of the standard web-component lifecycle. Overriding it is not recommended.
+     */
     detachedCallback() {
         Slim.__runPlugins('beforeRemove', this);
         this.onRemoved()
     }
 
+    /**
+     *
+     * @private
+     */
     _initInteractiveEvents() {
         if (!this.__eventsInitialized && (Slim.autoAttachInteractionEvents || this.isInteractive || this.hasAttribute('interactive'))) Slim.interactionEventNames.forEach(eventType => {
             this.addEventListener(eventType, e => { this.handleEvent(e) })
         })
     }
 
+    /**
+     * Part of the non-standard slim web-component's lifecycle. Overriding it is not recommended.
+     */
     initialize() {
         this._bindings = this._bindings || {};
         this._boundChildren = this._boundChildren || [];
@@ -386,12 +532,30 @@ class Slim extends HTMLElement {
         this._virtualDOM = this._virtualDOM || document.createElement('slim-root')
     }
 
+    /**
+     * Simple test if an HTML element is a Slim elememnt.
+     * @returns {boolean}
+     */
     get isSlim() { return true }
+
+    /**
+     * Override and provide a template, if not given in the tag creation process.
+     * @returns {*|null}
+     */
     get template() {
         return (Slim.__templateDict[ this.nodeName.toLowerCase()]) || null;
     }
+
+    /**
+     * By default, interactive events are registered only if returns true, or directly requested for.
+     * @returns {boolean}
+     */
     get isInteractive() { return false }
 
+    /**
+     * Handles interactive events, overriding this is not recommended.
+     * @param e
+     */
     handleEvent(e) {
         if (this.hasAttribute('on' + e.type)) {
             this.callAttribute('on' + e.type, e)
@@ -400,15 +564,24 @@ class Slim extends HTMLElement {
         }
     }
 
+    /**
+     * Part of the standard web-component lifecycle. Overriding it is not recommended.
+     */
     connectedCallback() {
         this.attachedCallback();
     }
 
+    /**
+     * Part of the standard web-component lifecycle. Overriding it is not recommended.
+     */
     disconnectedCallback() {
         this.detachedCallback();
     }
 
     //noinspection JSUnusedGlobalSymbols
+    /**
+     * Part of the standard web-component lifecycle. Overriding it is not recommended.
+     */
     attachedCallback() {
         this.onAdded();
     }
@@ -422,12 +595,18 @@ class Slim extends HTMLElement {
     onBeforeUpdate() { /* abstract */ }
     onAfterUpdate() { /* abstract */ }
 
+    /**
+     * Part of Slim's lifecycle, overriding is not recommended without calling super.update()
+     */
     update() {
         this.onBeforeUpdate();
         this._executeBindings();
         this.onAfterUpdate()
     }
 
+    /**
+     * Part of Slim's lifecycle, overriding is not recommended without calling super.render()
+     */
     render(template) {
         Slim.__runPlugins('beforeRender', this);
         this.onBeforeRender();
@@ -441,7 +620,11 @@ class Slim extends HTMLElement {
         Slim.__runPlugins('afterRender', this)
     }
 
-
+    /**
+     *
+     * @param prop
+     * @private
+     */
     _executeBindings(prop) {
         if (!this._bindings) return;
         // reset bound texts
@@ -470,6 +653,10 @@ class Slim extends HTMLElement {
         })
     }
 
+    /**
+     *
+     * @private
+     */
     _captureBindings() {
         const self = this;
         let $tpl = this.alternateTemplate || this.template;
@@ -591,6 +778,10 @@ catch (err) {
     Slim.__isWCSupported = false
 }
 
+/**
+ *
+ * @private
+ */
 Slim.__initRepeater = function() {
     class SlimRepeater extends Slim {
         get useShadow() {
@@ -684,6 +875,8 @@ Slim.__initRepeater = function() {
     window.SlimRepeater = SlimRepeater
 };
 window.Slim = Slim
+
+// monkey punching array to be observable by slim repeaters
 ;(function() {
 
     const originals = {};
