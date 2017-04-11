@@ -452,7 +452,7 @@ class Slim extends HTMLElement {
             if (!node) {
                 return true
             }
-            if (node.nodeName === 'BODY') {
+            if (node.nodeName === 'BODY' || node.host) {
                 return false
             }
         }
@@ -472,7 +472,7 @@ class Slim extends HTMLElement {
      * @returns {*}
      */
     get rootElement() {
-        if (this.useShadow) {
+        if (this.useShadow && this.createShadowRoot) {
             this.__shadowRoot = this.__shadowRoot || this.createShadowRoot();
             return this.__shadowRoot
         }
@@ -668,7 +668,9 @@ class Slim extends HTMLElement {
             }
         } else if (typeof($tpl) === 'string') {
             const frag = document.createRange().createContextualFragment($tpl);
-            this._virtualDOM.appendChild(frag);
+            while (frag.firstChild) {
+                this._virtualDOM.appendChild(frag.firstChild);
+            }
             let virtualContent = this._virtualDOM.querySelector('slim-content');
             if (virtualContent) {
                 while (self.firstChild) {
@@ -678,7 +680,7 @@ class Slim extends HTMLElement {
             }
         }
 
-        let allChildren = Array.prototype.slice.call( this._virtualDOM.querySelectorAll('*') );
+        let allChildren = Slim.selectorToArr(this._virtualDOM, '*');
         for (let child of allChildren) {
             child._sourceOuterHTML = child.outerHTML;
             child._boundParent = child._boundParent || this;
@@ -692,11 +694,12 @@ class Slim extends HTMLElement {
             if (slimID) this[slimID] = child;
             let descriptors = [];
             if (child.attributes) for (let i = 0; i < child.attributes.length; i++) {
-                if (!child.isSlim && Slim.interactionEventNames.indexOf(child.attributes[i].nodeName) >= 0) {
+                if (!child.isSlim && !child.__eventsInitialized && Slim.interactionEventNames.indexOf(child.attributes[i].nodeName) >= 0) {
                     child.isInteractive = true;
                     child.handleEvent = self.handleEvent.bind(child);
                     child.callAttribute = self.callAttribute.bind(child);
                     child.addEventListener(child.attributes[i].nodeName, child.handleEvent);
+                    child.__eventsInitialized = true;
                 }
                 let desc = Slim.__processAttribute(child.attributes[i], child);
                 if (desc) descriptors.push(desc);
@@ -728,7 +731,7 @@ class Slim extends HTMLElement {
             )
         }
 
-        allChildren = Array.prototype.slice.call( this._virtualDOM.querySelectorAll('*[bind]'));
+        allChildren = Slim.selectorToArr(this._virtualDOM, '*[bind]');
 
         for (let child of allChildren) {
             let match = child.innerText.match(/\[\[([\w|.]+)\]\]/g);
