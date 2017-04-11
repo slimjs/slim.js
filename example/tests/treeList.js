@@ -12,10 +12,6 @@ Slim.tag('tree-list', class extends Slim {
         }
     }
 
-    onAfterRender() {
-        this.dependency.TreeModel(this)
-    }
-
     reverse(what = '') {
         return what.toString().split('').reverse().join('')
     }

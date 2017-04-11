@@ -104,10 +104,10 @@ class Slim extends HTMLElement {
      * @private
      */
     static __moveChildrenBefore(source, target, activate) {
-        while (source.children.length) {
-            target.parentNode.insertBefore(source.children[0], target)
+        while (source.firstChild) {
+            target.parentNode.insertBefore(source.firstChild, target)
         }
-        let children = Array.prototype.slice.call( target.querySelectorAll('*'));
+        let children = Slim.selectorToArr(target, '*');
         for (let child of children) {
             if (activate && child.isSlim) {
                 child.createdCallback()
@@ -123,10 +123,10 @@ class Slim extends HTMLElement {
      * @private
      */
     static __moveChildren(source, target, activate) {
-        while (source.children.length) {
-            target.appendChild(source.children[0])
+        while (source.firstChild) {
+            target.appendChild(source.firstChild)
         }
-        let children = Array.prototype.slice.call( target.querySelectorAll('*'));
+        let children = Slim.selectorToArr(target, '*');
         for (let child of children) {
             if (activate && child.isSlim) {
                 child.createdCallback()
@@ -214,7 +214,7 @@ class Slim extends HTMLElement {
 
     //noinspection JSUnusedGlobalSymbols
     findAll(selector) {
-        return Array.prototype.slice.call( this.querySelectorAll(selector) );
+        return Slim.selectorToArr(this, selector);
     }
 
     watch(prop, executor) {
@@ -529,7 +529,7 @@ class Slim extends HTMLElement {
         this._initInteractiveEvents();
         this.__eventsInitialized = true;
         this.alternateTemplate = this.alternateTemplate || null;
-        this._virtualDOM = this._virtualDOM || document.createElement('slim-root')
+        this._virtualDOM = this._virtualDOM || document.createDocumentFragment();
     }
 
     /**
@@ -661,18 +661,19 @@ class Slim extends HTMLElement {
         const self = this;
         let $tpl = this.alternateTemplate || this.template;
         if (!$tpl) {
-            while (this.children.length) {
+            while (this.firstChild) {
                 // TODO: find why this line is needed for babel!!!
-                self._virtualDOM = this._virtualDOM || document.createElement('slim-root')
-                self._virtualDOM.appendChild( this.children[0] )
+                self._virtualDOM = this._virtualDOM || document.createDocumentFragment();
+                self._virtualDOM.appendChild( this.firstChild )
             }
         } else if (typeof($tpl) === 'string') {
-            this._virtualDOM.innerHTML = $tpl;
+            const frag = document.createRange().createContextualFragment($tpl);
+            this._virtualDOM.appendChild(frag);
             let virtualContent = this._virtualDOM.querySelector('slim-content');
             if (virtualContent) {
-                while (self.children.length) {
-                    self.children[0]._boundParent = this.children[0]._boundParent || this;
-                    virtualContent.appendChild( this.children[0] )
+                while (self.firstChild) {
+                    self.firstChild._boundParent = this.firstChild._boundParent || this;
+                    virtualContent.appendChild( this.firstChild )
                 }
             }
         }
@@ -731,7 +732,7 @@ class Slim extends HTMLElement {
 
         for (let child of allChildren) {
             let match = child.innerText.match(/\[\[([\w|.]+)\]\]/g);
-            if (match && child.children.length > 0) {
+            if (match && child.children.firstChild) {
                 throw 'Bind Error: Illegal bind attribute use on element type ' + child.localName + ' with nested children.\n' + child.outerHTML;
             }
             if (match) {
@@ -776,6 +777,16 @@ try {
 }
 catch (err) {
     Slim.__isWCSupported = false
+}
+
+if (Slim.__isWCSupported) {
+    Slim.selectorToArr = function(target, selector) {
+        return target.querySelectorAll(selector);
+    }
+} else {
+    Slim.selectorToArr = function(target, selector) {
+        return Array.prototype.slice.call( target.querySelectorAll(selector) );
+    }
 }
 
 /**
@@ -853,7 +864,7 @@ Slim.__initRepeater = function() {
                 else {
                     clone._boundParent = clone
                 }
-                Array.prototype.slice.call(clone.querySelectorAll('*')).forEach( element => {
+                Slim.selectorToArr(clone, '*').forEach( element => {
                     element._boundParent = clone._boundParent;
                     element._boundRepeaterParent = clone._boundRepeaterParent;
                     element[targetPropName] = clone[targetPropName];
