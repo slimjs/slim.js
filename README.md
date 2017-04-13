@@ -1,7 +1,10 @@
 ![hello, slim.js](./docs/slim2.png)
 
 [![Build Status](https://semaphoreci.com/api/v1/eavichay/slim-js/branches/master/badge.svg)](https://semaphoreci.com/eavichay/slim-js)
+
 # Hello, slim.js
+
+# New In 2.7.0 - Typescript Support
 
 ## Slim is an elegant library for web components
 
