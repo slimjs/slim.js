@@ -1,7 +1,7 @@
 export declare class Slim {
     static polyfill(url:string):void;
     static tag(tag:string, template:string, clazz:any):void;
-    static getTag(clazz:any):string;
+    static getTag(clazz:Slim):string;
     static plugin(phase:string, plugin:Function):void;
     static registerCustomAttribute(attr:string, fn:Function):void;
 
