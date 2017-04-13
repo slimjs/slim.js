@@ -4,6 +4,8 @@
 
 # Hello, slim.js
 
+# New In 2.7.0 - Typescript Support
+
 ## Slim is an elegant library for web components
 
 Slim.js is a lightning fast library for development of native web-components. No black magic.
