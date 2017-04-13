@@ -14,6 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/eavichay/slim.js.git"
   },
+  "typings": "Slim.d.ts",
   "author": "Avichay Eyal <eavichay@gmail.com>",
   "license": "MIT",
   "bugs": {
