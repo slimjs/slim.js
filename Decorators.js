@@ -7,13 +7,13 @@ module.exports = {
 
     template: function(tpl) {
         return function(target) {
-            target.prototype.__defineGetter__('template', () => tpl);
+            target.prototype.__defineGetter__('template', function() { return tpl; });
         }
     },
 
     useShadow: function(value) {
         return function(target) {
-            target.prototype.__defineGetter__('useShadow', () => value)
+            target.prototype.__defineGetter__('useShadow', function() { return value; })
         }
     }
 };
