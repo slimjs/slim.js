@@ -2,9 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>$Title$</title>
+    <title>Title</title>
+    <script src="../src/Slim.js"></script>
 </head>
 <body>
-$END$
+    <slim-test></slim-test>
+
+    <script>
+        Slim.tag('slim-test',
+        `<child-tag slim-repeat="items"></child-tag>`,
+        class extends Slim {
+            onBeforeCreated() {
+                this.items = [
+                    {text: "1", value: "a"},
+                    {text: "2", value: "b"}
+                ];
+            }
+        });
+
+        Slim.tag('child-tag',
+        `<span prop="[[data.value]]">*SPAN</span>`,
+        class extends Slim {
+            dataChanged(value) {
+                console.log(value);
+            }
+        })
+    </script>
 </body>
 </html>
