@@ -388,17 +388,17 @@ var Slim = function (_HTMLElement) {
                     value: source[rootProp],
                     executors: []
                 };
-                if (!source.__lookupGetter__(prop)) source.__defineGetter__(prop, function () {
-                    return this._bindings[prop].value;
+                if (!source.__lookupGetter__(rootProp)) source.__defineGetter__(rootProp, function () {
+                    return this._bindings[rootProp].value;
                 });
-                if (!source.__lookupSetter__(prop)) source.__defineSetter__(prop, function (x) {
-                    this._bindings[prop].value = x;
+                if (!source.__lookupSetter__(rootProp)) source.__defineSetter__(rootProp, function (x) {
+                    this._bindings[rootProp].value = x;
                     if (descriptor.sourceText) {
                         descriptor.target.innerText = descriptor.sourceText;
                     }
-                    this._executeBindings(prop);
-                    if (typeof this[prop + 'Changed'] === 'function') {
-                        this[prop + 'Changed'](x);
+                    this._executeBindings(rootProp);
+                    if (typeof this[rootProp + 'Changed'] === 'function') {
+                        this[rootProp + 'Changed'](x);
                     }
                 });
                 var executor = void 0;

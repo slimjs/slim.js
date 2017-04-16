@@ -6,8 +6,8 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "babel src/Slim.js > Slim.js && uglifyjs Slim.js -o Slim.min.js",
-    "pretest": "node prepare-test.js",
-    "test": "./node_modules/nightwatch/bin/nightwatch -- tests",
+    "pretest": "npm build && node prepare-test.js",
+    "test": "nightwatch -- tests",
     "server": "python -m SimpleHTTPServer 8000"
   },
   "repository": {
