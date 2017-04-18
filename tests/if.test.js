@@ -9,7 +9,7 @@ module.exports = {
         global.staticServer.stop();
     },
 
-    ifTest: function(browser) {
+    'slim-if': function(browser) {
         browser.waitForElementPresent('#slimIfTest');
         browser.execute(`
             window.unit.toggle = false;
