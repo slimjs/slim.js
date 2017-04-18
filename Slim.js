@@ -441,7 +441,8 @@ var Slim = function (_HTMLElement) {
                     };
                 } else if (descriptor.type === 'F') {
                     executor = function executor() {
-                        if (!descriptor.source[prop]) {
+                        var value = Slim.__lookup(descriptor.source, prop).obj;
+                        if (!value) {
                             if (descriptor.target.parentNode) {
                                 descriptor.target.insertAdjacentElement('beforeBegin', descriptor.helper);
                                 descriptor.target.remove();
