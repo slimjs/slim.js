@@ -2,6 +2,8 @@
 
 [![Build Status](https://semaphoreci.com/api/v1/eavichay/slim-js/branches/master/badge.svg)](https://semaphoreci.com/eavichay/slim-js)
 
+[Chat on gitter](https://gitter.im/slim-js/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
+
 # Hello, slim.js
 
 # New In 2.7.0 - Typescript Support
