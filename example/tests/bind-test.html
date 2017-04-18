@@ -17,6 +17,23 @@
 </head>
 <body>
 
+    <test-if></test-if>
+
+    <script>
+        Slim.tag('test-if', `
+            <button click="toggle">Test slim-if</button>
+            <div slim-if="show">Now you see me!</div>
+        `, class extends Slim{
+            onBeforeCreated() {
+                this.show = true;
+            }
+
+            toggle() {
+                this.show = !this.show;
+            }
+        })
+    </script>
+
     <script>
         Slim.registerCustomAttribute("slim-show", (element, value) => {
             if (!element.isSlim) {

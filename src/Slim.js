@@ -332,6 +332,20 @@ class Slim extends HTMLElement {
                     executor = () => {
                         descriptor.executor(Slim.__lookup(source, prop).obj)
                     }
+                } else if (descriptor.type === 'F') {
+                    executor = () => {
+                        if (!descriptor.source[prop]) {
+                            if (descriptor.target.parentNode) {
+                                descriptor.target.insertAdjacentElement('beforeBegin', descriptor.helper);
+                                descriptor.target.remove();
+                            }
+                        } else {
+                            if (!descriptor.target.parentNode) {
+                                descriptor.helper.insertAdjacentElement('beforeBegin', descriptor.target);
+                                descriptor.helper.remove();
+                            }
+                        }
+                    }
                 }
                 executor.descriptor = descriptor;
                 source._bindings[rootProp].executors.push( executor )
@@ -406,6 +420,16 @@ class Slim extends HTMLElement {
     static __processAttribute(attribute, child) {
         if (attribute.nodeName === 'slim-repeat') {
             return Slim.__processRepeater(attribute, child)
+        }
+
+        if (attribute.nodeName === 'slim-if') {
+            return {
+                type: 'F',
+                target: child,
+                source: child._boundParent,
+                helper: document.createElement('slim-if-helper'),
+                properties: [ attribute.nodeValue ]
+            }
         }
 
         if (Slim.__customAttributeProcessors[attribute.nodeName]) {
@@ -726,6 +750,8 @@ class Slim extends HTMLElement {
                     } else if (descriptor.type === 'R') {
                         Slim.__createRepeater(descriptor);
                         this.__bind(descriptor)
+                    } else if (descriptor.type === 'F') {
+                        this.__bind(descriptor);
                     }
                 }
             )

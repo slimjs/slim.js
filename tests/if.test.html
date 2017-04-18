@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../src/Slim.js"></script>
+</head>
+<body>
+    <slim-test></slim-test>
+
+    <script>
+        Slim.tag('slim-test',
+        `<div id="slimIfTest" slim-if="toggle"></div>`,
+        class extends Slim {
+            onBeforeCreated() {
+                window.unit = this;
+                this.toggle = true;
+            }
+        });
+    </script>
+</body>
+</html>
