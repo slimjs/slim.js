@@ -98,4 +98,17 @@ Slim.tag('my-custom-tag', class extends Slim {
 });
 ```
 
+### Conditional Rendering with slim-if
+```js
+Slim.tag('my-custom-tag', class extends Slim {
+    get template() {
+        return '<div slim-if="myBoolean">Now you see me</div>';
+    }
+    
+    onAfterUpdate() {
+        this.myBoolean = false; // now you don't
+    }
+});
+```
+
 ## Read next: [Using \<slim-content> tag](./using_content_tag.md)
