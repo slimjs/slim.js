@@ -237,20 +237,11 @@ var Slim = function (_HTMLElement) {
                 Slim.__initRepeater();
             }
             var repeater = void 0;
-            if (Slim.__isWCSupported) {
-                repeater = document.createElement('slim-repeat');
-                repeater.sourceNode = descriptor.target;
-                descriptor.target.parentNode.insertBefore(repeater, descriptor.target);
-                descriptor.repeater = repeater;
-            } else {
-                descriptor.target.insertAdjacentHTML('beforebegin', '<slim-repeat slim-new="true"></slim-repeat>');
-                repeater = descriptor.target.parentNode.querySelector('slim-repeat[slim-new="true"]');
-                repeater.__proto__ = window.SlimRepeater.prototype;
-                repeater.sourceNode = descriptor.target;
-                repeater.removeAttribute('slim-new');
+            repeater = document.createElement('slim-repeat');
+            repeater.sourceNode = descriptor.target;
+            descriptor.target.parentNode.insertBefore(repeater, descriptor.target);
+            descriptor.repeater = repeater;
 
-                repeater.createdCallback();
-            }
             repeater._boundParent = descriptor.source;
             descriptor.target.parentNode.removeChild(descriptor.target);
             repeater._isAdjacentRepeater = descriptor.repeatAdjacent;
@@ -441,7 +432,7 @@ var Slim = function (_HTMLElement) {
                     };
                 } else if (descriptor.type === 'F') {
                     executor = function executor() {
-                        var value = Slim.__lookup(descriptor.source, prop).obj;
+                        var value = !!Slim.__lookup(descriptor.source, prop).obj;
                         if (!value) {
                             if (descriptor.target.parentNode) {
                                 descriptor.target.insertAdjacentElement('beforeBegin', descriptor.helper);
@@ -450,6 +441,9 @@ var Slim = function (_HTMLElement) {
                         } else {
                             if (!descriptor.target.parentNode) {
                                 descriptor.helper.insertAdjacentElement('beforeBegin', descriptor.target);
+                                if (descriptor.target.isSlim) {
+                                    descriptor.target.createdCallback();
+                                }
                                 descriptor.helper.remove();
                             }
                         }

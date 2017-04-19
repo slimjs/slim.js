@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Bind-Tests</title>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/ShadowDOM.js"></script>-->
     <script src="../../src/Slim.js"></script>
     <script>
-    Slim.polyfill('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents-lite.min.js');
+    Slim.polyfill('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents-lite.js');
     </script>
 
     <script src="bind-parent.js"></script>
@@ -20,33 +21,24 @@
     <test-if></test-if>
 
     <script>
+        Slim.tag('test-if-child', '<div bind>[[data]]</div>',
+        class extends Slim {
+            onCreated() {
+                alert('created');
+            }
+        });
         Slim.tag('test-if', `
             <button click="toggle">Test slim-if</button>
-            <div slim-if="show">Now you see me!</div>
+            <test-if-child slim-if="show" data="Now you see me!"></test-if-child>
         `, class extends Slim{
             onBeforeCreated() {
-                this.show = true;
+                this.show = false;
             }
 
             toggle() {
                 this.show = !this.show;
             }
         })
-    </script>
-
-    <script>
-        Slim.registerCustomAttribute("slim-show", (element, value) => {
-            if (!element.isSlim) {
-                const result = Slim.extract(element._boundParent, value);
-                console.log(element, value, result);
-                element.style.display = String(value) !== 'undefined' ? "initial" : "none";
-                return;
-            }
-            element.watch(value, (newValue) => {
-                element.style.display = String(newValue) !== 'undefined' ? "initial" : "none";
-                console.log(newValue, element.style.display);
-            })
-        });
     </script>
 
     <script>
@@ -107,12 +99,12 @@
 
 
     <bind-parent>
-        <li slim-repeat="items"><span bind>[[data_index]]</span><bind-child interactive click="testClick" slim-show="aProp" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
+        <li slim-repeat="items"><span bind>[[data_index]]</span><bind-child interactive click="testClick" a-prop="[[myProp]]" b-prop="[[urProp]]"></bind-child></li>
         <br/>
         <hr/>
         <tree-list bind-wprop="[[wProp]]" slim-repeat="tree"></tree-list>
         <slim-confirm cancel="Cancel" confirm="OK" onconfirm="testOnConfirm" oncancel="testOnCancel">
-            <h3 slim-show="[[urProp]]">Confirm reusable example</h3>
+            <h3>Confirm reusable example</h3>
             <div>Are you sure?</div>
         </slim-confirm>
     </bind-parent>
