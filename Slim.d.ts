@@ -1,4 +1,4 @@
-export declare class Slim {
+export declare class Slim extends HTMLElement {
     static polyfill(url:string):void;
     static tag(tag:string, template:string, clazz:any):void;
     static getTag(clazz:Slim):string;
