@@ -433,6 +433,9 @@ var Slim = function (_HTMLElement) {
                 } else if (descriptor.type === 'F') {
                     executor = function executor() {
                         var value = !!Slim.__lookup(descriptor.source, prop).obj;
+                        if (descriptor.reversed) {
+                            value = !value;
+                        }
                         if (!value) {
                             if (descriptor.target.parentNode) {
                                 descriptor.target.insertAdjacentElement('beforeBegin', descriptor.helper);
@@ -974,12 +977,19 @@ var Slim = function (_HTMLElement) {
             }
 
             if (attribute.nodeName === 'slim-if') {
+                var propertyName = attribute.nodeValue;
+                var reverse = false;
+                if (attribute.nodeValue.charAt(0) === '!') {
+                    propertyName = propertyName.slice(1);
+                    reverse = true;
+                }
                 return {
                     type: 'F',
                     target: child,
                     source: child._boundParent,
                     helper: document.createElement('slim-if-helper'),
-                    properties: [attribute.nodeValue]
+                    reversed: reverse,
+                    properties: [propertyName]
                 };
             }
 

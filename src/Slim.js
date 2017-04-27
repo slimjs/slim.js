@@ -325,7 +325,10 @@ class Slim extends HTMLElement {
                     }
                 } else if (descriptor.type === 'F') {
                     executor = () => {
-                        const value = !!Slim.__lookup(descriptor.source, prop).obj;
+                        let value = !!Slim.__lookup(descriptor.source, prop).obj;
+                        if (descriptor.reversed) {
+                            value = !value;
+                        }
                         if (!value) {
                             if (descriptor.target.parentNode) {
                                 descriptor.target.insertAdjacentElement('beforeBegin', descriptor.helper);
@@ -418,12 +421,19 @@ class Slim extends HTMLElement {
         }
 
         if (attribute.nodeName === 'slim-if') {
+            let propertyName = attribute.nodeValue;
+            let reverse = false;
+            if (attribute.nodeValue.charAt(0) === '!') {
+                propertyName = propertyName.slice(1);
+                reverse = true;
+            }
             return {
                 type: 'F',
                 target: child,
                 source: child._boundParent,
                 helper: document.createElement('slim-if-helper'),
-                properties: [ attribute.nodeValue ]
+                reversed: reverse,
+                properties: [ propertyName ]
             }
         }
 

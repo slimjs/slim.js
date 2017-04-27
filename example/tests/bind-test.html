@@ -24,15 +24,16 @@
         Slim.tag('test-if-child', '<div bind>[[data]]</div>',
         class extends Slim {
             onCreated() {
-                alert('created');
+                console.log('created');
             }
         });
         Slim.tag('test-if', `
             <button click="toggle">Test slim-if</button>
             <test-if-child slim-if="show" data="Now you see me!"></test-if-child>
+            <span slim-if="!show">Now you don't</span>
         `, class extends Slim{
             onBeforeCreated() {
-                this.show = false;
+                this.show = true;
             }
 
             toggle() {
