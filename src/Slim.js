@@ -253,6 +253,12 @@ class Slim extends HTMLElement {
         }
     }
 
+    __propertyChanged(property, value) {
+        if (typeof this[property + 'Changed'] === 'function') {
+            this[property + 'Changed'](value);
+        }
+    }
+
     /**
      *
      * @param descriptor
@@ -282,9 +288,7 @@ class Slim extends HTMLElement {
                         descriptor.target.innerText = descriptor.sourceText
                     }
                     this._executeBindings(rootProp);
-                    if (typeof this[rootProp + 'Changed'] === 'function') {
-                        this[rootProp + 'Changed'](x);
-                    }
+                    this.__propertyChanged(rootProp, x);
                 });
                 let executor;
                 if (descriptor.type === 'C') {
@@ -296,7 +300,8 @@ class Slim extends HTMLElement {
                         if (!descriptor.target.hasAttribute('slim-repeat')) {
                             let sourceRef = descriptor.target._boundRepeaterParent;
                             let value = Slim.__lookup((sourceRef || source), prop).obj || Slim.__lookup(descriptor.target, prop).obj;
-                            descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value;
+                            const attrName = Slim.__dashToCamel(descriptor.attribute);
+                            descriptor.target[ attrName ] = value;
                             descriptor.target.setAttribute( descriptor.attribute, value )
                         }
                     }
@@ -306,7 +311,8 @@ class Slim extends HTMLElement {
                             let sourceRef = descriptor.target._boundRepeaterParent || source;
                             let value = sourceRef[ descriptor.method ].apply( sourceRef,
                                 descriptor.properties.map( prop => { return descriptor.target[prop] || sourceRef[prop] }));
-                            descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = value;
+                            const attrName = Slim.__dashToCamel(descriptor.attribute);
+                            descriptor.target[ attrName ] = value;
                             descriptor.target.setAttribute( descriptor.attribute, value )
                         }
                     }

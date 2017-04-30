@@ -356,6 +356,13 @@ var Slim = function (_HTMLElement) {
                 this.update();
             }
         }
+    }, {
+        key: '__propertyChanged',
+        value: function __propertyChanged(property, value) {
+            if (typeof this[property + 'Changed'] === 'function') {
+                this[property + 'Changed'](value);
+            }
+        }
 
         /**
          *
@@ -388,9 +395,7 @@ var Slim = function (_HTMLElement) {
                         descriptor.target.innerText = descriptor.sourceText;
                     }
                     this._executeBindings(rootProp);
-                    if (typeof this[rootProp + 'Changed'] === 'function') {
-                        this[rootProp + 'Changed'](x);
-                    }
+                    this.__propertyChanged(rootProp, x);
                 });
                 var executor = void 0;
                 if (descriptor.type === 'C') {
@@ -402,7 +407,8 @@ var Slim = function (_HTMLElement) {
                         if (!descriptor.target.hasAttribute('slim-repeat')) {
                             var sourceRef = descriptor.target._boundRepeaterParent;
                             var value = Slim.__lookup(sourceRef || source, prop).obj || Slim.__lookup(descriptor.target, prop).obj;
-                            descriptor.target[Slim.__dashToCamel(descriptor.attribute)] = value;
+                            var attrName = Slim.__dashToCamel(descriptor.attribute);
+                            descriptor.target[attrName] = value;
                             descriptor.target.setAttribute(descriptor.attribute, value);
                         }
                     };
@@ -413,7 +419,8 @@ var Slim = function (_HTMLElement) {
                             var value = sourceRef[descriptor.method].apply(sourceRef, descriptor.properties.map(function (prop) {
                                 return descriptor.target[prop] || sourceRef[prop];
                             }));
-                            descriptor.target[Slim.__dashToCamel(descriptor.attribute)] = value;
+                            var attrName = Slim.__dashToCamel(descriptor.attribute);
+                            descriptor.target[attrName] = value;
                             descriptor.target.setAttribute(descriptor.attribute, value);
                         }
                     };

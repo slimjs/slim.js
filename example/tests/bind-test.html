@@ -26,14 +26,19 @@
             onCreated() {
                 console.log('created');
             }
+
+            dataChanged(value) {
+                alert(value);
+            }
         });
         Slim.tag('test-if', `
             <button click="toggle">Test slim-if</button>
-            <test-if-child slim-if="show" data="Now you see me!"></test-if-child>
+            <test-if-child slim-if="show" data="[[data]]"></test-if-child>
             <span slim-if="!show">Now you don't</span>
         `, class extends Slim{
             onBeforeCreated() {
                 this.show = true;
+                this.data = "Now you see me!";
             }
 
             toggle() {
