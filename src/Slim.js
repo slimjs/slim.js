@@ -49,6 +49,11 @@ class Slim extends HTMLElement {
         }
     }
 
+    static __createUqIndex() {
+        Slim.__uqIndex++;
+        return Slim.__uqIndex.toString(16);
+    }
+
     /**
      * Supported HTML events built-in on slim components
      * @returns {Array<String>}
@@ -559,6 +564,8 @@ class Slim extends HTMLElement {
      * Part of the non-standard slim web-component's lifecycle. Overriding it is not recommended.
      */
     initialize() {
+        this.uq_index = Slim.__createUqIndex();
+        this.setAttribute('slim-uq', this.uq_index);
         this._bindings = this._bindings || {};
         this._boundChildren = this._boundChildren || [];
         this._initInteractiveEvents();
@@ -619,6 +626,14 @@ class Slim extends HTMLElement {
      */
     attachedCallback() {
         this.onAdded();
+    }
+
+    attributeChangedCallback(attr, oldValue, newValue) {
+        if (oldValue === newValue) return;
+        if (!this._bindings) return;
+        if (this._bindings[attr]) {
+            this[Slim.__dashToCamel(attr)] = newValue;
+        }
     }
 
     onAdded() { /* abstract */ }
@@ -800,6 +815,7 @@ Slim.rxProp = /\[\[(.+[^(\((.+)\))])\]\]/
 Slim.rxMethod = /\[\[(.+)(\((.+)\)){1}\]\]/
 Slim.__customAttributeProcessors = {};
 Slim.__prototypeDict = {};
+Slim.__uqIndex = 0;
 Slim.__templateDict = {};
 Slim.__plugins = {
     'create': [],
