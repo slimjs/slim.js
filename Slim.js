@@ -245,6 +245,7 @@ var Slim = function (_HTMLElement) {
             var repeater = void 0;
             repeater = document.createElement('slim-repeat');
             repeater.sourceNode = descriptor.target;
+            descriptor.target.repeater = repeater;
             descriptor.target.parentNode.insertBefore(repeater, descriptor.target);
             descriptor.repeater = repeater;
 
@@ -410,25 +411,37 @@ var Slim = function (_HTMLElement) {
                     };
                 } else if (descriptor.type === 'P') {
                     executor = function executor() {
+                        var targets = void 0;
                         if (!descriptor.target.hasAttribute('slim-repeat')) {
+                            targets = [descriptor.target];
+                        } else {
+                            targets = descriptor.target.repeater.clones;
+                        }
+                        if (targets) {
                             var sourceRef = descriptor.target._boundRepeaterParent;
                             var value = Slim.__lookup(sourceRef || source, prop).obj || Slim.__lookup(descriptor.target, prop).obj;
                             var attrName = Slim.__dashToCamel(descriptor.attribute);
-                            descriptor.target[attrName] = value;
-                            descriptor.target.setAttribute(descriptor.attribute, value);
+                            targets.forEach(function (target) {
+                                target[attrName] = value;
+                                target.setAttribute(descriptor.attribute, value);
+                            });
                         }
                     };
                 } else if (descriptor.type === 'M') {
                     executor = function executor() {
-                        if (!descriptor.target.hasAttribute('slim-repeat')) {
-                            var sourceRef = descriptor.target._boundRepeaterParent || source;
-                            var value = sourceRef[descriptor.method].apply(sourceRef, descriptor.properties.map(function (prop) {
-                                return descriptor.target[prop] || sourceRef[prop];
-                            }));
-                            var attrName = Slim.__dashToCamel(descriptor.attribute);
-                            descriptor.target[attrName] = value;
-                            descriptor.target.setAttribute(descriptor.attribute, value);
+                        var targets = [descriptor.target];
+                        if (descriptor.target.hasAttribute('slim-repeat')) {
+                            targets = descriptor.target.repeater.clones;
                         }
+                        var sourceRef = descriptor.target._boundRepeaterParent || source;
+                        var value = sourceRef[descriptor.method].apply(sourceRef, descriptor.properties.map(function (prop) {
+                            return descriptor.target[prop] || sourceRef[prop];
+                        }));
+                        var attrName = Slim.__dashToCamel(descriptor.attribute);
+                        targets.forEach(function (target) {
+                            target[attrName] = value;
+                            target.setAttribute(descriptor.attribute, value);
+                        });
                     };
                 } else if (descriptor.type === 'T') {
                     executor = function executor() {
@@ -1123,16 +1136,21 @@ Slim.__initRepeater = function () {
                 this.renderList();
             }
         }, {
+            key: 'clearList',
+            value: function clearList() {
+                this.clones && this.clones.forEach(function (clone) {
+                    clone.remove();
+                });
+                this.clones = [];
+            }
+        }, {
             key: 'renderList',
             value: function renderList() {
                 var _this7 = this;
 
                 var targetPropName = this.getAttribute('target-attr');
                 if (!this.sourceNode) return;
-                this.clones && this.clones.forEach(function (clone) {
-                    clone.remove();
-                });
-                this.clones = [];
+                this.clearList();
                 //noinspection JSUnusedGlobalSymbols
 
                 this.sourceData.registerSlimRepeater(this);

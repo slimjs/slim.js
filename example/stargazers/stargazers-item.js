@@ -2,11 +2,12 @@
 Slim.tag('stargazer-item',
 
     `
-<img width="[[size]]" height="[[size]]" src="[[data.avatar_url]]" />
 <h1 bind click="handleClick">[[data.login]]</h1>
 
 <style bind>
     :host {
+        background-image: url('[[data.avatar_url]]');
+        background-size: cover;
         position: relative;
         display: inline-flex;
         flex-direction: column;
@@ -18,7 +19,7 @@ Slim.tag('stargazer-item',
         padding: 0;
         border-radius: 1em;
     }
-
+   
     h1 {
         position: absolute;
         bottom: 0;

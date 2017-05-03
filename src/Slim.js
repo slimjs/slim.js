@@ -167,6 +167,7 @@ class Slim extends HTMLElement {
         let repeater;
         repeater = document.createElement('slim-repeat');
         repeater.sourceNode = descriptor.target;
+        descriptor.target.repeater = repeater;
         descriptor.target.parentNode.insertBefore(repeater, descriptor.target);
         descriptor.repeater = repeater;
 
@@ -302,24 +303,36 @@ class Slim extends HTMLElement {
                     }
                 } else if (descriptor.type === 'P') {
                     executor = () => {
+                        let targets;
                         if (!descriptor.target.hasAttribute('slim-repeat')) {
+                            targets = [descriptor.target];
+                        } else {
+                            targets = descriptor.target.repeater.clones;
+                        }
+                        if (targets) {
                             let sourceRef = descriptor.target._boundRepeaterParent;
                             let value = Slim.__lookup((sourceRef || source), prop).obj || Slim.__lookup(descriptor.target, prop).obj;
                             const attrName = Slim.__dashToCamel(descriptor.attribute);
-                            descriptor.target[ attrName ] = value;
-                            descriptor.target.setAttribute( descriptor.attribute, value )
+                            targets.forEach(target => {
+                                target[ attrName ] = value;
+                                target.setAttribute( descriptor.attribute, value )
+                            })
                         }
                     }
                 } else if (descriptor.type === 'M') {
                     executor = () => {
-                        if (!descriptor.target.hasAttribute('slim-repeat')) {
-                            let sourceRef = descriptor.target._boundRepeaterParent || source;
-                            let value = sourceRef[ descriptor.method ].apply( sourceRef,
-                                descriptor.properties.map( prop => { return descriptor.target[prop] || sourceRef[prop] }));
-                            const attrName = Slim.__dashToCamel(descriptor.attribute);
-                            descriptor.target[ attrName ] = value;
-                            descriptor.target.setAttribute( descriptor.attribute, value )
+                        let targets = [ descriptor.target ];
+                        if (descriptor.target.hasAttribute('slim-repeat')) {
+                            targets = descriptor.target.repeater.clones;
                         }
+                        let sourceRef = descriptor.target._boundRepeaterParent || source;
+                        let value = sourceRef[ descriptor.method ].apply( sourceRef,
+                            descriptor.properties.map( prop => { return descriptor.target[prop] || sourceRef[prop] }));
+                        const attrName = Slim.__dashToCamel(descriptor.attribute);
+                        targets.forEach(target => {
+                            target[ attrName ] = value;
+                            target.setAttribute( descriptor.attribute, value )
+                        });
                     }
                 } else if (descriptor.type === 'T') {
                     executor = () => {
@@ -851,6 +864,7 @@ if (Slim.__isWCSupported) {
  */
 Slim.__initRepeater = function() {
     class SlimRepeater extends Slim {
+
         get useShadow() {
             return false;
         }
@@ -882,13 +896,17 @@ Slim.__initRepeater = function() {
             this.renderList();
         }
 
-        renderList() {
-            let targetPropName = this.getAttribute('target-attr');
-            if (!this.sourceNode) return;
+        clearList() {
             this.clones && this.clones.forEach( clone => {
                 clone.remove();
             });
             this.clones = [];
+        }
+
+        renderList() {
+            let targetPropName = this.getAttribute('target-attr');
+            if (!this.sourceNode) return;
+            this.clearList();
             //noinspection JSUnusedGlobalSymbols
 
             this.sourceData.registerSlimRepeater(this);

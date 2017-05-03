@@ -4,9 +4,12 @@ Slim.tag('stargazers-demo',
     <div>
         <input slim-id="myInput" type="text" placeholder="user/repo" />
         <button click="search">Search...</button>
+        <hr/>
+        <button click="makeBig">256x256</button>
+        <button click="makeSmall">128x128</button>
     </div>
     <div id="results">
-        <stargazer-item handle-select="handleSelect" size="128" slim-repeat="stargazers"></stargazer-item>
+        <stargazer-item handle-select="handleSelect" size="[[avatarSize]]" slim-repeat="stargazers"></stargazer-item>
     </div>
     
     <style bind>
@@ -21,8 +24,18 @@ Slim.tag('stargazers-demo',
         get useShadow() { return true; }
 
         onBeforeCreated() {
+            window.unit = this;
             this.repoName = 'eavichay/slim.js';
             this.stargazers = [];
+            this.avatarSize = 128;
+        }
+
+        makeBig() {
+            this.avatarSize = 256;
+        }
+
+        makeSmall() {
+            this.avatarSize = 128;
         }
 
         onCreated() {
@@ -40,7 +53,7 @@ Slim.tag('stargazers-demo',
         }
 
         runQuery() {
-            fetch(`https://api.github.com/repos/${this.repoName}/stargazers?page=1&per_page=100`)
+            fetch(`https://api.github.com/repos/${this.repoName}/stargazers?page=1&per_page=10`)
                 .then(response => response.json() )
                 .then(stargazers => {
                     this.stargazers = stargazers;
