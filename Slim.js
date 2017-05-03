@@ -482,15 +482,6 @@ var Slim = function (_HTMLElement) {
                 source._bindings[rootProp].executors.push(executor);
             });
         }
-
-        /**
-         *
-         * @param attribute
-         * @param child
-         * @returns {{type: string, target: *, targetAttribute: *, repeatAdjacent: boolean, attribute: string, properties: [*], source: (*|Slim)}}
-         * @private
-         */
-
     }, {
         key: 'createdCallback',
 
@@ -768,6 +759,9 @@ var Slim = function (_HTMLElement) {
                     self._boundChildren = this._boundChildren || [];
                     self._boundChildren.push(child);
                     self._boundChildren.push(child);
+                    if (child.localName === 'style' && this.useShadow) {
+                        Slim.__processStyleNode(child, this.localName, this.uq_index);
+                    }
                     if (child.getAttribute('slim-id')) {
                         child._boundParent[Slim.__dashToCamel(child.getAttribute('slim-id'))] = child;
                     }
@@ -946,6 +940,34 @@ var Slim = function (_HTMLElement) {
             return false;
         }
     }], [{
+        key: '__processStyleNode',
+        value: function __processStyleNode(node, tag, uqIndex) {
+            if (Slim.__isWCSupported) return;
+            var rxRules = /([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g;
+            var unique_index = node._boundParent.uq_index;
+            var match = node.innerText.match(rxRules);
+            if (match) {
+                match.forEach(function (selector) {
+                    if (selector.indexOf(':host') <= 0) {
+                        node.innerText = node.innerText.replace(selector, ':host ' + selector);
+                    }
+                });
+            }
+
+            var customTagName = tag + '[slim-uq="' + uqIndex + '"]';
+            node.innerText = node.innerText.replace(/\:host/g, customTagName);
+            // tag-name[slim-uq="[[uq_index]]"]
+        }
+
+        /**
+         *
+         * @param attribute
+         * @param child
+         * @returns {{type: string, target: *, targetAttribute: *, repeatAdjacent: boolean, attribute: string, properties: [*], source: (*|Slim)}}
+         * @private
+         */
+
+    }, {
         key: '__processRepeater',
         value: function __processRepeater(attribute, child) {
             return {

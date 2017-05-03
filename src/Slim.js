@@ -375,6 +375,24 @@ class Slim extends HTMLElement {
         )
     }
 
+    static __processStyleNode(node, tag, uqIndex) {
+        if (Slim.__isWCSupported) return;
+        const rxRules = /([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g;
+        const unique_index = node._boundParent.uq_index;
+        const match = node.innerText.match(rxRules);
+        if (match) {
+            match.forEach( selector => {
+                if (selector.indexOf(':host') <= 0) {
+                    node.innerText = node.innerText.replace(selector, ':host ' + selector);
+                }
+            });
+        }
+
+        const customTagName = `${tag}[slim-uq="${uqIndex}"]`;
+        node.innerText = node.innerText.replace(/\:host/g, customTagName);
+        // tag-name[slim-uq="[[uq_index]]"]
+    }
+
     /**
      *
      * @param attribute
@@ -755,6 +773,9 @@ class Slim extends HTMLElement {
             self._boundChildren = this._boundChildren || [];
             self._boundChildren.push(child);
             self._boundChildren.push(child);
+            if (child.localName === 'style' && this.useShadow) {
+                Slim.__processStyleNode(child, this.localName, this.uq_index);
+            }
             if (child.getAttribute('slim-id')) {
                 child._boundParent[ Slim.__dashToCamel(child.getAttribute('slim-id')) ] = child
             }
