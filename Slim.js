@@ -446,7 +446,7 @@ var Slim = function (_HTMLElement) {
                 } else if (descriptor.type === 'T') {
                     executor = function executor() {
                         var source = descriptor.target._boundParent;
-                        descriptor.target.innerText = descriptor.target.innerText.replace('[[' + prop + ']]', Slim.__lookup(source, prop).obj);
+                        descriptor.target._innerText = descriptor.target._innerText.replace('[[' + prop + ']]', Slim.__lookup(source, prop).obj);
                     };
                 } else if (descriptor.type === 'R') {
                     executor = function executor() {
@@ -695,7 +695,7 @@ var Slim = function (_HTMLElement) {
             this._boundChildren.forEach(function (child) {
                 // this._boundChildren.forEach( child => {
                 if (child.hasAttribute('bind') && child.sourceText !== undefined) {
-                    child.innerText = child.sourceText;
+                    child._innerText = child.sourceText;
                 }
             });
 
@@ -712,6 +712,11 @@ var Slim = function (_HTMLElement) {
                 _this3._bindings[property].executors.forEach(function (fn) {
                     if (fn.descriptor.type === 'T') {
                         fn();
+                    }
+                });
+                _this3._bindings[property].executors.forEach(function (fn) {
+                    if (fn.descriptor.type === 'T') {
+                        fn.descriptor.target.innerText = fn.descriptor.target._innerText;
                     }
                 });
             });

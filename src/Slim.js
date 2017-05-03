@@ -337,7 +337,7 @@ class Slim extends HTMLElement {
                 } else if (descriptor.type === 'T') {
                     executor = () => {
                         let source = descriptor.target._boundParent;
-                        descriptor.target.innerText = descriptor.target.innerText.replace(`[[${prop}]]`, Slim.__lookup(source, prop).obj)
+                        descriptor.target._innerText = descriptor.target._innerText.replace(`[[${prop}]]`, Slim.__lookup(source, prop).obj)
                     }
                 } else if (descriptor.type === 'R') {
                     executor = () => {
@@ -694,7 +694,7 @@ class Slim extends HTMLElement {
         this._boundChildren.forEach( child => {
             // this._boundChildren.forEach( child => {
             if (child.hasAttribute('bind') && child.sourceText !== undefined) {
-                child.innerText = child.sourceText
+                child._innerText = child.sourceText
             }
         });
 
@@ -711,6 +711,11 @@ class Slim extends HTMLElement {
             this._bindings[property].executors.forEach( fn => {
                 if (fn.descriptor.type === 'T') {
                     fn();
+                }
+            });
+            this._bindings[property].executors.forEach( fn => {
+                if (fn.descriptor.type === 'T') {
+                    fn.descriptor.target.innerText = fn.descriptor.target._innerText;
                 }
             })
         })

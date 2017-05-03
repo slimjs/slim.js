@@ -31,11 +31,15 @@ Slim.tag('stargazers-demo',
         }
 
         makeBig() {
+            console.time('makeBig');
             this.avatarSize = 256;
+            console.timeEnd('makeBig');
         }
 
         makeSmall() {
+            console.time('makeSmall');
             this.avatarSize = 128;
+            console.timeEnd('makeSmall');
         }
 
         onCreated() {
@@ -53,7 +57,7 @@ Slim.tag('stargazers-demo',
         }
 
         runQuery() {
-            fetch(`https://api.github.com/repos/${this.repoName}/stargazers?page=1&per_page=10`)
+            fetch(`https://api.github.com/repos/${this.repoName}/stargazers?page=1&per_page=100`)
                 .then(response => response.json() )
                 .then(stargazers => {
                     this.stargazers = stargazers;
