@@ -1,0 +1,217 @@
+<html>
+    <head>
+        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        <script src="../Slim.min.js"></script>
+        <script src="./fancy-text.js"></script>
+        <script>
+            Slim.polyfill('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents-lite.min.js');
+        </script>
+        <style>
+
+            html, body {
+                font-size: 12px;
+                font-family: "Lato", sans-serif;
+                margin: 0;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            p {
+                font-size: 2rem;
+            }
+
+            .slide {
+                width: 100%;
+                height: 100vh;
+                position: relative;
+            }
+
+            .reddish {
+                background-color: #e06538;
+            }
+
+            .centered {
+                position: absolute;
+                margin: auto;
+                top: 0;
+                left: 5rem;
+                right: 5rem;
+                bottom: 0;
+                height: 20rem;
+                text-align: center;
+            }
+
+            .logo {
+                position: relative;
+                left: -1.5em;
+            }
+
+            button {
+                border: 0;
+                padding: 0.5rem 2rem 0.5rem 2rem;
+                margin: 0 0.5rem;
+                border-radius: 1.5rem;
+                font-size: 2rem;
+                border: 2px solid;
+                cursor: pointer;
+                letter-spacing: 0.05rem;
+                font-family: "Lato", sans-serif;
+            }
+
+            .primary {
+                background-color: #c1272d;
+            }
+
+            .secondary {
+                background-color: #fbb03b;
+
+            }
+
+            section {
+                margin: 0 auto;
+                width: 50vw;
+                text-align: left;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="slide reddish">
+            <div class="centered">
+                <img class="logo" width="350" height="130" src="logo.png" />
+                <h1><fancy-text text="A fresh approach to web components!"></fancy-text></h1>
+                <button class="primary" onclick="track('guide', 'https://slim.js.org/guide.html')">Getting started</button>
+                <button class="secondary" onclick="track('github', 'https://github.com/eavichay/slim.js')">Project on Github</button>
+                <button class="secondary" onclick="track('gitter', 'https://gitter.im/slim-js/Lobby?utm_source=slim-website&utm_medium=link&utm_campaign=share-link')">Chat on gitter.im</button>
+                <p>
+                    <fancy-text text="Slim.js is a lightning fast library for easy development of native web-components with data-binding."></fancy-text>
+                    <br/>
+                    <fancy-text text="No black magic. It uses javascript's enhances native elements using simple inheritance mechanism."></fancy-text>
+                </p>
+            </div>
+        </div>
+        <div class="slide">
+            <div class="centered">
+                <section>
+                    <h1 id="introduction">Introduction</h1>
+                    <h2 id="what-is-slimjs">What is slim.js?</h2>
+                    <p>Slim.js is a lightweight web component library that provides extended capabilities for components, such as data binding,
+                        using es6 native class inheritance. This library is focused for providing the developer
+                        the ability to write robust and native web components without the hassle of dependencies and
+                        an overhead of a framework.</p>
+                    <h2 id="getting-started">Getting started</h2>
+                    <div class="language-bash highlighter-rouge">
+                        <pre class="highlight">
+<code>npm install slim-js --save
+bower install slimjs</code></pre>
+                    </div>
+                    <blockquote>
+                        <p>Please note:
+                            Target browsers that do not support web component are required to use a polyfill like <a href="https://www.webcomponents.org/">web-components</a></p>
+                    </blockquote>
+                    <h1 id="defining-a-slim-component">Defining a slim component</h1>
+                    <div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="nx">Slim</span><span class="p">.</span><span class="nx">tag</span><span class="p">(</span><span class="s1">'my-custom-tagname'</span><span class="p">,</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">Slim</span> <span class="p">{</span>
+<span class="p">});</span>
+</code></pre>
+                    </div>
+
+                    <p>Every slim.js component has it’s own default template to be rendered upon placed on the DOM tree.
+                        This template is accessible via a <em>template getter function</em>.</p>
+
+                    <div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="nx">Slim</span><span class="p">.</span><span class="nx">tag</span><span class="p">(</span><span class="s1">'my-custom-tagname'</span><span class="p">,</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">Slim</span> <span class="p">{</span>
+    <span class="nx">get</span> <span class="nx">template</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s1">'&lt;div&gt;Hello, slim.js!&lt;/div&gt;'</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre>
+                    </div>
+
+                    <p>Usage of the element in another template or in a HTML wrapper:</p>
+
+                    <div class="language-html highlighter-rouge"><pre class="highlight"><code><span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;my-custom-tagname&gt;&lt;/my-custom-tagname&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+</code></pre>
+                    </div>
+
+                    <h1 id="data-binding">Data Binding</h1>
+                    <p>Slim.js supports one-way data binding to inner text, attributes, directly or via a parsing methods.</p>
+
+                    <h2 id="examples">Examples</h2>
+
+                    <h3 id="text-property-binding">Text-property binding</h3>
+
+                    <p>Text binding is used with the <em>bind</em> attribute</p>
+
+                    <div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="nx">Slim</span><span class="p">.</span><span class="nx">tag</span><span class="p">(</span><span class="s1">'my-greeter'</span><span class="p">,</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">Slim</span> <span class="p">{</span>
+    <span class="nx">get</span> <span class="nx">template</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s1">'&lt;span bind&gt;Hello, [[person]]'</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">onBeforeUpdate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">person</span> <span class="o">=</span> <span class="s1">'slim.js'</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre>
+                    </div>
+
+                    <blockquote>
+                        <p>Slim.js creates a runtime getter/setter function for the property <em>greetee</em>, and with every change the component will
+                            automatically render itself with the new result.</p>
+                    </blockquote>
+
+                    <h3 id="attribute-property-binding">Attribute-property Binding</h3>
+                    <p>Attribute binding is done in a same manner, only the bind attribute is not required.</p>
+
+                    <div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="nx">Slim</span><span class="p">.</span><span class="nx">tag</span><span class="p">(</span><span class="s1">'my-custom-tag'</span><span class="p">,</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">Slim</span> <span class="p">{</span>
+    <span class="nx">get</span> <span class="nx">template</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s1">'&lt;my-greeter name="[[person]]"&gt;&lt;/my-greeter&gt;'</span>
+    <span class="p">}</span>
+
+    <span class="nx">onBeforeUpdate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">person</span> <span class="o">=</span> <span class="s1">'John doe'</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre>
+                    </div>
+
+                    <h3 id="attribute-method-property-binding">Attribute-method-property binding</h3>
+                    <p>You could wrap a binding with a parsing method, thus enforcing parser method to run every change in the property</p>
+
+                    <div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="nx">Slim</span><span class="p">.</span><span class="nx">tag</span><span class="p">(</span><span class="s1">'my-custom-tag'</span><span class="p">,</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">Slim</span> <span class="p">{</span>
+    <span class="nx">get</span> <span class="nx">template</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s1">'&lt;my-greeter name="[[toUpper(person)]]"&gt;&lt;/my-greeter&gt;'</span>
+    <span class="p">}</span>
+
+    <span class="nx">onBeforeUpdate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">person</span> <span class="o">=</span> <span class="s1">'John doe'</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">toUpper</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">value</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre>
+                    </div>
+
+                    <h3 id="conditional-rendering-with-slim-if">Conditional Rendering with slim-if</h3>
+                    <div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="nx">Slim</span><span class="p">.</span><span class="nx">tag</span><span class="p">(</span><span class="s1">'my-custom-tag'</span><span class="p">,</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">Slim</span> <span class="p">{</span>
+    <span class="nx">get</span> <span class="nx">template</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s1">'&lt;div slim-if="myBoolean"&gt;Now you see me&lt;/div&gt;'</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">onAfterUpdate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">myBoolean</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span> <span class="c1">// now you don't</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</code></pre>
+                    </div>
+
+                </section>
+
+            </div>
+        </div>
+        <a href="https://github.com/eavichay/slim-web-components"><img style="position: fixed; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+    </body>
+</html>

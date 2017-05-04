@@ -8,8 +8,16 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Slim = function (_HTMLElement) {
-    _inherits(Slim, _HTMLElement);
+function _CustomElement() {
+    return Reflect.construct(HTMLElement, [], this.__proto__.constructor);
+}
+
+;
+Object.setPrototypeOf(_CustomElement.prototype, HTMLElement.prototype);
+Object.setPrototypeOf(_CustomElement, HTMLElement);
+
+var Slim = function (_CustomElement2) {
+    _inherits(Slim, _CustomElement2);
 
     _createClass(Slim, null, [{
         key: 'polyfill',
@@ -1092,7 +1100,7 @@ var Slim = function (_HTMLElement) {
     }]);
 
     return Slim;
-}(HTMLElement);
+}(_CustomElement);
 
 Slim.rxInject = /\{(.+[^(\((.+)\))])\}/;
 Slim.rxProp = /\[\[(.+[^(\((.+)\))])\]\]/;
