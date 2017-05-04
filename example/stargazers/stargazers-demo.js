@@ -8,7 +8,8 @@ Slim.tag('stargazers-demo',
         <button click="makeBig">256x256</button>
         <button click="makeSmall">128x128</button>
     </div>
-    <div id="results">
+    <div slim-if="isLoading">Loading...</div>
+    <div slim-if="!isLoading" id="results">
         <stargazer-item handle-select="handleSelect" size="[[avatarSize]]" slim-repeat="stargazers"></stargazer-item>
     </div>
     
@@ -28,6 +29,7 @@ Slim.tag('stargazers-demo',
             this.repoName = 'eavichay/slim.js';
             this.stargazers = [];
             this.avatarSize = 128;
+            this.isLoading = false;
         }
 
         makeBig() {
@@ -57,10 +59,12 @@ Slim.tag('stargazers-demo',
         }
 
         runQuery() {
+            this.isLoading = true;
             fetch(`https://api.github.com/repos/${this.repoName}/stargazers?page=1&per_page=100`)
                 .then(response => response.json() )
                 .then(stargazers => {
                     this.stargazers = stargazers;
+                    this.isLoading = false;
                 });
         }
 });

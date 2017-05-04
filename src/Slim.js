@@ -943,6 +943,13 @@ Slim.__initRepeater = function() {
             }
         }
 
+        onAdded() {
+            if (!this.uq_index) {
+                this.createdCallback();
+            }
+            this.renderList();
+        }
+
         onRemoved() {
             this.sourceData.unregisterSlimRepeater(this)
         }
@@ -992,7 +999,7 @@ Slim.__initRepeater = function() {
                 }
                 this.clones.push(clone)
             });
-            this._captureBindings();
+            if (this._virtualDOM) this._captureBindings();
             for (let clone of this.clones) {
                 clone[targetPropName] = clone[targetPropName];
                 clone._boundRepeaterParent = this._boundParent;
@@ -1013,9 +1020,9 @@ Slim.__initRepeater = function() {
 
             this._executeBindings();
             if (this._isAdjacentRepeater) {
-                Slim.__moveChildrenBefore(this._virtualDOM, this, true)
+                this._virtualDOM && Slim.__moveChildrenBefore(this._virtualDOM, this, true)
             } else {
-                Slim.__moveChildren(this._virtualDOM, this, true)
+                this._virtualDOM && Slim.__moveChildren(this._virtualDOM, this, true)
             }
         }
     }
