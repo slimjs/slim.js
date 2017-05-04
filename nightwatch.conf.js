@@ -61,34 +61,13 @@ module.exports = {
           "headless": true
         }
     },
-    "dev": {
-      "screenshots": {
-          "enabled": true,
-          "path": "reports"
-        },
-        "globals": {
-          "abortOnAssertionFailure": true,
-          "waitForConditionTimeout": 15000
-        },
-        "desiredCapabilities": {
-          "browserName": "chrome",
-          "javascriptEnabled": true,
-          "acceptSslCerts": true
-        }
-    },
-    "phantomjs": {
-      "browserName": "phantomjs",
-      "javascriptEnabled": true,
-      "acceptSslCerts": true,
-      "phantomjs.binary.path": "./node_modules/phantomjs/bin/phantomjs"
-    },
     "chrome": {
       "desiredCapabilities": {
         "browserName": "chrome",
         "chromeOptions" : {
           "args" : ["--headless"]
         },
-        "javascriptEnabled": true // set to false to test progressive enhancement
+        "javascriptEnabled": true
       }
     }
   }
