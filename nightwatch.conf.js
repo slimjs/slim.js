@@ -56,19 +56,13 @@ module.exports = {
         },
         "desiredCapabilities": {
           "browserName": "chrome",
+          "chromeOptions" : {
+              "args" : ["--start-maximized"] // --headless
+          },
           "javascriptEnabled": true,
           "acceptSslCerts": true,
           "headless": true
         }
-    },
-    "chrome": {
-      "desiredCapabilities": {
-        "browserName": "chrome",
-        "chromeOptions" : {
-          "args" : ["--headless"]
-        },
-        "javascriptEnabled": true
-      }
     }
   }
 };
