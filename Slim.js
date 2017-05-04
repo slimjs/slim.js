@@ -1189,6 +1189,14 @@ Slim.__initRepeater = function () {
         }
 
         _createClass(SlimRepeater, [{
+            key: 'onAdded',
+            value: function onAdded() {
+                if (!this.uq_index) {
+                    this.createdCallback();
+                }
+                this.renderList();
+            }
+        }, {
             key: 'onRemoved',
             value: function onRemoved() {
                 this.sourceData.unregisterSlimRepeater(this);
@@ -1247,7 +1255,7 @@ Slim.__initRepeater = function () {
                     }
                     _this7.clones.push(clone);
                 });
-                this._captureBindings();
+                if (this._virtualDOM) this._captureBindings();
 
                 var _loop = function _loop(clone) {
                     clone[targetPropName] = clone[targetPropName];
@@ -1293,9 +1301,9 @@ Slim.__initRepeater = function () {
 
                 this._executeBindings();
                 if (this._isAdjacentRepeater) {
-                    Slim.__moveChildrenBefore(this._virtualDOM, this, true);
+                    this._virtualDOM && Slim.__moveChildrenBefore(this._virtualDOM, this, true);
                 } else {
-                    Slim.__moveChildren(this._virtualDOM, this, true);
+                    this._virtualDOM && Slim.__moveChildren(this._virtualDOM, this, true);
                 }
             }
         }, {

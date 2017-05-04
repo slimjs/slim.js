@@ -1,8 +1,7 @@
 <html>
     <head>
-        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Droid+Serif|Lato" rel="stylesheet">
         <script src="../Slim.min.js"></script>
-        <script src="./fancy-text.js"></script>
         <script>
             Slim.polyfill('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents-lite.min.js');
         </script>
@@ -12,14 +11,45 @@
                 font-size: 12px;
                 font-family: "Lato", sans-serif;
                 margin: 0;
+                background-color: #8e9c9f;
+                color: white;
+            }
+
+            blockquote {
+                font-style: italic;
             }
 
             h1 {
                 font-size: 3rem;
+                font-family: "Droid Serif", Serif;
+                letter-spacing: 0.08em;
+            }
+
+            h2 {
+                font-size: 2rem;
+                color: #e4c8a3;
+                font-family: "Droid Serif", Serif;
+            }
+
+            h3 {
+                font-size: 2rem;
+                color: #d8d2cb;
+                font-family: "Droid Serif", Serif;
             }
 
             p {
                 font-size: 2rem;
+                font-weight: normal;
+                padding-left: 2rem;
+                line-height: 1.3em;
+            }
+
+            code {
+                font-size: 2em;
+                background: black;
+                display: inline-block;
+                width: 100%;
+                padding: 1em;
             }
 
             .slide {
@@ -30,6 +60,22 @@
 
             .reddish {
                 background-color: #e06538;
+            }
+
+            .frontpage {
+                background-image: url('./bg.jpg');
+                background-size: cover;
+            }
+
+            .frontpage h1 {
+                color: black;
+            }
+
+            .frontpage-blinds {
+                background-color: rgba(255,255,255,0.8);
+                left: 0 !important;
+                right: 0 !important;
+                padding: 5rem;
             }
 
             .centered {
@@ -77,22 +123,17 @@
         </style>
     </head>
     <body>
-        <div class="slide reddish">
-            <div class="centered">
-                <img class="logo" width="350" height="130" src="logo.png" />
-                <h1><fancy-text text="A fresh approach to web components!"></fancy-text></h1>
+        <div class="slide frontpage">
+            <div class="centered frontpage-blinds">
+                <img class="logo" width="460" height="183" src="logo.png" />
+                <h1>A fresh approach to web components!</h1>
                 <button class="primary" onclick="track('guide', 'https://slim.js.org/guide.html')">Getting started</button>
                 <button class="secondary" onclick="track('github', 'https://github.com/eavichay/slim.js')">Project on Github</button>
                 <button class="secondary" onclick="track('gitter', 'https://gitter.im/slim-js/Lobby?utm_source=slim-website&utm_medium=link&utm_campaign=share-link')">Chat on gitter.im</button>
-                <p>
-                    <fancy-text text="Slim.js is a lightning fast library for easy development of native web-components with data-binding."></fancy-text>
-                    <br/>
-                    <fancy-text text="No black magic. It uses javascript's enhances native elements using simple inheritance mechanism."></fancy-text>
-                </p>
             </div>
         </div>
         <div class="slide">
-            <div class="centered">
+            <div>
                 <section>
                     <h1 id="introduction">Introduction</h1>
                     <h2 id="what-is-slimjs">What is slim.js?</h2>
@@ -106,10 +147,8 @@
 <code>npm install slim-js --save
 bower install slimjs</code></pre>
                     </div>
-                    <blockquote>
-                        <p>Please note:
-                            Target browsers that do not support web component are required to use a polyfill like <a href="https://www.webcomponents.org/">web-components</a></p>
-                    </blockquote>
+                    <p>Please note:
+                        Target browsers that do not support web component are required to use a polyfill like <a href="https://www.webcomponents.org/">web-components</a></p>
                     <h1 id="defining-a-slim-component">Defining a slim component</h1>
                     <div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="nx">Slim</span><span class="p">.</span><span class="nx">tag</span><span class="p">(</span><span class="s1">'my-custom-tagname'</span><span class="p">,</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">Slim</span> <span class="p">{</span>
 <span class="p">});</span>
