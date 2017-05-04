@@ -134,6 +134,29 @@ var Slim = function (_CustomElement2) {
         }
 
         /**
+         * Polyfill for IE11 support
+         * @param target
+         */
+
+    }, {
+        key: 'removeChild',
+        value: function removeChild(target) {
+            if (target.remove) {
+                target.remove();
+            }
+            if (!target.remove && target.parentNode) {
+                target.parentNode.removeChild(target);
+                if (target._boundChildren) {
+                    target._boundChildren.forEach(function (child) {
+                        if (child.__ieClone) {
+                            Slim.removeChild(child.__ieClone);
+                        }
+                    });
+                }
+            }
+        }
+
+        /**
          *
          * @param source
          * @param target
@@ -473,7 +496,7 @@ var Slim = function (_CustomElement2) {
                         if (!value) {
                             if (descriptor.target.parentNode) {
                                 descriptor.target.insertAdjacentElement('beforeBegin', descriptor.helper);
-                                descriptor.target.remove();
+                                Slim.removeChild(descriptor.target);
                             }
                         } else {
                             if (!descriptor.target.parentNode) {
@@ -481,7 +504,7 @@ var Slim = function (_CustomElement2) {
                                 if (descriptor.target.isSlim) {
                                     descriptor.target.createdCallback();
                                 }
-                                descriptor.helper.remove();
+                                Slim.removeChild(descriptor.helper);
                             }
                         }
                     };
@@ -716,6 +739,9 @@ var Slim = function (_CustomElement2) {
                 _this3._bindings[property].executors.forEach(function (fn) {
                     if (fn.descriptor.type === 'T') {
                         fn.descriptor.target.innerText = fn.descriptor.target._innerText;
+                        if (fn.descriptor.target.__ieClone) {
+                            fn.descriptor.target.__ieClone.innerText = fn.descriptor.target.innerText;
+                        }
                     }
                 });
             });
@@ -964,7 +990,13 @@ var Slim = function (_CustomElement2) {
 
             var customTagName = tag + '[slim-uq="' + uqIndex + '"]';
             node.innerText = node.innerText.replace(/\:host/g, customTagName);
-            // tag-name[slim-uq="[[uq_index]]"]
+
+            if (Slim.__isIE11) {
+                var ieClone = document.createElement('style');
+                node.__ieClone = ieClone;
+                ieClone.innerText = node.innerText;
+                document.head.appendChild(ieClone);
+            }
         }
 
         /**
@@ -1124,6 +1156,14 @@ try {
     Slim.__isWCSupported = false;
 }
 
+try {
+    Slim.__isIE11 = function () {
+        return !!window['MSInputMethodContext'] && !!document['documentMode'];
+    }();
+} catch (err) {
+    Slim.__isIE11 = false;
+}
+
 if (Slim.__isWCSupported) {
     Slim.selectorToArr = function (target, selector) {
         return target.querySelectorAll(selector);
@@ -1174,7 +1214,7 @@ Slim.__initRepeater = function () {
             key: 'clearList',
             value: function clearList() {
                 this.clones && this.clones.forEach(function (clone) {
-                    clone.remove();
+                    Slim.removeChild(clone);
                 });
                 this.clones = [];
             }
