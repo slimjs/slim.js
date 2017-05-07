@@ -1,6 +1,7 @@
 <html>
     <head>
         <link href="https://fonts.googleapis.com/css?family=Droid+Serif|Lato" rel="stylesheet">
+        <link href="https://highlightjs.org/static/demo/styles/default.css" rel="stylesheet">
         <script src="../Slim.min.js"></script>
         <script>
             Slim.polyfill('https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents-lite.min.js');
@@ -11,8 +12,7 @@
                 font-size: 12px;
                 font-family: "Lato", sans-serif;
                 margin: 0;
-                background-color: #8e9c9f;
-                color: white;
+                background-color: #fffbf4;
             }
 
             blockquote {
@@ -25,31 +25,39 @@
                 letter-spacing: 0.08em;
             }
 
+            h1.title {
+                letter-spacing: 0;
+            }
+
             h2 {
                 font-size: 2rem;
-                color: #e4c8a3;
+                color: #fbb03b;
                 font-family: "Droid Serif", Serif;
             }
 
             h3 {
                 font-size: 2rem;
-                color: #d8d2cb;
+                color: #c24930;
                 font-family: "Droid Serif", Serif;
             }
 
             p {
-                font-size: 2rem;
+                font-family: "Droid Serif", Serif;
+                font-size: 1.5rem;
                 font-weight: normal;
                 padding-left: 2rem;
-                line-height: 1.3em;
+                line-height: 1.4em;
             }
 
-            code {
-                font-size: 2em;
-                background: black;
-                display: inline-block;
+            pre {
+                border-radius: 5px;
+                font-size: 1.5rem;
+                background: aliceblue;
+                display: block;
                 width: 100%;
+                border: 1px solid black;
                 padding: 1em;
+                overflow-x: auto;
             }
 
             .slide {
@@ -75,7 +83,10 @@
                 background-color: rgba(255,255,255,0.8);
                 left: 0 !important;
                 right: 0 !important;
-                padding: 5rem;
+                top: 4vh !important;
+                bottom: 4vh !important;
+                height: 33rem !important;
+                padding-top: 3rem;
             }
 
             .centered {
@@ -117,22 +128,27 @@
 
             section {
                 margin: 0 auto;
-                width: 50vw;
+                width: 75vw;
                 text-align: left;
+            }
+
+            .logotype {
+                color: #c1282f;
+                font-size: 9rem;
             }
         </style>
     </head>
     <body>
         <div class="slide frontpage">
             <div class="centered frontpage-blinds">
-                <img class="logo" width="460" height="183" src="logo.png" />
-                <h1>A fresh approach to web components!</h1>
+                <img class="logo" width="222" height="204" src="slim3-new.png" /><span class="logotype">Slim.js</span>
+                <h1 class="title">Rapid web components development!</h1>
                 <button class="primary" onclick="track('guide', 'https://slim.js.org/guide.html')">Getting started</button>
                 <button class="secondary" onclick="track('github', 'https://github.com/eavichay/slim.js')">Project on Github</button>
                 <button class="secondary" onclick="track('gitter', 'https://gitter.im/slim-js/Lobby?utm_source=slim-website&utm_medium=link&utm_campaign=share-link')">Chat on gitter.im</button>
             </div>
         </div>
-        <div class="slide">
+        <div>
             <div>
                 <section>
                     <h1 id="introduction">Introduction</h1>
@@ -149,13 +165,13 @@ bower install slimjs</code></pre>
                     </div>
                     <p>Please note:
                         Target browsers that do not support web component are required to use a polyfill like <a href="https://www.webcomponents.org/">web-components</a></p>
-                    <h1 id="defining-a-slim-component">Defining a slim component</h1>
+                    <h2 id="defining-a-slim-component">Defining a slim component</h2>
                     <div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="nx">Slim</span><span class="p">.</span><span class="nx">tag</span><span class="p">(</span><span class="s1">'my-custom-tagname'</span><span class="p">,</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">Slim</span> <span class="p">{</span>
 <span class="p">});</span>
 </code></pre>
                     </div>
 
-                    <p>Every slim.js component has it’s own default template to be rendered upon placed on the DOM tree.
+                    <p>Every slim.js component has it's own default template to be rendered upon placed on the DOM tree.
                         This template is accessible via a <em>template getter function</em>.</p>
 
                     <div class="language-js highlighter-rouge"><pre class="highlight"><code><span class="nx">Slim</span><span class="p">.</span><span class="nx">tag</span><span class="p">(</span><span class="s1">'my-custom-tagname'</span><span class="p">,</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">Slim</span> <span class="p">{</span>
@@ -174,10 +190,8 @@ bower install slimjs</code></pre>
 </code></pre>
                     </div>
 
-                    <h1 id="data-binding">Data Binding</h1>
+                    <h2 id="data-binding">Data Binding</h2>
                     <p>Slim.js supports one-way data binding to inner text, attributes, directly or via a parsing methods.</p>
-
-                    <h2 id="examples">Examples</h2>
 
                     <h3 id="text-property-binding">Text-property binding</h3>
 
@@ -246,11 +260,162 @@ bower install slimjs</code></pre>
 <span class="p">});</span>
 </code></pre>
                     </div>
-
                 </section>
-
+            </div>
+        </div>
+        <div class="slide frontpage">
+            <div class="centered frontpage-blinds">
+                <img class="logo" width="222" height="204" src="slim3-new.png" /><span class="logotype">Slim.js</span>
+                <h1 class="title">Read the docs</h1>
+                <button class="primary" onclick="track('guide', 'https://slim.js.org/guide.html')">Getting started</button>
+                <button class="secondary" onclick="track('github', 'https://github.com/eavichay/slim.js')">Project on Github</button>
+                <button class="secondary" onclick="track('gitter', 'https://gitter.im/slim-js/Lobby?utm_source=slim-website&utm_medium=link&utm_campaign=share-link')">Chat on gitter.im</button>
             </div>
         </div>
         <a href="https://github.com/eavichay/slim-web-components"><img style="position: fixed; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+    <style>
+        .highlight table td { padding: 5px; }
+
+        .highlight table pre { margin: 0; }
+
+        .highlight .cm { color: #999988; font-style: italic; }
+
+        .highlight .cp { color: #999999; font-weight: bold; }
+
+        .highlight .c1 { color: #999988; font-style: italic; }
+
+        .highlight .cs { color: #999999; font-weight: bold; font-style: italic; }
+
+        .highlight .c, .highlight .cd { color: #999988; font-style: italic; }
+
+        .highlight .err { color: #a61717; background-color: #e3d2d2; }
+
+        .highlight .gd { color: #000000; background-color: #ffdddd; }
+
+        .highlight .ge { color: #000000; font-style: italic; }
+
+        .highlight .gr { color: #aa0000; }
+
+        .highlight .gh { color: #999999; }
+
+        .highlight .gi { color: #000000; background-color: #ddffdd; }
+
+        .highlight .go { color: #888888; }
+
+        .highlight .gp { color: #555555; }
+
+        .highlight .gs { font-weight: bold; }
+
+        .highlight .gu { color: #aaaaaa; }
+
+        .highlight .gt { color: #aa0000; }
+
+        .highlight .kc { color: #000000; font-weight: bold; }
+
+        .highlight .kd { color: #000000; font-weight: bold; }
+
+        .highlight .kn { color: #000000; font-weight: bold; }
+
+        .highlight .kp { color: #000000; font-weight: bold; }
+
+        .highlight .kr { color: #000000; font-weight: bold; }
+
+        .highlight .kt { color: #445588; font-weight: bold; }
+
+        .highlight .k, .highlight .kv { color: #000000; font-weight: bold; }
+
+        .highlight .mf { color: #009999; }
+
+        .highlight .mh { color: #009999; }
+
+        .highlight .il { color: #009999; }
+
+        .highlight .mi { color: #009999; }
+
+        .highlight .mo { color: #009999; }
+
+        .highlight .m, .highlight .mb, .highlight .mx { color: #009999; }
+
+        .highlight .sb { color: #d14; }
+
+        .highlight .sc { color: #d14; }
+
+        .highlight .sd { color: #d14; }
+
+        .highlight .s2 { color: #d14; }
+
+        .highlight .se { color: #d14; }
+
+        .highlight .sh { color: #d14; }
+
+        .highlight .si { color: #d14; }
+
+        .highlight .sx { color: #d14; }
+
+        .highlight .sr { color: #009926; }
+
+        .highlight .s1 { color: #d14; }
+
+        .highlight .ss { color: #990073; }
+
+        .highlight .s { color: #d14; }
+
+        .highlight .na { color: #008080; }
+
+        .highlight .bp { color: #999999; }
+
+        .highlight .nb { color: #0086B3; }
+
+        .highlight .nc { color: #445588; font-weight: bold; }
+
+        .highlight .no { color: #008080; }
+
+        .highlight .nd { color: #3c5d5d; font-weight: bold; }
+
+        .highlight .ni { color: #800080; }
+
+        .highlight .ne { color: #990000; font-weight: bold; }
+
+        .highlight .nf { color: #990000; font-weight: bold; }
+
+        .highlight .nl { color: #990000; font-weight: bold; }
+
+        .highlight .nn { color: #555555; }
+
+        .highlight .nt { color: #000080; }
+
+        .highlight .vc { color: #008080; }
+
+        .highlight .vg { color: #008080; }
+
+        .highlight .vi { color: #008080; }
+
+        .highlight .nv { color: #008080; }
+
+        .highlight .ow { color: #000000; font-weight: bold; }
+
+        .highlight .o { color: #000000; font-weight: bold; }
+
+        .highlight .w { color: #bbbbbb; }
+
+        .highlight { background-color: #f8f8f8; }
+    </style>
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-97046917-1', 'auto');
+            ga('send', 'pageview');
+
+            function track(event, url) {
+                ga('send', 'event', event);
+                if (url) {
+                    this.window.open(url, "_blank");
+                }
+            }
+
+        </script>
     </body>
 </html>
