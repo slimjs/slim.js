@@ -13,6 +13,7 @@
         Slim.tag('test-binding',
         `
         <h1 click="changeName" bind>Hello, [[myName]]</h1>
+        <h2 bind>[[rev(myName)]]</h2>
         <div id="check-prop" attr="[[myName]]">Test Div</div>
         <div id="check-method" attr="[[rev(myName)]]">Test Div</div>
         `,
