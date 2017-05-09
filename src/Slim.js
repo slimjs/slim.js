@@ -359,6 +359,14 @@ class Slim extends HTMLElement {
                         let source = descriptor.target._boundParent;
                         descriptor.target._innerText = descriptor.target._innerText.replace(`[[${prop}]]`, Slim.__lookup(source, prop).obj)
                     }
+                } else if (descriptor.type === 'TM') {
+                    executor = () => {
+                        const values = descriptor.properties.map( compoundProp => {
+                            return Slim.__lookup(source, compoundProp).obj;
+                        });
+                        const value = source[descriptor.methodName].apply(source, values)
+                        descriptor.target._innerText = descriptor.target._innerText.replace(descriptor.expression, value);
+                    }
                 } else if (descriptor.type === 'R') {
                     executor = () => {
                         descriptor.repeater.renderList()
@@ -746,19 +754,19 @@ class Slim extends HTMLElement {
         const properties = prop ? [ prop ] : Object.keys(this._bindings);
         properties.forEach( property => {
             this._bindings[property].executors.forEach( fn => {
-                if (fn.descriptor.type !== 'T') fn()
+                if (fn.descriptor.type !== 'T' && fn.descriptor.type !== 'TM') fn()
             } )
         });
 
         // execute text bindings always
         Object.keys(this._bindings).forEach( property => {
             this._bindings[property].executors.forEach( fn => {
-                if (fn.descriptor.type === 'T') {
+                if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                     fn();
                 }
             });
             this._bindings[property].executors.forEach( fn => {
-                if (fn.descriptor.type === 'T') {
+                if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                     fn.descriptor.target.innerText = fn.descriptor.target._innerText;
                     if (fn.descriptor.target.__ieClone) {
                         fn.descriptor.target.__ieClone.innerText = fn.descriptor.target.innerText;
@@ -853,6 +861,31 @@ class Slim extends HTMLElement {
 
         allChildren = Slim.selectorToArr(this._virtualDOM, '*[bind]');
 
+        // bind method-based text binds
+        for (let child of allChildren) {
+            let match = child.innerText.match(/\[\[(\w+)\((.+)\)]\]/g);
+            if (match) {
+                match.forEach( expression => {
+                    // group 1 -> method
+                    // group 2 -> propertie(s), separated by comma, may have space
+                    const matches = expression.match(Slim.rxMethod);
+                    const methodName = matches[1];
+                    const props = matches[3].split(' ').join('').split(',');
+                    let descriptor = {
+                        type: 'TM',
+                        properties: props,
+                        target: child,
+                        expression: expression,
+                        source: child._boundParent,
+                        sourceText: child.innerText,
+                        methodName: methodName
+                    }
+                    child.sourceText = child.innerText;
+                    this.__bind(descriptor);
+                });
+            }
+        }
+        // bind property based text binds
         for (let child of allChildren) {
             let match = child.innerText.match(/\[\[([\w|.]+)\]\]/g);
             if (match && child.children.firstChild) {

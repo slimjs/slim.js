@@ -479,6 +479,14 @@ var Slim = function (_CustomElement2) {
                         var source = descriptor.target._boundParent;
                         descriptor.target._innerText = descriptor.target._innerText.replace('[[' + prop + ']]', Slim.__lookup(source, prop).obj);
                     };
+                } else if (descriptor.type === 'TM') {
+                    executor = function executor() {
+                        var values = descriptor.properties.map(function (compoundProp) {
+                            return Slim.__lookup(source, compoundProp).obj;
+                        });
+                        var value = source[descriptor.methodName].apply(source, values);
+                        descriptor.target._innerText = descriptor.target._innerText.replace(descriptor.expression, value);
+                    };
                 } else if (descriptor.type === 'R') {
                     executor = function executor() {
                         descriptor.repeater.renderList();
@@ -725,19 +733,19 @@ var Slim = function (_CustomElement2) {
             var properties = prop ? [prop] : Object.keys(this._bindings);
             properties.forEach(function (property) {
                 _this3._bindings[property].executors.forEach(function (fn) {
-                    if (fn.descriptor.type !== 'T') fn();
+                    if (fn.descriptor.type !== 'T' && fn.descriptor.type !== 'TM') fn();
                 });
             });
 
             // execute text bindings always
             Object.keys(this._bindings).forEach(function (property) {
                 _this3._bindings[property].executors.forEach(function (fn) {
-                    if (fn.descriptor.type === 'T') {
+                    if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                         fn();
                     }
                 });
                 _this3._bindings[property].executors.forEach(function (fn) {
-                    if (fn.descriptor.type === 'T') {
+                    if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                         fn.descriptor.target.innerText = fn.descriptor.target._innerText;
                         if (fn.descriptor.target.__ieClone) {
                             fn.descriptor.target.__ieClone.innerText = fn.descriptor.target.innerText;
@@ -856,6 +864,32 @@ var Slim = function (_CustomElement2) {
 
             allChildren = Slim.selectorToArr(this._virtualDOM, '*[bind]');
 
+            // bind method-based text binds
+
+            var _loop = function _loop(_child) {
+                var match = _child.innerText.match(/\[\[(\w+)\((.+)\)]\]/g);
+                if (match) {
+                    match.forEach(function (expression) {
+                        // group 1 -> method
+                        // group 2 -> propertie(s), separated by comma, may have space
+                        var matches = expression.match(Slim.rxMethod);
+                        var methodName = matches[1];
+                        var props = matches[3].split(' ').join('').split(',');
+                        var descriptor = {
+                            type: 'TM',
+                            properties: props,
+                            target: _child,
+                            expression: expression,
+                            source: _child._boundParent,
+                            sourceText: _child.innerText,
+                            methodName: methodName
+                        };
+                        _child.sourceText = _child.innerText;
+                        _this4.__bind(descriptor);
+                    });
+                }
+            };
+
             var _iteratorNormalCompletion4 = true;
             var _didIteratorError4 = false;
             var _iteratorError4 = undefined;
@@ -864,26 +898,9 @@ var Slim = function (_CustomElement2) {
                 for (var _iterator4 = allChildren[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
                     var _child = _step4.value;
 
-                    var match = _child.innerText.match(/\[\[([\w|.]+)\]\]/g);
-                    if (match && _child.children.firstChild) {
-                        throw 'Bind Error: Illegal bind attribute use on element type ' + _child.localName + ' with nested children.\n' + _child.outerHTML;
-                    }
-                    if (match) {
-                        var properties = [];
-                        for (var _i = 0; _i < match.length; _i++) {
-                            var lookup = match[_i].match(/([^\[].+[^\]])/)[0];
-                            properties.push(lookup);
-                        }
-                        var descriptor = {
-                            type: 'T',
-                            properties: properties,
-                            target: _child,
-                            sourceText: _child.innerText
-                        };
-                        _child.sourceText = _child.innerText;
-                        this.__bind(descriptor);
-                    }
+                    _loop(_child);
                 }
+                // bind property based text binds
             } catch (err) {
                 _didIteratorError4 = true;
                 _iteratorError4 = err;
@@ -895,6 +912,49 @@ var Slim = function (_CustomElement2) {
                 } finally {
                     if (_didIteratorError4) {
                         throw _iteratorError4;
+                    }
+                }
+            }
+
+            var _iteratorNormalCompletion5 = true;
+            var _didIteratorError5 = false;
+            var _iteratorError5 = undefined;
+
+            try {
+                for (var _iterator5 = allChildren[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                    var _child2 = _step5.value;
+
+                    var _match = _child2.innerText.match(/\[\[([\w|.]+)\]\]/g);
+                    if (_match && _child2.children.firstChild) {
+                        throw 'Bind Error: Illegal bind attribute use on element type ' + _child2.localName + ' with nested children.\n' + _child2.outerHTML;
+                    }
+                    if (_match) {
+                        var properties = [];
+                        for (var _i = 0; _i < _match.length; _i++) {
+                            var lookup = _match[_i].match(/([^\[].+[^\]])/)[0];
+                            properties.push(lookup);
+                        }
+                        var descriptor = {
+                            type: 'T',
+                            properties: properties,
+                            target: _child2,
+                            sourceText: _child2.innerText
+                        };
+                        _child2.sourceText = _child2.innerText;
+                        this.__bind(descriptor);
+                    }
+                }
+            } catch (err) {
+                _didIteratorError5 = true;
+                _iteratorError5 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                        _iterator5.return();
+                    }
+                } finally {
+                    if (_didIteratorError5) {
+                        throw _iteratorError5;
                     }
                 }
             }
@@ -1257,7 +1317,7 @@ Slim.__initRepeater = function () {
                 });
                 if (this._virtualDOM) this._captureBindings();
 
-                var _loop = function _loop(clone) {
+                var _loop2 = function _loop2(clone) {
                     clone[targetPropName] = clone[targetPropName];
                     clone._boundRepeaterParent = _this7._boundParent;
                     if (Slim.__prototypeDict[clone.localName] !== undefined || clone.isSlim) {
@@ -1274,27 +1334,27 @@ Slim.__initRepeater = function () {
                     });
                 };
 
-                var _iteratorNormalCompletion5 = true;
-                var _didIteratorError5 = false;
-                var _iteratorError5 = undefined;
+                var _iteratorNormalCompletion6 = true;
+                var _didIteratorError6 = false;
+                var _iteratorError6 = undefined;
 
                 try {
-                    for (var _iterator5 = this.clones[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                        var clone = _step5.value;
+                    for (var _iterator6 = this.clones[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                        var clone = _step6.value;
 
-                        _loop(clone);
+                        _loop2(clone);
                     }
                 } catch (err) {
-                    _didIteratorError5 = true;
-                    _iteratorError5 = err;
+                    _didIteratorError6 = true;
+                    _iteratorError6 = err;
                 } finally {
                     try {
-                        if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                            _iterator5.return();
+                        if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                            _iterator6.return();
                         }
                     } finally {
-                        if (_didIteratorError5) {
-                            throw _iteratorError5;
+                        if (_didIteratorError6) {
+                            throw _iteratorError6;
                         }
                     }
                 }
