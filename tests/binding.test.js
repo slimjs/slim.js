@@ -13,17 +13,21 @@ module.exports = {
         browser.waitForElementPresent('body');
         browser.waitForElementPresent('test-binding');
         browser.waitForElementPresent('h1');
+        browser.waitForElementPresent('h2');
         browser.assert.containsText('h1', 'Hello, eavichay');
+        browser.assert.containsText('h2', 'yahcivae');
         browser.assert.attributeEquals('#check-prop', 'attr', 'eavichay');
         browser.assert.attributeEquals('#check-method', 'attr', 'yahcivae');
         browser.click('h1');
         browser.assert.containsText('h1', 'Hello, slim.js');
+        browser.assert.containsText('h2', 'sj.mils');
         browser.assert.attributeEquals('#check-prop', 'attr', 'slim.js');
         browser.assert.attributeEquals('#check-method', 'attr', 'sj.mils');
         browser.execute(`
             document.querySelector('test-binding').myName = 'test';
         `);
         browser.assert.containsText('h1', 'Hello, test');
+        browser.assert.containsText('h2', 'tset');
         browser.assert.attributeEquals('#check-prop', 'attr', 'test');
         browser.assert.attributeEquals('#check-method', 'attr', 'tset');
     }
