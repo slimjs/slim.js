@@ -1053,8 +1053,12 @@ var Slim = function (_CustomElement2) {
 
             if (Slim.__isIE11) {
                 var ieClone = document.createElement('style');
+                ieClone.type = 'text/css';
                 node.__ieClone = ieClone;
                 ieClone.innerText = node.innerText;
+                while (ieClone.innerText.indexOf('  ') >= 0) {
+                    ieClone.innerText = ieClone.innerText.replace('  ', ' ');
+                }
                 document.head.appendChild(ieClone);
             }
         }

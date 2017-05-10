@@ -421,8 +421,12 @@ class Slim extends HTMLElement {
 
         if (Slim.__isIE11) {
             const ieClone = document.createElement('style');
+            ieClone.type = 'text/css';
             node.__ieClone = ieClone;
             ieClone.innerText = node.innerText;
+            while (ieClone.innerText.indexOf('  ') >= 0) {
+                ieClone.innerText = ieClone.innerText.replace('  ', ' ');
+            }
             document.head.appendChild(ieClone);
         }
     }
