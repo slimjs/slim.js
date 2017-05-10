@@ -1042,7 +1042,7 @@ var Slim = function (_CustomElement2) {
             var match = node.innerText.match(rxRules);
             if (match) {
                 match.forEach(function (selector) {
-                    if (selector.indexOf(':host') <= 0) {
+                    if (selector.indexOf(':host') < 0) {
                         node.innerText = node.innerText.replace(selector, ':host ' + selector);
                     }
                 });

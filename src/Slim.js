@@ -410,7 +410,7 @@ class Slim extends HTMLElement {
         const match = node.innerText.match(rxRules);
         if (match) {
             match.forEach( selector => {
-                if (selector.indexOf(':host') <= 0) {
+                if (selector.indexOf(':host') < 0) {
                     node.innerText = node.innerText.replace(selector, ':host ' + selector);
                 }
             });
@@ -422,7 +422,7 @@ class Slim extends HTMLElement {
         if (Slim.__isIE11) {
             const ieClone = document.createElement('style');
             ieClone.type = 'text/css';
-            node.__ieClone = ieClone;
+            node.__ieClone = ieClone; 
             ieClone.innerText = node.innerText;
             while (ieClone.innerText.indexOf('  ') >= 0) {
                 ieClone.innerText = ieClone.innerText.replace('  ', ' ');
