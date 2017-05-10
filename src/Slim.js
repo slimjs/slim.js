@@ -226,12 +226,12 @@ class Slim extends HTMLElement {
     }
 
     find(selector) {
-        return this.querySelector(selector);
+        return this.rootElement.querySelector(selector);
     }
 
     //noinspection JSUnusedGlobalSymbols
     findAll(selector) {
-        return Slim.selectorToArr(this, selector);
+        return Slim.selectorToArr(this.rootElemnt, selector);
     }
 
     watch(prop, executor) {

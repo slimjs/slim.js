@@ -335,7 +335,7 @@ var Slim = function (_CustomElement2) {
     _createClass(Slim, [{
         key: 'find',
         value: function find(selector) {
-            return this.querySelector(selector);
+            return this.rootElement.querySelector(selector);
         }
 
         //noinspection JSUnusedGlobalSymbols
@@ -343,7 +343,7 @@ var Slim = function (_CustomElement2) {
     }, {
         key: 'findAll',
         value: function findAll(selector) {
-            return Slim.selectorToArr(this, selector);
+            return Slim.selectorToArr(this.rootElemnt, selector);
         }
     }, {
         key: 'watch',
