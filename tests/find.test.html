@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="../Slim.js"></script>
+    <title></title>
+</head>
+<body>
+    <test-find></test-find>
+
+    <script>
+        Slim.tag('test-find',
+        `
+        <div id="output" bind>[[data]]</div>
+        <input type="text" id="inp" />
+        <button click="doit" id="btn"></button>
+        `,
+        class extends Slim {
+                onAfterRender() {
+                    window.unit = this;
+                }
+               doit() {
+                   this.data = this.find('#inp').value;
+               }     
+               onBeforeCreated() {
+                   this.data = 'before123';
+               }
+               get useShadow() {
+                   return true;
+               }
+            
+        });
+    </script>
+</body>
+</html>
