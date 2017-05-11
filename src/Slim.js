@@ -364,8 +364,14 @@ class Slim extends HTMLElement {
                         const values = descriptor.properties.map( compoundProp => {
                             return Slim.__lookup(source, compoundProp).obj;
                         });
-                        const value = source[descriptor.methodName].apply(source, values)
-                        descriptor.target._innerText = descriptor.target._innerText.replace(descriptor.expression, value);
+                        try{
+                            const value = source[descriptor.methodName].apply(source, values);
+                            descriptor.target._innerText = descriptor.target._innerText.replace(descriptor.expression, value);
+                        }
+                        catch(exc) {
+                            console.error(`Could not execute function ${descriptor.methodName} in element ${descriptor.source.localName}`);
+                            console.info(exc);
+                        }
                     }
                 } else if (descriptor.type === 'R') {
                     executor = () => {

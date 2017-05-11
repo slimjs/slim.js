@@ -29,7 +29,7 @@ var Slim = function (_CustomElement2) {
          * Best practice to call polyfill in <head> section of the HTML
          * @example
          *      <head>
-         *          <script src="./path/to/slim/Slim.min.js"></script>
+         *          <script src="./path/to/slim/Slim.min.js></script>
          *          <script>
          *              Slim.polyfill('./path/to/web-components-polyfill.js');
          *          </script>
@@ -484,8 +484,13 @@ var Slim = function (_CustomElement2) {
                         var values = descriptor.properties.map(function (compoundProp) {
                             return Slim.__lookup(source, compoundProp).obj;
                         });
-                        var value = source[descriptor.methodName].apply(source, values);
-                        descriptor.target._innerText = descriptor.target._innerText.replace(descriptor.expression, value);
+                        try {
+                            var value = source[descriptor.methodName].apply(source, values);
+                            descriptor.target._innerText = descriptor.target._innerText.replace(descriptor.expression, value);
+                        } catch (exc) {
+                            console.error('Could not execute function ' + descriptor.methodName + ' in element ' + descriptor.source.localName);
+                            console.info(exc);
+                        }
                     };
                 } else if (descriptor.type === 'R') {
                     executor = function executor() {

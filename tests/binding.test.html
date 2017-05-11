@@ -3,21 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents.min.js"></script>
-    <script src="../Slim.js"></script>
+    <script src="../src/Slim.js"></script>
+    <script>
+        console.error = function(what) {
+            document.querySelector('#log-error').innerText = what;
+        }
+        console.info = function(what) {
+            document.querySelector('#log-info').innerText = what;
+        }
+    </script>
     <title></title>
 </head>
 <body>
     <test-binding></test-binding>
+    <div id="log">
+        <p id="log-error"></p>
+        <p id="log-info"></p>
+    </div>
 
     <script>
+
         Slim.tag('test-binding',
         `
         <h1 click="changeName" bind>Hello, [[myName]]</h1>
         <h2 bind>[[rev(myName)]]</h2>
         <div id="check-prop" attr="[[myName]]">Test Div</div>
         <div id="check-method" attr="[[rev(myName)]]">Test Div</div>
+        <div id="check-undefined-method" bind>[[undefinedMethod(prop)]]</div>
         `,
         class extends Slim {
+
             onBeforeCreated() {
                 this.myName = "eavichay";
             }

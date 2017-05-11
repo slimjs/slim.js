@@ -23,6 +23,9 @@ module.exports = {
         browser.assert.containsText('h2', 'sj.mils');
         browser.assert.attributeEquals('#check-prop', 'attr', 'slim.js');
         browser.assert.attributeEquals('#check-method', 'attr', 'sj.mils');
+        browser.assert.containsText('#check-undefined-method', '[[undefinedMethod(prop)]]');
+        browser.assert.containsText('#log-error', 'Could not execute function undefinedMethod in element test-binding');
+        browser.assert.containsText('#log-info', `TypeError: Cannot read property 'apply' of undefined`);
         browser.execute(`
             document.querySelector('test-binding').myName = 'test';
         `);
@@ -30,5 +33,10 @@ module.exports = {
         browser.assert.containsText('h2', 'tset');
         browser.assert.attributeEquals('#check-prop', 'attr', 'test');
         browser.assert.attributeEquals('#check-method', 'attr', 'tset');
+        browser.assert.containsText('#check-undefined-method', '[[undefinedMethod(prop)]]');
+        browser.assert.containsText('#log-error', 'Could not execute function undefinedMethod in element test-binding');
+        browser.assert.containsText('#log-info', `TypeError: Cannot read property 'apply' of undefined`);
+
+
     }
 };
