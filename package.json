@@ -1,6 +1,6 @@
 {
   "name": "slim-js",
-  "version": "2.8.19",
+  "version": "2.8.20",
   "description": "Superpower Web Components",
   "main": "Slim.min.js",
   "scripts": {
