@@ -144,15 +144,18 @@ var Slim = function (_CustomElement2) {
             if (target.remove) {
                 target.remove();
             }
-            if (!target.remove && target.parentNode) {
+            if (target.parentNode) {
                 target.parentNode.removeChild(target);
-                if (target._boundChildren) {
-                    target._boundChildren.forEach(function (child) {
-                        if (child.__ieClone) {
-                            Slim.removeChild(child.__ieClone);
-                        }
-                    });
-                }
+            }
+            if (target.__ieClone) {
+                Slim.removeChild(target.__ieClone);
+            }
+            if (target._boundChildren) {
+                target._boundChildren.forEach(function (child) {
+                    if (child.__ieClone) {
+                        Slim.removeChild(child.__ieClone);
+                    }
+                });
             }
         }
 
@@ -494,7 +497,8 @@ var Slim = function (_CustomElement2) {
                     };
                 } else if (descriptor.type === 'R') {
                     executor = function executor() {
-                        descriptor.repeater.renderList();
+                        var value = Slim.__lookup(descriptor.source, descriptor.properties[0]).obj;
+                        descriptor.repeater.renderList(value);
                     };
                 } else if (descriptor.type === 'W') {
                     executor = function executor() {
@@ -1258,12 +1262,22 @@ Slim.__initRepeater = function () {
         }
 
         _createClass(SlimRepeater, [{
+            key: 'getSourceData',
+            value: function getSourceData() {
+                try {
+                    var lookup = Slim.__lookup(this._boundParent, this.getAttribute('source'));
+                    return lookup.obj || [];
+                } catch (err) {
+                    return [];
+                }
+            }
+        }, {
             key: 'onAdded',
             value: function onAdded() {
                 if (!this.uq_index) {
                     this.createdCallback();
                 }
-                this.renderList();
+                this.renderList(this.getSourceData());
             }
         }, {
             key: 'onRemoved',
@@ -1285,7 +1299,7 @@ Slim.__initRepeater = function () {
             key: 'checkoutRender',
             value: function checkoutRender() {
                 this.pendingRender = false;
-                this.renderList();
+                this.renderList(this.getSourceData());
             }
         }, {
             key: 'clearList',
@@ -1297,16 +1311,35 @@ Slim.__initRepeater = function () {
             }
         }, {
             key: 'renderList',
-            value: function renderList() {
+            value: function renderList(sourceData) {
                 var _this7 = this;
 
+                if (!this.sourceNode || !sourceData) return;
+                if (this.sourceData !== sourceData) {
+                    this.sourceData && this.sourceData.unregisterSlimRepeater && this.sourceData.unregisterSlimRepeater(this);
+                    this.sourceData = sourceData;
+                    sourceData.registerSlimRepeater(this);
+                }
                 var targetPropName = this.getAttribute('target-attr');
-                if (!this.sourceNode) return;
+
+                // same list length - update only
+                if (this.clones && sourceData.length === this.clones.length) {
+                    this.clones.forEach(function (clone, idx) {
+                        clone[targetPropName] = sourceData[idx];
+                    });
+                    this._executeBindings(targetPropName);
+                    return;
+                }
+
                 this.clearList();
                 //noinspection JSUnusedGlobalSymbols
 
-                this.sourceData.registerSlimRepeater(this);
-                this.sourceData.forEach(function (dataItem, index) {
+                // empty list - return now when clear
+                if (sourceData.length === 0) {
+                    return;
+                }
+
+                sourceData.forEach(function (dataItem, index) {
                     var clone = _this7.sourceNode.cloneNode(true);
                     clone.removeAttribute('slim-repeat');
                     clone.removeAttribute('slim-repeat-as');
@@ -1317,7 +1350,7 @@ Slim.__initRepeater = function () {
                     }
                     clone[targetPropName] = dataItem;
                     clone.data_index = index;
-                    clone.data_source = _this7.sourceData;
+                    clone.data_source = sourceData;
                     clone.sourceText = clone.innerText;
                     if (Slim.__isWCSupported) {
                         _this7.insertAdjacentElement('beforeEnd', clone);
@@ -1379,16 +1412,6 @@ Slim.__initRepeater = function () {
             key: 'useShadow',
             get: function get() {
                 return false;
-            }
-        }, {
-            key: 'sourceData',
-            get: function get() {
-                try {
-                    var lookup = Slim.__lookup(this._boundParent, this.getAttribute('source'));
-                    return lookup.obj || [];
-                } catch (err) {
-                    return [];
-                }
             }
         }]);
 

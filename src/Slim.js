@@ -109,15 +109,18 @@ class Slim extends HTMLElement {
         if (target.remove) {
             target.remove();
         }
-        if (!target.remove && target.parentNode) {
+        if (target.parentNode) {
             target.parentNode.removeChild(target);
-            if (target._boundChildren) {
-                target._boundChildren.forEach( child => {
-                    if (child.__ieClone) {
-                        Slim.removeChild(child.__ieClone);
-                    }
-                });
-            }
+        }
+        if (target.__ieClone) {
+            Slim.removeChild(target.__ieClone);
+        }
+        if (target._boundChildren) {
+            target._boundChildren.forEach( child => {
+                if (child.__ieClone) {
+                    Slim.removeChild(child.__ieClone);
+                }
+            });
         }
     }
 
@@ -375,7 +378,8 @@ class Slim extends HTMLElement {
                     }
                 } else if (descriptor.type === 'R') {
                     executor = () => {
-                        descriptor.repeater.renderList()
+                        const value = Slim.__lookup(descriptor.source, descriptor.properties[0]).obj;
+                        descriptor.repeater.renderList(value);
                     }
                 } else if (descriptor.type === 'W') {
                     executor = () => {
@@ -428,7 +432,7 @@ class Slim extends HTMLElement {
         if (Slim.__isIE11) {
             const ieClone = document.createElement('style');
             ieClone.type = 'text/css';
-            node.__ieClone = ieClone; 
+            node.__ieClone = ieClone;
             ieClone.innerText = node.innerText;
             while (ieClone.innerText.indexOf('  ') >= 0) {
                 ieClone.innerText = ieClone.innerText.replace('  ', ' ');
@@ -976,7 +980,7 @@ Slim.__initRepeater = function() {
             return false;
         }
 
-        get sourceData() {
+        getSourceData() {
             try {
                 let lookup = Slim.__lookup(this._boundParent, this.getAttribute('source'));
                 return lookup.obj || []
@@ -990,7 +994,7 @@ Slim.__initRepeater = function() {
             if (!this.uq_index) {
                 this.createdCallback();
             }
-            this.renderList();
+            this.renderList(this.getSourceData());
         }
 
         onRemoved() {
@@ -1007,7 +1011,7 @@ Slim.__initRepeater = function() {
 
         checkoutRender() {
             this.pendingRender = false;
-            this.renderList();
+            this.renderList(this.getSourceData());
         }
 
         clearList() {
@@ -1017,14 +1021,33 @@ Slim.__initRepeater = function() {
             this.clones = [];
         }
 
-        renderList() {
+        renderList(sourceData) {
+            if (!this.sourceNode || !sourceData) return;
+            if (this.sourceData !== sourceData) {
+                this.sourceData && this.sourceData.unregisterSlimRepeater && this.sourceData.unregisterSlimRepeater(this);
+                this.sourceData = sourceData;
+                sourceData.registerSlimRepeater(this);
+            }
             let targetPropName = this.getAttribute('target-attr');
-            if (!this.sourceNode) return;
+
+            // same list length - update only
+            if (this.clones && sourceData.length === this.clones.length) {
+                this.clones.forEach( (clone, idx) => {
+                    clone[targetPropName] = sourceData[idx];
+                });
+                this._executeBindings(targetPropName);
+                return;
+            }
+
             this.clearList();
             //noinspection JSUnusedGlobalSymbols
 
-            this.sourceData.registerSlimRepeater(this);
-            this.sourceData.forEach( (dataItem, index) => {
+            // empty list - return now when clear
+            if (sourceData.length === 0) {
+                return;
+            }
+
+            sourceData.forEach( (dataItem, index) => {
                 let clone = this.sourceNode.cloneNode(true);
                 clone.removeAttribute('slim-repeat');
                 clone.removeAttribute('slim-repeat-as');
@@ -1035,7 +1058,7 @@ Slim.__initRepeater = function() {
                 }
                 clone[targetPropName] = dataItem;
                 clone.data_index = index;
-                clone.data_source = this.sourceData;
+                clone.data_source = sourceData;
                 clone.sourceText = clone.innerText;
                 if (Slim.__isWCSupported) {
                     this.insertAdjacentElement('beforeEnd', clone)
