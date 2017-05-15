@@ -1034,7 +1034,23 @@ Slim.__initRepeater = function() {
             if (this.clones && sourceData.length === this.clones.length && this.clones.length !== 0) {
                 this.clones.forEach( (clone, idx) => {
                     clone[targetPropName] = sourceData[idx];
+                    Slim.selectorToArr(clone, '*').forEach( child => {
+                        child[targetPropName] = sourceData[idx];
+                    });
                 });
+                this._executeBindings(targetPropName);
+                return;
+            } else if (this.clones && sourceData.length < this.clones.length) {
+                this.sourceData.forEach( (dataItem, idx) => {
+                    this.clones[idx][targetPropName] = dataItem;
+                    Slim.selectorToArr(this.clones[idx], '*').forEach( child => {
+                        child[targetPropName] = sourceData[idx];
+                    });
+                });
+                const clonesToBeRemoved = this.clones.splice(sourceData.length);
+                clonesToBeRemoved.forEach( cloneToBeRemoved => {
+                    Slim.removeChild(cloneToBeRemoved);
+                })
                 this._executeBindings(targetPropName);
                 return;
             }

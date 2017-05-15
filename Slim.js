@@ -1326,6 +1326,22 @@ Slim.__initRepeater = function () {
                 if (this.clones && sourceData.length === this.clones.length && this.clones.length !== 0) {
                     this.clones.forEach(function (clone, idx) {
                         clone[targetPropName] = sourceData[idx];
+                        Slim.selectorToArr(clone, '*').forEach(function (child) {
+                            child[targetPropName] = sourceData[idx];
+                        });
+                    });
+                    this._executeBindings(targetPropName);
+                    return;
+                } else if (this.clones && sourceData.length < this.clones.length) {
+                    this.sourceData.forEach(function (dataItem, idx) {
+                        _this7.clones[idx][targetPropName] = dataItem;
+                        Slim.selectorToArr(_this7.clones[idx], '*').forEach(function (child) {
+                            child[targetPropName] = sourceData[idx];
+                        });
+                    });
+                    var clonesToBeRemoved = this.clones.splice(sourceData.length);
+                    clonesToBeRemoved.forEach(function (cloneToBeRemoved) {
+                        Slim.removeChild(cloneToBeRemoved);
                     });
                     this._executeBindings(targetPropName);
                     return;
