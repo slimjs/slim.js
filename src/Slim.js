@@ -767,19 +767,19 @@ class Slim extends HTMLElement {
         // execute specific binding or all
         const properties = prop ? [ prop ] : Object.keys(this._bindings);
         properties.forEach( property => {
-            this._bindings[property].executors.forEach( fn => {
+            this._bindings[property] && this._bindings[property].executors.forEach( fn => {
                 if (fn.descriptor.type !== 'T' && fn.descriptor.type !== 'TM') fn()
             } )
         });
 
         // execute text bindings always
         Object.keys(this._bindings).forEach( property => {
-            this._bindings[property].executors.forEach( fn => {
+            this._bindings[property] && this._bindings[property].executors.forEach( fn => {
                 if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                     fn();
                 }
             });
-            this._bindings[property].executors.forEach( fn => {
+            this._bindings[property] && this._bindings[property].executors.forEach( fn => {
                 if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                     fn.descriptor.target.innerText = fn.descriptor.target._innerText;
                     if (fn.descriptor.target.__ieClone) {
@@ -980,6 +980,11 @@ Slim.__initRepeater = function() {
             return false;
         }
 
+        initialize() {
+            super.initialize();
+            this.clones = [];
+        }
+
         getSourceData() {
             try {
                 let lookup = Slim.__lookup(this._boundParent, this.getAttribute('source'));
@@ -1023,6 +1028,7 @@ Slim.__initRepeater = function() {
 
         renderList(sourceData) {
             if (!this.sourceNode || !sourceData) return;
+            let remaining = [];
             if (this.sourceData !== sourceData) {
                 this.sourceData && this.sourceData.unregisterSlimRepeater && this.sourceData.unregisterSlimRepeater(this);
                 this.sourceData = sourceData;
@@ -1040,7 +1046,10 @@ Slim.__initRepeater = function() {
                 });
                 this._executeBindings(targetPropName);
                 return;
-            } else if (this.clones && sourceData.length < this.clones.length) {
+            }
+
+            // data is shorter
+            if (this.clones && sourceData.length < this.clones.length) {
                 this.sourceData.forEach( (dataItem, idx) => {
                     this.clones[idx][targetPropName] = dataItem;
                     Slim.selectorToArr(this.clones[idx], '*').forEach( child => {
@@ -1055,10 +1064,25 @@ Slim.__initRepeater = function() {
                 return;
             }
 
-            this.clearList();
-            //noinspection JSUnusedGlobalSymbols
+            // data is longer
+            if (this.clones && sourceData.length > this.clones.length) {
+                this.clones.forEach( (clone, idx) => {
+                    clone[targetPropName] = sourceData[idx];
+                    Slim.selectorToArr(clone, '*').forEach( child => {
+                        child[targetPropName] = sourceData[idx];
+                    });
+                });
+                remaining = sourceData.slice( this.clones.length );
+            }
 
-            sourceData.forEach( (dataItem, index) => {
+
+            // this.clearList();
+            //noinspection JSUnusedGlobalSymbols
+            if (remaining.length === 0) {
+                return;
+            }
+
+            remaining.forEach( (dataItem, index) => {
                 let clone = this.sourceNode.cloneNode(true);
                 clone.removeAttribute('slim-repeat');
                 clone.removeAttribute('slim-repeat-as');

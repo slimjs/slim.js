@@ -1,5 +1,7 @@
 'use strict';
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -741,19 +743,19 @@ var Slim = function (_CustomElement2) {
             // execute specific binding or all
             var properties = prop ? [prop] : Object.keys(this._bindings);
             properties.forEach(function (property) {
-                _this3._bindings[property].executors.forEach(function (fn) {
+                _this3._bindings[property] && _this3._bindings[property].executors.forEach(function (fn) {
                     if (fn.descriptor.type !== 'T' && fn.descriptor.type !== 'TM') fn();
                 });
             });
 
             // execute text bindings always
             Object.keys(this._bindings).forEach(function (property) {
-                _this3._bindings[property].executors.forEach(function (fn) {
+                _this3._bindings[property] && _this3._bindings[property].executors.forEach(function (fn) {
                     if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                         fn();
                     }
                 });
-                _this3._bindings[property].executors.forEach(function (fn) {
+                _this3._bindings[property] && _this3._bindings[property].executors.forEach(function (fn) {
                     if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                         fn.descriptor.target.innerText = fn.descriptor.target._innerText;
                         if (fn.descriptor.target.__ieClone) {
@@ -1262,6 +1264,12 @@ Slim.__initRepeater = function () {
         }
 
         _createClass(SlimRepeater, [{
+            key: 'initialize',
+            value: function initialize() {
+                _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'initialize', this).call(this);
+                this.clones = [];
+            }
+        }, {
             key: 'getSourceData',
             value: function getSourceData() {
                 try {
@@ -1315,6 +1323,7 @@ Slim.__initRepeater = function () {
                 var _this7 = this;
 
                 if (!this.sourceNode || !sourceData) return;
+                var remaining = [];
                 if (this.sourceData !== sourceData) {
                     this.sourceData && this.sourceData.unregisterSlimRepeater && this.sourceData.unregisterSlimRepeater(this);
                     this.sourceData = sourceData;
@@ -1332,7 +1341,10 @@ Slim.__initRepeater = function () {
                     });
                     this._executeBindings(targetPropName);
                     return;
-                } else if (this.clones && sourceData.length < this.clones.length) {
+                }
+
+                // data is shorter
+                if (this.clones && sourceData.length < this.clones.length) {
                     this.sourceData.forEach(function (dataItem, idx) {
                         _this7.clones[idx][targetPropName] = dataItem;
                         Slim.selectorToArr(_this7.clones[idx], '*').forEach(function (child) {
@@ -1347,10 +1359,24 @@ Slim.__initRepeater = function () {
                     return;
                 }
 
-                this.clearList();
-                //noinspection JSUnusedGlobalSymbols
+                // data is longer
+                if (this.clones && sourceData.length > this.clones.length) {
+                    this.clones.forEach(function (clone, idx) {
+                        clone[targetPropName] = sourceData[idx];
+                        Slim.selectorToArr(clone, '*').forEach(function (child) {
+                            child[targetPropName] = sourceData[idx];
+                        });
+                    });
+                    remaining = sourceData.slice(this.clones.length);
+                }
 
-                sourceData.forEach(function (dataItem, index) {
+                // this.clearList();
+                //noinspection JSUnusedGlobalSymbols
+                if (remaining.length === 0) {
+                    return;
+                }
+
+                remaining.forEach(function (dataItem, index) {
                     var clone = _this7.sourceNode.cloneNode(true);
                     clone.removeAttribute('slim-repeat');
                     clone.removeAttribute('slim-repeat-as');
