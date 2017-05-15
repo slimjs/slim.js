@@ -1323,7 +1323,7 @@ Slim.__initRepeater = function () {
                 var targetPropName = this.getAttribute('target-attr');
 
                 // same list length - update only
-                if (this.clones && sourceData.length === this.clones.length) {
+                if (this.clones && sourceData.length === this.clones.length && this.clones.length !== 0) {
                     this.clones.forEach(function (clone, idx) {
                         clone[targetPropName] = sourceData[idx];
                     });
@@ -1333,11 +1333,6 @@ Slim.__initRepeater = function () {
 
                 this.clearList();
                 //noinspection JSUnusedGlobalSymbols
-
-                // empty list - return now when clear
-                if (sourceData.length === 0) {
-                    return;
-                }
 
                 sourceData.forEach(function (dataItem, index) {
                     var clone = _this7.sourceNode.cloneNode(true);
