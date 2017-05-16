@@ -32,14 +32,8 @@ class Slim extends HTMLElement {
             Slim.__templateDict[tag] = clazzOrTemplate;
         }
         Slim.__prototypeDict[tag] = clazz;
-
         // window.customElements.define(tag, clazz);
-        if (Slim.__prototypeDict['slim-repeat'] === undefined) {
-            Slim.__initRepeater();
-        }
-        setTimeout( () => {
-            document.registerElement(tag, clazz);
-        }, 0);
+        document.registerElement(tag, clazz);
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -115,18 +109,15 @@ class Slim extends HTMLElement {
         if (target.remove) {
             target.remove();
         }
-        if (target.parentNode) {
+        if (!target.remove && target.parentNode) {
             target.parentNode.removeChild(target);
-        }
-        if (target.__ieClone) {
-            Slim.removeChild(target.__ieClone);
-        }
-        if (target._boundChildren) {
-            target._boundChildren.forEach( child => {
-                if (child.__ieClone) {
-                    Slim.removeChild(child.__ieClone);
-                }
-            });
+            if (target._boundChildren) {
+                target._boundChildren.forEach( child => {
+                    if (child.__ieClone) {
+                        Slim.removeChild(child.__ieClone);
+                    }
+                });
+            }
         }
     }
 
@@ -184,28 +175,15 @@ class Slim extends HTMLElement {
         return {source: desc, prop:prop, obj:obj};
     }
 
-    static __inject(descriptor) {
-        try {
-            descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = Slim.__injections[ descriptor.factory ](descriptor.target);
-        }
-        catch (err) {
-            console.error('Could not inject ' + descriptor.attribute + ' into ' + descriptor.target);
-            console.info('Descriptor ', descriptor);
-            throw err;
-        }
-
-    }
-
-    static inject(name, injector) {
-        Slim.__injections[name] = injector;
-    }
-
     /**
      *
      * @param descriptor
      * @private
      */
     static __createRepeater(descriptor) {
+        if (Slim.__prototypeDict['slim-repeat'] === undefined) {
+            Slim.__initRepeater();
+        }
         let repeater;
         repeater = document.createElement('slim-repeat');
         repeater.sourceNode = descriptor.target;
@@ -397,7 +375,8 @@ class Slim extends HTMLElement {
                     }
                 } else if (descriptor.type === 'R') {
                     executor = () => {
-                        descriptor.repeater.renderList()
+                        descriptor.repeater.unregister();
+                        descriptor.repeater.renderList();
                     }
                 } else if (descriptor.type === 'W') {
                     executor = () => {
@@ -837,6 +816,8 @@ class Slim extends HTMLElement {
 
         let allChildren = Slim.selectorToArr(this._virtualDOM, '*');
         for (let child of allChildren) {
+            if (child._boundP) continue;
+            child._boundP = true;
             child._sourceOuterHTML = child.outerHTML;
             child._boundParent = child._boundParent || this;
             self._boundChildren = this._boundChildren || [];
@@ -895,6 +876,8 @@ class Slim extends HTMLElement {
 
         // bind method-based text binds
         for (let child of allChildren) {
+            if (child._boundTM) continue;
+            child._boundTM = true;
             let match = child.innerText.match(/\[\[(\w+)\((.+)\)]\]/g);
             if (match) {
                 match.forEach( expression => {
@@ -919,6 +902,8 @@ class Slim extends HTMLElement {
         }
         // bind property based text binds
         for (let child of allChildren) {
+            if (child._boundT) continue;
+            child._boundT = true;
             let match = child.innerText.match(/\[\[([\w|.]+)\]\]/g);
             if (match && child.children.firstChild) {
                 throw 'Bind Error: Illegal bind attribute use on element type ' + child.localName + ' with nested children.\n' + child.outerHTML;
@@ -950,7 +935,6 @@ Slim.__customAttributeProcessors = {};
 Slim.__prototypeDict = {};
 Slim.__uqIndex = 0;
 Slim.__templateDict = {};
-Slim.__injections = {};
 Slim.__plugins = {
     'create': [],
     'beforeRender': [],
@@ -1009,6 +993,10 @@ Slim.__initRepeater = function() {
             }
         }
 
+        onBeforeCreated() {
+            this.clones = [];
+        }
+
         onAdded() {
             if (!this.uq_index) {
                 this.createdCallback();
@@ -1033,31 +1021,84 @@ Slim.__initRepeater = function() {
             this.renderList();
         }
 
+        unregister() {
+            this.sourceData.unregisterSlimRepeater(this);
+        }
+
         clearList() {
             this.clones && this.clones.forEach( clone => {
                 Slim.removeChild(clone);
             });
             this.clones = [];
+            this._boundChildren = [];
+        }
+
+        removeClone(clone) {
+            Slim.removeChild(clone);
+            Slim.selectorToArr(clone, '*').forEach(child => {
+                this._boundChildren.splice( this._boundChildren.indexOf(child), 1);
+            })
+            this._boundChildren.splice(this._boundChildren.indexOf(clone), 1);
+        }
+
+        updateList() {
+            const targetPropName = this.getAttribute('target-attr');
+            this.clones.forEach( (clone, idx) => {
+                const data = this.sourceData[idx];
+                if (clone[targetPropName] === data) return;
+                clone[targetPropName] = data;
+                Slim.selectorToArr(clone, '*').forEach( child => {
+                    child[targetPropName] = data;
+                });
+            });
         }
 
         renderList() {
-            let targetPropName = this.getAttribute('target-attr');
-            if (!this.sourceNode) return;
-            this.clearList();
-            //noinspection JSUnusedGlobalSymbols
-
             this.sourceData.registerSlimRepeater(this);
-            this.sourceData.forEach( (dataItem, index) => {
+            if (!this.sourceNode) return;
+            if (this.sourceData.length === 0) {
+                this.clearList();
+                return;
+            } else if (this.clones && this.clones.length === this.sourceData.length) {
+                this.updateList();
+                this._executeBindings();
+                return;
+            } else if (this.clones && this.clones.length > this.sourceData.length) {
+                this.updateList();
+                const leftovers = this.clones.splice( this.sourceData.length );
+                leftovers.forEach( leftover => {
+                    this.removeClone(leftover);
+                });
+                this._executeBindings();
+                return;
+            } else if (this.clones && this.clones.length < this.sourceData.length) {
+                this.updateList();
+                const remaining = this.sourceData.slice( this.clones.length );
+                this.buildNodes(remaining);
+                this._executeBindings();
+            } else {
+                this.buildNodes(this.sourceData);
+                this._executeBindings();
+            }
+        }
+
+        buildNodes(nodes) {
+
+            // this.clearList();
+            //noinspection JSUnusedGlobalSymbols
+            const offset = this.clones.length;
+            let targetPropName = this.getAttribute('target-attr');
+            nodes.forEach( (dataItem, index) => {
                 let clone = this.sourceNode.cloneNode(true);
                 clone.removeAttribute('slim-repeat');
                 clone.removeAttribute('slim-repeat-as');
-                clone.setAttribute('slim-repeat-index', index);
+                clone.setAttribute('slim-repeat-index', index + offset);
                 if (!Slim.__isWCSupported) {
                     this.insertAdjacentHTML('beforeEnd', clone.outerHTML);
                     clone = this.find('*[slim-repeat-index="' + index.toString() + '"]')
                 }
                 clone[targetPropName] = dataItem;
-                clone.data_index = index;
+                clone.data_index = index + offset;
                 clone.data_source = this.sourceData;
                 clone.sourceText = clone.innerText;
                 if (Slim.__isWCSupported) {
@@ -1083,8 +1124,6 @@ Slim.__initRepeater = function() {
                     element.data_source = clone.data_source;
                 })
             }
-
-            this._executeBindings();
             if (this._isAdjacentRepeater) {
                 this._virtualDOM && Slim.__moveChildrenBefore(this._virtualDOM, this, true)
             } else {
