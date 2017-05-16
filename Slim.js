@@ -1323,7 +1323,6 @@ Slim.__initRepeater = function () {
                 var _this7 = this;
 
                 if (!this.sourceNode || !sourceData) return;
-                var remaining = [];
                 if (this.sourceData !== sourceData) {
                     this.sourceData && this.sourceData.unregisterSlimRepeater && this.sourceData.unregisterSlimRepeater(this);
                     this.sourceData = sourceData;
@@ -1360,23 +1359,10 @@ Slim.__initRepeater = function () {
                 }
 
                 // data is longer
-                if (this.clones && sourceData.length > this.clones.length) {
-                    this.clones.forEach(function (clone, idx) {
-                        clone[targetPropName] = sourceData[idx];
-                        Slim.selectorToArr(clone, '*').forEach(function (child) {
-                            child[targetPropName] = sourceData[idx];
-                        });
-                    });
-                    remaining = sourceData.slice(this.clones.length);
-                }
 
-                // this.clearList();
-                //noinspection JSUnusedGlobalSymbols
-                if (remaining.length === 0) {
-                    return;
-                }
+                this.clearList();
 
-                remaining.forEach(function (dataItem, index) {
+                sourceData.forEach(function (dataItem, index) {
                     var clone = _this7.sourceNode.cloneNode(true);
                     clone.removeAttribute('slim-repeat');
                     clone.removeAttribute('slim-repeat-as');
