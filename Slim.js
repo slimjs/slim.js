@@ -62,6 +62,9 @@ var Slim = function (_CustomElement2) {
             Slim.__prototypeDict[_tag] = clazz;
 
             // window.customElements.define(tag, clazz);
+            if (Slim.__prototypeDict['slim-repeat'] === undefined) {
+                Slim.__initRepeater();
+            }
             setTimeout(function () {
                 document.registerElement(_tag, clazz);
             }, 0);
@@ -165,7 +168,7 @@ var Slim = function (_CustomElement2) {
         }
 
         /**
-         *
+         *§
          * @param source
          * @param target
          * @param activate
@@ -294,9 +297,6 @@ var Slim = function (_CustomElement2) {
     }, {
         key: '__createRepeater',
         value: function __createRepeater(descriptor) {
-            if (Slim.__prototypeDict['slim-repeat'] === undefined) {
-                Slim.__initRepeater();
-            }
             var repeater = void 0;
             repeater = document.createElement('slim-repeat');
             repeater.sourceNode = descriptor.target;
@@ -826,6 +826,8 @@ var Slim = function (_CustomElement2) {
                 for (var _iterator3 = allChildren[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                     var child = _step3.value;
 
+                    if (child._bound) continue;
+                    child._bound = true;
                     child._sourceOuterHTML = child.outerHTML;
                     child._boundParent = child._boundParent || this;
                     self._boundChildren = this._boundChildren || [];
@@ -897,6 +899,8 @@ var Slim = function (_CustomElement2) {
             // bind method-based text binds
 
             var _loop = function _loop(_child) {
+                if (_child._boundTM) return 'continue';
+                _child._boundTM = true;
                 var match = _child.innerText.match(/\[\[(\w+)\((.+)\)]\]/g);
                 if (match) {
                     match.forEach(function (expression) {
@@ -928,7 +932,9 @@ var Slim = function (_CustomElement2) {
                 for (var _iterator4 = allChildren[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
                     var _child = _step4.value;
 
-                    _loop(_child);
+                    var _ret = _loop(_child);
+
+                    if (_ret === 'continue') continue;
                 }
                 // bind property based text binds
             } catch (err) {
@@ -954,6 +960,8 @@ var Slim = function (_CustomElement2) {
                 for (var _iterator5 = allChildren[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
                     var _child2 = _step5.value;
 
+                    if (_child2._boundT) continue;
+                    _child2._boundT = true;
                     var _match = _child2.innerText.match(/\[\[([\w|.]+)\]\]/g);
                     if (_match && _child2.children.firstChild) {
                         throw 'Bind Error: Illegal bind attribute use on element type ' + _child2.localName + ' with nested children.\n' + _child2.outerHTML;
@@ -1364,35 +1372,29 @@ Slim.__initRepeater = function () {
 
                 // data is shorter
                 if (this.clones && sourceData.length < this.clones.length) {
-                    this.sourceData.forEach(function (dataItem, idx) {
-                        _this7.clones[idx][targetPropName] = dataItem;
-                        Slim.selectorToArr(_this7.clones[idx], '*').forEach(function (child) {
-                            child[targetPropName] = sourceData[idx];
-                        });
+                    this.clones.forEach(function (clone) {
+                        Slim.removeChild(clone);
                     });
-                    var clonesToBeRemoved = this.clones.splice(sourceData.length);
-                    clonesToBeRemoved.forEach(function (cloneToBeRemoved) {
-                        Slim.removeChild(cloneToBeRemoved);
-                    });
-                    this._executeBindings(targetPropName);
-                    return;
+                    this.clones = [];
+                    this.clearList();
                 }
 
                 // data is longer
 
-                this.clearList();
+                var offset = this.clones.length;
+                var remaining = sourceData.slice(offset);
 
-                sourceData.forEach(function (dataItem, index) {
+                remaining.forEach(function (dataItem, index) {
                     var clone = _this7.sourceNode.cloneNode(true);
                     clone.removeAttribute('slim-repeat');
                     clone.removeAttribute('slim-repeat-as');
-                    clone.setAttribute('slim-repeat-index', index);
+                    clone.setAttribute('slim-repeat-index', index + offset);
                     if (!Slim.__isWCSupported) {
                         _this7.insertAdjacentHTML('beforeEnd', clone.outerHTML);
                         clone = _this7.find('*[slim-repeat-index="' + index.toString() + '"]');
                     }
                     clone[targetPropName] = dataItem;
-                    clone.data_index = index;
+                    clone.data_index = index + offset;
                     clone.data_source = sourceData;
                     clone.sourceText = clone.innerText;
                     if (Slim.__isWCSupported) {

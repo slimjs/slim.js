@@ -838,6 +838,8 @@ class Slim extends HTMLElement {
 
         let allChildren = Slim.selectorToArr(this._virtualDOM, '*');
         for (let child of allChildren) {
+            if (child._bound) continue;
+            child._bound = true;
             child._sourceOuterHTML = child.outerHTML;
             child._boundParent = child._boundParent || this;
             self._boundChildren = this._boundChildren || [];
@@ -896,6 +898,8 @@ class Slim extends HTMLElement {
 
         // bind method-based text binds
         for (let child of allChildren) {
+            if (child._boundTM) continue;
+            child._boundTM = true;
             let match = child.innerText.match(/\[\[(\w+)\((.+)\)]\]/g);
             if (match) {
                 match.forEach( expression => {
@@ -920,6 +924,8 @@ class Slim extends HTMLElement {
         }
         // bind property based text binds
         for (let child of allChildren) {
+            if (child._boundT) continue;
+            child._boundT = true;
             let match = child.innerText.match(/\[\[([\w|.]+)\]\]/g);
             if (match && child.children.firstChild) {
                 throw 'Bind Error: Illegal bind attribute use on element type ' + child.localName + ' with nested children.\n' + child.outerHTML;
@@ -1069,35 +1075,29 @@ Slim.__initRepeater = function() {
 
             // data is shorter
             if (this.clones && sourceData.length < this.clones.length) {
-                this.sourceData.forEach( (dataItem, idx) => {
-                    this.clones[idx][targetPropName] = dataItem;
-                    Slim.selectorToArr(this.clones[idx], '*').forEach( child => {
-                        child[targetPropName] = sourceData[idx];
-                    });
+                this.clones.forEach( clone => {
+                    Slim.removeChild(clone);
                 });
-                const clonesToBeRemoved = this.clones.splice(sourceData.length);
-                clonesToBeRemoved.forEach( cloneToBeRemoved => {
-                    Slim.removeChild(cloneToBeRemoved);
-                });
-                this._executeBindings(targetPropName);
-                return;
+                this.clones = [];
+                this.clearList();
             }
 
             // data is longer
 
-            this.clearList();
+            const offset = this.clones.length;
+            const remaining = sourceData.slice(offset);
 
-            sourceData.forEach( (dataItem, index) => {
+            remaining.forEach( (dataItem, index) => {
                 let clone = this.sourceNode.cloneNode(true);
                 clone.removeAttribute('slim-repeat');
                 clone.removeAttribute('slim-repeat-as');
-                clone.setAttribute('slim-repeat-index', index);
+                clone.setAttribute('slim-repeat-index', index + offset);
                 if (!Slim.__isWCSupported) {
                     this.insertAdjacentHTML('beforeEnd', clone.outerHTML);
                     clone = this.find('*[slim-repeat-index="' + index.toString() + '"]')
                 }
                 clone[targetPropName] = dataItem;
-                clone.data_index = index;
+                clone.data_index = index + offset;
                 clone.data_source = sourceData;
                 clone.sourceText = clone.innerText;
                 if (Slim.__isWCSupported) {
