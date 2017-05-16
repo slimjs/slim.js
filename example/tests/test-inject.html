@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../../src/Slim.js"></script>
+</head>
+<body>
+    <inject-container></inject-container>
+
+    <script>
+        Slim.tag('inject-container',
+        '<inject-demo model="{model}"></inject-demo>', class extends Slim {});
+
+        Slim.tag('inject-demo', '<h1>Hello</h1>', class extends Slim {
+            onBeforeCreated() {
+                console.log('onBeforeCreated', this.model);
+            }
+
+            onCreated() {
+                console.log('onCreated', this.model);
+            }
+
+            onBeforeRender() {
+                console.log('onBeforeRender', this.model);
+            }
+        });
+
+        Slim.inject('model', function(element) {
+            return {
+                data: "12345",
+                e: element.localName
+            };
+        });
+    </script>
+</body>
+</html>

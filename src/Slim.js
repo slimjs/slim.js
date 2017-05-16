@@ -32,8 +32,11 @@ class Slim extends HTMLElement {
             Slim.__templateDict[tag] = clazzOrTemplate;
         }
         Slim.__prototypeDict[tag] = clazz;
+
         // window.customElements.define(tag, clazz);
-        document.registerElement(tag, clazz);
+        setTimeout( () => {
+            document.registerElement(tag, clazz);
+        }, 0);
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -176,6 +179,22 @@ class Slim extends HTMLElement {
             obj = obj[prop = arr.shift()]
         }
         return {source: desc, prop:prop, obj:obj};
+    }
+
+    static __inject(descriptor) {
+        try {
+            descriptor.target[ descriptor.attribute ] = Slim.__injections[ descriptor.factory ](descriptor.target);
+        }
+        catch (err) {
+            console.error('Could not inject ' + descriptor.attribute + ' into ' + descriptor.target);
+            console.info('Descriptor ', descriptor);
+            throw err;
+        }
+
+    }
+
+    static inject(name, injector) {
+        Slim.__injections[name] = injector;
     }
 
     /**
@@ -929,6 +948,7 @@ Slim.rxInject = /\{(.+[^(\((.+)\))])\}/
 Slim.rxProp = /\[\[(.+[^(\((.+)\))])\]\]/
 Slim.rxMethod = /\[\[(.+)(\((.+)\)){1}\]\]/
 Slim.__customAttributeProcessors = {};
+Slim.__injections = {};
 Slim.__prototypeDict = {};
 Slim.__uqIndex = 0;
 Slim.__templateDict = {};
