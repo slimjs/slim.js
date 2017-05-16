@@ -58,8 +58,14 @@ var Slim = function (_CustomElement2) {
                 Slim.__templateDict[_tag] = clazzOrTemplate;
             }
             Slim.__prototypeDict[_tag] = clazz;
+
             // window.customElements.define(tag, clazz);
-            document.registerElement(_tag, clazz);
+            if (Slim.__prototypeDict['slim-repeat'] === undefined) {
+                Slim.__initRepeater();
+            }
+            setTimeout(function () {
+                document.registerElement(_tag, clazz);
+            }, 0);
         }
 
         //noinspection JSUnusedGlobalSymbols
@@ -144,15 +150,18 @@ var Slim = function (_CustomElement2) {
             if (target.remove) {
                 target.remove();
             }
-            if (!target.remove && target.parentNode) {
+            if (target.parentNode) {
                 target.parentNode.removeChild(target);
-                if (target._boundChildren) {
-                    target._boundChildren.forEach(function (child) {
-                        if (child.__ieClone) {
-                            Slim.removeChild(child.__ieClone);
-                        }
-                    });
-                }
+            }
+            if (target.__ieClone) {
+                Slim.removeChild(target.__ieClone);
+            }
+            if (target._boundChildren) {
+                target._boundChildren.forEach(function (child) {
+                    if (child.__ieClone) {
+                        Slim.removeChild(child.__ieClone);
+                    }
+                });
             }
         }
 
@@ -260,6 +269,22 @@ var Slim = function (_CustomElement2) {
             }
             return { source: desc, prop: prop, obj: obj };
         }
+    }, {
+        key: '__inject',
+        value: function __inject(descriptor) {
+            try {
+                descriptor.target[Slim.__dashToCamel(descriptor.attribute)] = Slim.__injections[descriptor.factory](descriptor.target);
+            } catch (err) {
+                console.error('Could not inject ' + descriptor.attribute + ' into ' + descriptor.target);
+                console.info('Descriptor ', descriptor);
+                throw err;
+            }
+        }
+    }, {
+        key: 'inject',
+        value: function inject(name, injector) {
+            Slim.__injections[name] = injector;
+        }
 
         /**
          *
@@ -270,9 +295,6 @@ var Slim = function (_CustomElement2) {
     }, {
         key: '__createRepeater',
         value: function __createRepeater(descriptor) {
-            if (Slim.__prototypeDict['slim-repeat'] === undefined) {
-                Slim.__initRepeater();
-            }
             var repeater = void 0;
             repeater = document.createElement('slim-repeat');
             repeater.sourceNode = descriptor.target;
@@ -1210,6 +1232,7 @@ Slim.__customAttributeProcessors = {};
 Slim.__prototypeDict = {};
 Slim.__uqIndex = 0;
 Slim.__templateDict = {};
+Slim.__injections = {};
 Slim.__plugins = {
     'create': [],
     'beforeRender': [],

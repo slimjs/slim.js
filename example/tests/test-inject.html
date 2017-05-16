@@ -10,9 +10,9 @@
 
     <script>
         Slim.tag('inject-container',
-        '<inject-demo model="{model}"></inject-demo>', class extends Slim {});
+        '<inject-demo model-name="{model}"></inject-demo>', class extends Slim {});
 
-        Slim.tag('inject-demo', '<h1>Hello</h1>', class extends Slim {
+        Slim.tag('inject-demo', '<h1 bind>Hello [[modelName.e]]</h1>', class extends Slim {
             onBeforeCreated() {
                 console.log('onBeforeCreated', this.model);
             }
