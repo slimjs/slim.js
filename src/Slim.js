@@ -1050,6 +1050,7 @@ Slim.__initRepeater = function() {
                 Slim.removeChild(clone);
             });
             this.clones = [];
+            this._boundChildren = [];
         }
 
         renderList(sourceData) {
@@ -1073,19 +1074,24 @@ Slim.__initRepeater = function() {
                 return;
             }
 
-            // data is shorter
-            if (this.clones && sourceData.length < this.clones.length) {
-                this.clones.forEach( clone => {
-                    Slim.removeChild(clone);
-                });
-                this.clones = [];
-                this.clearList();
-            }
+            // // data is shorter
+            // if (this.clones && sourceData.length < this.clones.length) {
+            //     this.clones.forEach( clone => {
+            //         Slim.removeChild(clone);
+            //     });
+            //     this.clones = [];
+            //     this.clearList();
+            // }
+            //
+            // // data is longer
+            //
+            // const offset = this.clones.length;
+            // const remaining = sourceData.slice(offset);
 
-            // data is longer
+            this.clearList();
 
-            const offset = this.clones.length;
-            const remaining = sourceData.slice(offset);
+            let remaining = sourceData;
+            let offset = 0;
 
             remaining.forEach( (dataItem, index) => {
                 let clone = this.sourceNode.cloneNode(true);

@@ -1344,6 +1344,7 @@ Slim.__initRepeater = function () {
                     Slim.removeChild(clone);
                 });
                 this.clones = [];
+                this._boundChildren = [];
             }
         }, {
             key: 'renderList',
@@ -1370,19 +1371,24 @@ Slim.__initRepeater = function () {
                     return;
                 }
 
-                // data is shorter
-                if (this.clones && sourceData.length < this.clones.length) {
-                    this.clones.forEach(function (clone) {
-                        Slim.removeChild(clone);
-                    });
-                    this.clones = [];
-                    this.clearList();
-                }
+                // // data is shorter
+                // if (this.clones && sourceData.length < this.clones.length) {
+                //     this.clones.forEach( clone => {
+                //         Slim.removeChild(clone);
+                //     });
+                //     this.clones = [];
+                //     this.clearList();
+                // }
+                //
+                // // data is longer
+                //
+                // const offset = this.clones.length;
+                // const remaining = sourceData.slice(offset);
 
-                // data is longer
+                this.clearList();
 
-                var offset = this.clones.length;
-                var remaining = sourceData.slice(offset);
+                var remaining = sourceData;
+                var offset = 0;
 
                 remaining.forEach(function (dataItem, index) {
                     var clone = _this7.sourceNode.cloneNode(true);
