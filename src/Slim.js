@@ -34,6 +34,9 @@ class Slim extends HTMLElement {
         Slim.__prototypeDict[tag] = clazz;
 
         // window.customElements.define(tag, clazz);
+        if (Slim.__prototypeDict['slim-repeat'] === undefined) {
+            Slim.__initRepeater();
+        }
         setTimeout( () => {
             document.registerElement(tag, clazz);
         }, 0);
@@ -128,7 +131,7 @@ class Slim extends HTMLElement {
     }
 
     /**
-     *
+     *§
      * @param source
      * @param target
      * @param activate
@@ -203,9 +206,6 @@ class Slim extends HTMLElement {
      * @private
      */
     static __createRepeater(descriptor) {
-        if (Slim.__prototypeDict['slim-repeat'] === undefined) {
-            Slim.__initRepeater();
-        }
         let repeater;
         repeater = document.createElement('slim-repeat');
         repeater.sourceNode = descriptor.target;
