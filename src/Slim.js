@@ -32,14 +32,8 @@ class Slim extends HTMLElement {
             Slim.__templateDict[tag] = clazzOrTemplate;
         }
         Slim.__prototypeDict[tag] = clazz;
-
         // window.customElements.define(tag, clazz);
-        if (Slim.__prototypeDict['slim-repeat'] === undefined) {
-            Slim.__initRepeater();
-        }
-        setTimeout( () => {
-            document.registerElement(tag, clazz);
-        }, 0);
+        document.registerElement(tag, clazz);
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -115,23 +109,20 @@ class Slim extends HTMLElement {
         if (target.remove) {
             target.remove();
         }
-        if (target.parentNode) {
+        if (!target.remove && target.parentNode) {
             target.parentNode.removeChild(target);
-        }
-        if (target.__ieClone) {
-            Slim.removeChild(target.__ieClone);
-        }
-        if (target._boundChildren) {
-            target._boundChildren.forEach( child => {
-                if (child.__ieClone) {
-                    Slim.removeChild(child.__ieClone);
-                }
-            });
+            if (target._boundChildren) {
+                target._boundChildren.forEach( child => {
+                    if (child.__ieClone) {
+                        Slim.removeChild(child.__ieClone);
+                    }
+                });
+            }
         }
     }
 
     /**
-     *§
+     *
      * @param source
      * @param target
      * @param activate
@@ -184,28 +175,15 @@ class Slim extends HTMLElement {
         return {source: desc, prop:prop, obj:obj};
     }
 
-    static __inject(descriptor) {
-        try {
-            descriptor.target[ descriptor.attribute ] = Slim.__injections[ descriptor.factory ](descriptor.target);
-        }
-        catch (err) {
-            console.error('Could not inject ' + descriptor.attribute + ' into ' + descriptor.target);
-            console.info('Descriptor ', descriptor);
-            throw err;
-        }
-
-    }
-
-    static inject(name, injector) {
-        Slim.__injections[name] = injector;
-    }
-
     /**
      *
      * @param descriptor
      * @private
      */
     static __createRepeater(descriptor) {
+        if (Slim.__prototypeDict['slim-repeat'] === undefined) {
+            Slim.__initRepeater();
+        }
         let repeater;
         repeater = document.createElement('slim-repeat');
         repeater.sourceNode = descriptor.target;
@@ -397,8 +375,7 @@ class Slim extends HTMLElement {
                     }
                 } else if (descriptor.type === 'R') {
                     executor = () => {
-                        const value = Slim.__lookup(descriptor.source, descriptor.properties[0]).obj;
-                        descriptor.repeater.renderList(value);
+                        descriptor.repeater.renderList()
                     }
                 } else if (descriptor.type === 'W') {
                     executor = () => {
@@ -786,19 +763,19 @@ class Slim extends HTMLElement {
         // execute specific binding or all
         const properties = prop ? [ prop ] : Object.keys(this._bindings);
         properties.forEach( property => {
-            this._bindings[property] && this._bindings[property].executors.forEach( fn => {
+            this._bindings[property].executors.forEach( fn => {
                 if (fn.descriptor.type !== 'T' && fn.descriptor.type !== 'TM') fn()
             } )
         });
 
         // execute text bindings always
         Object.keys(this._bindings).forEach( property => {
-            this._bindings[property] && this._bindings[property].executors.forEach( fn => {
+            this._bindings[property].executors.forEach( fn => {
                 if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                     fn();
                 }
             });
-            this._bindings[property] && this._bindings[property].executors.forEach( fn => {
+            this._bindings[property].executors.forEach( fn => {
                 if (fn.descriptor.type === 'T' || fn.descriptor.type === 'TM') {
                     fn.descriptor.target.innerText = fn.descriptor.target._innerText;
                     if (fn.descriptor.target.__ieClone) {
@@ -838,8 +815,6 @@ class Slim extends HTMLElement {
 
         let allChildren = Slim.selectorToArr(this._virtualDOM, '*');
         for (let child of allChildren) {
-            if (child._bound) continue;
-            child._bound = true;
             child._sourceOuterHTML = child.outerHTML;
             child._boundParent = child._boundParent || this;
             self._boundChildren = this._boundChildren || [];
@@ -898,8 +873,6 @@ class Slim extends HTMLElement {
 
         // bind method-based text binds
         for (let child of allChildren) {
-            if (child._boundTM) continue;
-            child._boundTM = true;
             let match = child.innerText.match(/\[\[(\w+)\((.+)\)]\]/g);
             if (match) {
                 match.forEach( expression => {
@@ -924,8 +897,6 @@ class Slim extends HTMLElement {
         }
         // bind property based text binds
         for (let child of allChildren) {
-            if (child._boundT) continue;
-            child._boundT = true;
             let match = child.innerText.match(/\[\[([\w|.]+)\]\]/g);
             if (match && child.children.firstChild) {
                 throw 'Bind Error: Illegal bind attribute use on element type ' + child.localName + ' with nested children.\n' + child.outerHTML;
@@ -954,7 +925,6 @@ Slim.rxInject = /\{(.+[^(\((.+)\))])\}/
 Slim.rxProp = /\[\[(.+[^(\((.+)\))])\]\]/
 Slim.rxMethod = /\[\[(.+)(\((.+)\)){1}\]\]/
 Slim.__customAttributeProcessors = {};
-Slim.__injections = {};
 Slim.__prototypeDict = {};
 Slim.__uqIndex = 0;
 Slim.__templateDict = {};
@@ -1006,12 +976,7 @@ Slim.__initRepeater = function() {
             return false;
         }
 
-        initialize() {
-            super.initialize();
-            this.clones = [];
-        }
-
-        getSourceData() {
+        get sourceData() {
             try {
                 let lookup = Slim.__lookup(this._boundParent, this.getAttribute('source'));
                 return lookup.obj || []
@@ -1025,7 +990,7 @@ Slim.__initRepeater = function() {
             if (!this.uq_index) {
                 this.createdCallback();
             }
-            this.renderList(this.getSourceData());
+            this.renderList();
         }
 
         onRemoved() {
@@ -1042,7 +1007,7 @@ Slim.__initRepeater = function() {
 
         checkoutRender() {
             this.pendingRender = false;
-            this.renderList(this.getSourceData());
+            this.renderList();
         }
 
         clearList() {
@@ -1050,61 +1015,27 @@ Slim.__initRepeater = function() {
                 Slim.removeChild(clone);
             });
             this.clones = [];
-            this._boundChildren = [];
         }
 
-        renderList(sourceData) {
-            if (!this.sourceNode || !sourceData) return;
-            if (this.sourceData !== sourceData) {
-                this.sourceData && this.sourceData.unregisterSlimRepeater && this.sourceData.unregisterSlimRepeater(this);
-                this.sourceData = sourceData;
-                sourceData.registerSlimRepeater(this);
-            }
+        renderList() {
             let targetPropName = this.getAttribute('target-attr');
-
-            // same list length - update only
-            if (this.clones && sourceData.length === this.clones.length && this.clones.length !== 0) {
-                this.clones.forEach( (clone, idx) => {
-                    clone[targetPropName] = sourceData[idx];
-                    Slim.selectorToArr(clone, '*').forEach( child => {
-                        child[targetPropName] = sourceData[idx];
-                    });
-                });
-                this._executeBindings(targetPropName);
-                return;
-            }
-
-            // // data is shorter
-            // if (this.clones && sourceData.length < this.clones.length) {
-            //     this.clones.forEach( clone => {
-            //         Slim.removeChild(clone);
-            //     });
-            //     this.clones = [];
-            //     this.clearList();
-            // }
-            //
-            // // data is longer
-            //
-            // const offset = this.clones.length;
-            // const remaining = sourceData.slice(offset);
-
+            if (!this.sourceNode) return;
             this.clearList();
+            //noinspection JSUnusedGlobalSymbols
 
-            let remaining = sourceData;
-            let offset = 0;
-
-            remaining.forEach( (dataItem, index) => {
+            this.sourceData.registerSlimRepeater(this);
+            this.sourceData.forEach( (dataItem, index) => {
                 let clone = this.sourceNode.cloneNode(true);
                 clone.removeAttribute('slim-repeat');
                 clone.removeAttribute('slim-repeat-as');
-                clone.setAttribute('slim-repeat-index', index + offset);
+                clone.setAttribute('slim-repeat-index', index);
                 if (!Slim.__isWCSupported) {
                     this.insertAdjacentHTML('beforeEnd', clone.outerHTML);
                     clone = this.find('*[slim-repeat-index="' + index.toString() + '"]')
                 }
                 clone[targetPropName] = dataItem;
-                clone.data_index = index + offset;
-                clone.data_source = sourceData;
+                clone.data_index = index;
+                clone.data_source = this.sourceData;
                 clone.sourceText = clone.innerText;
                 if (Slim.__isWCSupported) {
                     this.insertAdjacentElement('beforeEnd', clone)
