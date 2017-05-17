@@ -14,15 +14,15 @@
 
         Slim.tag('inject-demo', '<h1 bind>Hello [[modelName.e]]</h1>', class extends Slim {
             onBeforeCreated() {
-                console.log('onBeforeCreated', this.model);
+                console.log('onBeforeCreated', this.modelName);
             }
 
             onCreated() {
-                console.log('onCreated', this.model);
+                console.log('onCreated', this.modelName);
             }
 
             onBeforeRender() {
-                console.log('onBeforeRender', this.model);
+                console.log('onBeforeRender', this.modelName);
             }
         });
 

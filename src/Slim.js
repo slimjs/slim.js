@@ -32,8 +32,12 @@ class Slim extends HTMLElement {
             Slim.__templateDict[tag] = clazzOrTemplate;
         }
         Slim.__prototypeDict[tag] = clazz;
-        // window.customElements.define(tag, clazz);
-        document.registerElement(tag, clazz);
+        if (Slim.__prototypeDict['slim-repeat'] === undefined) {
+            Slim.__initRepeater();
+        }
+        setTimeout( () => {
+            document.registerElement(tag, clazz);
+        }, 0);
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -109,15 +113,18 @@ class Slim extends HTMLElement {
         if (target.remove) {
             target.remove();
         }
-        if (!target.remove && target.parentNode) {
+        if (target.parentNode) {
             target.parentNode.removeChild(target);
-            if (target._boundChildren) {
-                target._boundChildren.forEach( child => {
-                    if (child.__ieClone) {
-                        Slim.removeChild(child.__ieClone);
-                    }
-                });
-            }
+        }
+        if (target.__ieClone) {
+            Slim.removeChild(target.__ieClone);
+        }
+        if (target._boundChildren) {
+            target._boundChildren.forEach( child => {
+                if (child.__ieClone) {
+                    Slim.removeChild(child.__ieClone);
+                }
+            });
         }
     }
 
@@ -175,15 +182,28 @@ class Slim extends HTMLElement {
         return {source: desc, prop:prop, obj:obj};
     }
 
+    static __inject(descriptor) {
+        try {
+            descriptor.target[ Slim.__dashToCamel(descriptor.attribute) ] = Slim.__injections[ descriptor.factory ](descriptor.target);
+        }
+        catch (err) {
+            console.error('Could not inject ' + descriptor.attribute + ' into ' + descriptor.target);
+            console.info('Descriptor ', descriptor);
+            throw err;
+        }
+
+    }
+
+    static inject(name, injector) {
+        Slim.__injections[name] = injector;
+    }
+
     /**
      *
      * @param descriptor
      * @private
      */
     static __createRepeater(descriptor) {
-        if (Slim.__prototypeDict['slim-repeat'] === undefined) {
-            Slim.__initRepeater();
-        }
         let repeater;
         repeater = document.createElement('slim-repeat');
         repeater.sourceNode = descriptor.target;
@@ -482,7 +502,6 @@ class Slim extends HTMLElement {
      * @returns {*}
      */
     static extract(target, expression) {
-        const rxInject = Slim.rxInject.exec(expression);
         const rxProp = Slim.rxProp.exec(expression);
         const rxMethod = Slim.rxMethod.exec(expression);
 
@@ -933,6 +952,7 @@ Slim.__customAttributeProcessors = {};
 Slim.__prototypeDict = {};
 Slim.__uqIndex = 0;
 Slim.__templateDict = {};
+Slim.__injections = {};
 Slim.__plugins = {
     'create': [],
     'beforeRender': [],
