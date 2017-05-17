@@ -378,9 +378,7 @@ var Slim = function (_CustomElement2) {
                 console.warn && console.warn('Unable to call null attribute-bound method on bound parent ' + this._boundParent.outerHTML);
                 return;
             }
-            if (typeof this[fnName] === 'function') {
-                this[fnName](value);
-            } else if (typeof this._boundParent[fnName] === 'function') {
+            if (typeof this._boundParent[fnName] === 'function') {
                 this._boundParent[fnName](value);
             } else if (this._boundParent && this._boundParent._boundParent && typeof this._boundParent._boundParent[fnName] === 'function') {
                 // safari, firefox
@@ -1092,7 +1090,7 @@ var Slim = function (_CustomElement2) {
                 type: 'R',
                 target: child,
                 targetAttribute: child.getAttribute('slim-repeat-as') ? child.getAttribute('slim-repeat-as') : 'data',
-                repeatAdjacent: child.hasAttribute('slim-repeat-adjacent') || child.localName === 'option',
+                repeatAdjacent: child.hasAttribute('slim-repeat-adjacent') || child.localName === 'option' || child.localName === 'tr' || child.localName === 'td',
                 attribute: attribute.nodeName,
                 properties: [attribute.nodeValue],
                 source: child._boundParent
