@@ -1369,6 +1369,11 @@ Slim.__initRepeater = function () {
                 if (this.sourceData.length === 0) {
                     this.clearList();
                     return;
+                } else if (this.sourceData.length <= 1000) {
+                    this.clearList();
+                    this.buildNodes(this.sourceData);
+                    this._executeBindings();
+                    return;
                 } else if (this.clones && this.clones.length === this.sourceData.length) {
                     this.updateList();
                     this._executeBindings();
