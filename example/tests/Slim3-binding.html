@@ -13,8 +13,10 @@
         Slim.tag('test-parent',
         `<div bind click="handleClick" aaa="[[double(myValue)]]" bbb="[[double(myData.num)]]" prop="[[myValue]]" hello="[[myData.text]]" world="[[myData.value]]">[[myData.text]] ---> [[myData.value]] ---> [[myData.num]] ---> [[myValue]]</div>
         <hr/>
-        <li s-repeat="items" aaa="[[myValue]]"><span bind>[[data]]</span></li>`,
+        <li s-repeat="items" aaa="[[myValue]]"><span bind>[[data_index]] > [[data]]</span></li>`,
         class extends Slim {
+
+            get useShadow() { return false; }
 
             onBeforeCreated() {
                 window.unit = this;
