@@ -228,6 +228,25 @@ class Slim extends HTMLElement {
                 });
             });
         }
+
+        // method bindings
+        match = child.__sourceInnerText.match(/\[\[(\w+)\((.+)\)]\]/g);
+        if (match) {
+            match.forEach( expression => {
+                const matches = expression.match(Slim.rxMethod);
+                const methodName = matches[1];
+                const props = matches[3].split(' ').join('').split(',');
+                child.__textBindings.push( () => {
+                    const args = props.map( prop => {
+                        const dbp = Slim.__lookup(scopeElement, prop).obj;
+                        const dbr = Slim.__lookup(child, prop).obj;
+                        return dbr || dbp;
+                    });
+                    const value = scopeElement[methodName].apply(scopeElement, args);
+                    child.innerText = child.innerText.replace(`${expression}`, value);
+                });
+            });
+        }
     }
 
     static applyTextBinding(target) {
@@ -260,7 +279,7 @@ class Slim extends HTMLElement {
             const attributeName = attribute.nodeName;
             const attributeValue = attribute.nodeValue;
 
-            if (attributeName === 'slim-id') {
+            if (attributeName === 's-id') {
                 element.__boundParent[attributeValue] = element;
                 continue;
             }
@@ -282,8 +301,6 @@ class Slim extends HTMLElement {
 
             const rxProp = !element._locked && Slim.rxProp.exec(attributeValue);
             const rxMethod = !element._locked && Slim.rxMethod.exec(attributeValue);
-
-            // ...
 
             if (rxMethod) {
                 Slim.bindAttributeToMethod(element, rxMethod, attribute.nodeName);
