@@ -58,6 +58,8 @@ var Slim = function (_CustomElement2) {
                 Slim.__templateDict[_tag] = clazzOrTemplate;
             }
             Slim.__prototypeDict[_tag] = clazz;
+
+            // window.customElements.define(tag, clazz);
             if (Slim.__prototypeDict['slim-repeat'] === undefined) {
                 Slim.__initRepeater();
             }
@@ -398,7 +400,9 @@ var Slim = function (_CustomElement2) {
                 console.warn && console.warn('Unable to call null attribute-bound method on bound parent ' + this._boundParent.outerHTML);
                 return;
             }
-            if (typeof this._boundParent[fnName] === 'function') {
+            if (typeof this[fnName] === 'function') {
+                this[fnName](value);
+            } else if (typeof this._boundParent[fnName] === 'function') {
                 this._boundParent[fnName](value);
             } else if (this._boundParent && this._boundParent._boundParent && typeof this._boundParent._boundParent[fnName] === 'function') {
                 // safari, firefox
@@ -512,7 +516,6 @@ var Slim = function (_CustomElement2) {
                     };
                 } else if (descriptor.type === 'R') {
                     executor = function executor() {
-                        descriptor.repeater.unregister();
                         descriptor.repeater.renderList();
                     };
                 } else if (descriptor.type === 'W') {
@@ -820,8 +823,6 @@ var Slim = function (_CustomElement2) {
                 for (var _iterator3 = allChildren[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                     var child = _step3.value;
 
-                    if (child._boundP) continue;
-                    child._boundP = true;
                     child._sourceOuterHTML = child.outerHTML;
                     child._boundParent = child._boundParent || this;
                     self._boundChildren = this._boundChildren || [];
@@ -893,8 +894,6 @@ var Slim = function (_CustomElement2) {
             // bind method-based text binds
 
             var _loop = function _loop(_child) {
-                if (_child._boundTM) return 'continue';
-                _child._boundTM = true;
                 var match = _child.innerText.match(/\[\[(\w+)\((.+)\)]\]/g);
                 if (match) {
                     match.forEach(function (expression) {
@@ -926,9 +925,7 @@ var Slim = function (_CustomElement2) {
                 for (var _iterator4 = allChildren[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
                     var _child = _step4.value;
 
-                    var _ret = _loop(_child);
-
-                    if (_ret === 'continue') continue;
+                    _loop(_child);
                 }
                 // bind property based text binds
             } catch (err) {
@@ -954,8 +951,6 @@ var Slim = function (_CustomElement2) {
                 for (var _iterator5 = allChildren[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
                     var _child2 = _step5.value;
 
-                    if (_child2._boundT) continue;
-                    _child2._boundT = true;
                     var _match = _child2.innerText.match(/\[\[([\w|.]+)\]\]/g);
                     if (_match && _child2.children.firstChild) {
                         throw 'Bind Error: Illegal bind attribute use on element type ' + _child2.localName + ' with nested children.\n' + _child2.outerHTML;
@@ -1110,7 +1105,7 @@ var Slim = function (_CustomElement2) {
                 type: 'R',
                 target: child,
                 targetAttribute: child.getAttribute('slim-repeat-as') ? child.getAttribute('slim-repeat-as') : 'data',
-                repeatAdjacent: child.hasAttribute('slim-repeat-adjacent') || child.localName === 'option' || child.localName === 'tr' || child.localName === 'td',
+                repeatAdjacent: child.hasAttribute('slim-repeat-adjacent') || child.localName === 'option',
                 attribute: attribute.nodeName,
                 properties: [attribute.nodeValue],
                 source: child._boundParent
@@ -1150,6 +1145,7 @@ var Slim = function (_CustomElement2) {
     }, {
         key: 'extract',
         value: function extract(target, expression) {
+            var rxInject = Slim.rxInject.exec(expression);
             var rxProp = Slim.rxProp.exec(expression);
             var rxMethod = Slim.rxMethod.exec(expression);
 
@@ -1285,11 +1281,6 @@ Slim.__initRepeater = function () {
         }
 
         _createClass(SlimRepeater, [{
-            key: 'onBeforeCreated',
-            value: function onBeforeCreated() {
-                this.clones = [];
-            }
-        }, {
             key: 'onAdded',
             value: function onAdded() {
                 if (!this.uq_index) {
@@ -1320,116 +1311,49 @@ Slim.__initRepeater = function () {
                 this.renderList();
             }
         }, {
-            key: 'unregister',
-            value: function unregister() {
-                this.sourceData.unregisterSlimRepeater(this);
-            }
-        }, {
             key: 'clearList',
             value: function clearList() {
                 this.clones && this.clones.forEach(function (clone) {
                     Slim.removeChild(clone);
                 });
                 this.clones = [];
-                this._boundChildren = [];
-            }
-        }, {
-            key: 'removeClone',
-            value: function removeClone(clone) {
-                var _this7 = this;
-
-                Slim.removeChild(clone);
-                Slim.selectorToArr(clone, '*').forEach(function (child) {
-                    _this7._boundChildren.splice(_this7._boundChildren.indexOf(child), 1);
-                });
-                this._boundChildren.splice(this._boundChildren.indexOf(clone), 1);
-            }
-        }, {
-            key: 'updateList',
-            value: function updateList() {
-                var _this8 = this;
-
-                var targetPropName = this.getAttribute('target-attr');
-                this.clones.forEach(function (clone, idx) {
-                    var data = _this8.sourceData[idx];
-                    if (clone[targetPropName] === data) return;
-                    clone[targetPropName] = data;
-                    Slim.selectorToArr(clone, '*').forEach(function (child) {
-                        child[targetPropName] = data;
-                    });
-                });
             }
         }, {
             key: 'renderList',
             value: function renderList() {
-                var _this9 = this;
+                var _this7 = this;
+
+                var targetPropName = this.getAttribute('target-attr');
+                if (!this.sourceNode) return;
+                this.clearList();
+                //noinspection JSUnusedGlobalSymbols
 
                 this.sourceData.registerSlimRepeater(this);
-                if (!this.sourceNode) return;
-                if (this.sourceData.length === 0) {
-                    this.clearList();
-                    return;
-                } else if (this.sourceData.length <= 1000) {
-                    this.clearList();
-                    this.buildNodes(this.sourceData);
-                    this._executeBindings();
-                    return;
-                } else if (this.clones && this.clones.length === this.sourceData.length) {
-                    this.updateList();
-                    this._executeBindings();
-                    return;
-                } else if (this.clones && this.clones.length > this.sourceData.length) {
-                    this.updateList();
-                    var leftovers = this.clones.splice(this.sourceData.length);
-                    leftovers.forEach(function (leftover) {
-                        _this9.removeClone(leftover);
-                    });
-                    this._executeBindings();
-                    return;
-                } else if (this.clones && this.clones.length < this.sourceData.length) {
-                    this.updateList();
-                    var remaining = this.sourceData.slice(this.clones.length);
-                    this.buildNodes(remaining);
-                    this._executeBindings();
-                } else {
-                    this.buildNodes(this.sourceData);
-                    this._executeBindings();
-                }
-            }
-        }, {
-            key: 'buildNodes',
-            value: function buildNodes(nodes) {
-                var _this10 = this;
-
-                // this.clearList();
-                //noinspection JSUnusedGlobalSymbols
-                var offset = this.clones.length;
-                var targetPropName = this.getAttribute('target-attr');
-                nodes.forEach(function (dataItem, index) {
-                    var clone = _this10.sourceNode.cloneNode(true);
+                this.sourceData.forEach(function (dataItem, index) {
+                    var clone = _this7.sourceNode.cloneNode(true);
                     clone.removeAttribute('slim-repeat');
                     clone.removeAttribute('slim-repeat-as');
-                    clone.setAttribute('slim-repeat-index', index + offset);
+                    clone.setAttribute('slim-repeat-index', index);
                     if (!Slim.__isWCSupported) {
-                        _this10.insertAdjacentHTML('beforeEnd', clone.outerHTML);
-                        clone = _this10.find('*[slim-repeat-index="' + index.toString() + '"]');
+                        _this7.insertAdjacentHTML('beforeEnd', clone.outerHTML);
+                        clone = _this7.find('*[slim-repeat-index="' + index.toString() + '"]');
                     }
                     clone[targetPropName] = dataItem;
-                    clone.data_index = index + offset;
-                    clone.data_source = _this10.sourceData;
+                    clone.data_index = index;
+                    clone.data_source = _this7.sourceData;
                     clone.sourceText = clone.innerText;
                     if (Slim.__isWCSupported) {
-                        _this10.insertAdjacentElement('beforeEnd', clone);
+                        _this7.insertAdjacentElement('beforeEnd', clone);
                     }
-                    _this10.clones.push(clone);
+                    _this7.clones.push(clone);
                 });
                 if (this._virtualDOM) this._captureBindings();
 
                 var _loop2 = function _loop2(clone) {
                     clone[targetPropName] = clone[targetPropName];
-                    clone._boundRepeaterParent = _this10._boundParent;
+                    clone._boundRepeaterParent = _this7._boundParent;
                     if (Slim.__prototypeDict[clone.localName] !== undefined || clone.isSlim) {
-                        clone._boundParent = _this10._boundParent;
+                        clone._boundParent = _this7._boundParent;
                     } else {
                         clone._boundParent = clone;
                     }
@@ -1467,6 +1391,7 @@ Slim.__initRepeater = function () {
                     }
                 }
 
+                this._executeBindings();
                 if (this._isAdjacentRepeater) {
                     this._virtualDOM && Slim.__moveChildrenBefore(this._virtualDOM, this, true);
                 } else {
