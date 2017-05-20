@@ -978,7 +978,7 @@ catch (err) {
     Slim.__isIE11 = false;
 }
 
-if (Slim.__isWCSupported) {
+if (Slim.__isWCSupported && NodeList.prototype.hasOwnProperty('forEach')) {
     Slim.selectorToArr = function(target, selector) {
         return target.querySelectorAll(selector);
     }
