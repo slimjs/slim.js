@@ -328,14 +328,25 @@ class Slim extends HTMLElement {
                 if (!source.__lookupGetter__(rootProp)) source.__defineGetter__(rootProp, function() {
                     return this._bindings[rootProp].value
                 });
-                if (!source.__lookupSetter__(rootProp)) source.__defineSetter__(rootProp, function(x) {
+                const originalSetter = source.__lookupSetter__(rootProp);
+                const newSetter = function(x) {
                     this._bindings[rootProp].value = x;
                     if (descriptor.sourceText) {
                         descriptor.target.innerText = descriptor.sourceText
                     }
                     this._executeBindings(rootProp);
                     this.__propertyChanged(rootProp, x);
-                });
+                };
+                newSetter.isBindingSetter = true;
+                if (!originalSetter) {
+                    source.__defineSetter__(rootProp, newSetter);
+                } else if (originalSetter && !originalSetter.isBindingSetter) {
+                    source.__defineSetter__(rootProp, function(x) {
+                        originalSetter.call(this, x);
+                        newSetter.call(this, x);
+                    });
+                    source.__lookupSetter__(rootProp).isBindingSetter = true;
+                }
                 let executor;
                 if (descriptor.type === 'C') {
                     executor = () => {
