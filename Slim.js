@@ -1074,7 +1074,6 @@ var Slim = function (_CustomElement2) {
         value: function __processStyleNode(node, tag, uqIndex) {
             if (Slim.__isWCSupported) return;
             var rxRules = /([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g;
-            var unique_index = node._boundParent.uq_index;
             var match = node.innerText.match(rxRules);
             if (match) {
                 match.forEach(function (selector) {
@@ -1328,41 +1327,71 @@ Slim.__initRepeater = function () {
                 this.clones = [];
             }
         }, {
-            key: 'renderList',
-            value: function renderList() {
+            key: 'updateExistingList',
+            value: function updateExistingList() {
                 var _this7 = this;
 
                 var targetPropName = this.getAttribute('target-attr');
+                this.clones.forEach(function (clone, idx) {
+                    clone[targetPropName] = _this7.sourceData[idx];
+                });
+                this._executeBindings();
+            }
+        }, {
+            key: 'renderList',
+            value: function renderList() {
                 if (!this.sourceNode) return;
+                if (this.clones && this.clones.length >= this.sourceData.length) {
+                    this.updateExistingList();
+                    var leftovers = this.clones.splice(this.sourceData.length);
+                    leftovers.forEach(function (leftover) {
+                        Slim.removeChild(leftover);
+                    });
+                    return;
+                }
+                // if (this.clones && this.clones.length < this.sourceData.length) {
+                //     this.updateExistingList();
+                //     let remaining = this.sourceData.splice(this.clones.length);
+                //     this.createItems(remaining);
+                //     return;
+                // }
                 this.clearList();
-                //noinspection JSUnusedGlobalSymbols
+                this.createItems(this.sourceData);
+            }
+        }, {
+            key: 'createItems',
+            value: function createItems(sourceData) {
+                var _this8 = this;
 
-                this.sourceData.registerSlimRepeater(this);
-                this.sourceData.forEach(function (dataItem, index) {
-                    var clone = _this7.sourceNode.cloneNode(true);
+                var targetPropName = this.getAttribute('target-attr');
+                var offset = this.clones.length;
+
+                sourceData.registerSlimRepeater(this);
+                sourceData.forEach(function (dataItem, index) {
+                    var clone = _this8.sourceNode.cloneNode(true);
                     clone.removeAttribute('slim-repeat');
                     clone.removeAttribute('slim-repeat-as');
-                    clone.setAttribute('slim-repeat-index', index);
+                    clone.setAttribute('slim-repeat-index', index + offset);
                     if (!Slim.__isWCSupported) {
-                        _this7.insertAdjacentHTML('beforeEnd', clone.outerHTML);
-                        clone = _this7.find('*[slim-repeat-index="' + index.toString() + '"]');
+                        _this8.insertAdjacentHTML('beforeEnd', clone.outerHTML);
+                        clone = _this8.find('*[slim-repeat-index="' + index.toString() + '"]');
                     }
                     clone[targetPropName] = dataItem;
-                    clone.data_index = index;
-                    clone.data_source = _this7.sourceData;
+                    clone.data_index = index + offset;
+                    clone.data_source = _this8.sourceData;
                     clone.sourceText = clone.innerText;
                     if (Slim.__isWCSupported) {
-                        _this7.insertAdjacentElement('beforeEnd', clone);
+                        _this8.insertAdjacentElement('beforeEnd', clone);
                     }
-                    _this7.clones.push(clone);
+                    _this8.clones.push(clone);
                 });
                 if (this._virtualDOM) this._captureBindings();
 
                 var _loop2 = function _loop2(clone) {
                     clone[targetPropName] = clone[targetPropName];
-                    clone._boundRepeaterParent = _this7._boundParent;
+                    clone._boundRepeaterParent = _this8._boundParent;
                     if (Slim.__prototypeDict[clone.localName] !== undefined || clone.isSlim) {
-                        clone._boundParent = _this7._boundParent;
+                        clone._boundParent = _this8._boundParent;
                     } else {
                         clone._boundParent = clone;
                     }

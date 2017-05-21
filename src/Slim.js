@@ -443,7 +443,6 @@ class Slim extends HTMLElement {
     static __processStyleNode(node, tag, uqIndex) {
         if (Slim.__isWCSupported) return;
         const rxRules = /([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g;
-        const unique_index = node._boundParent.uq_index;
         const match = node.innerText.match(rxRules);
         if (match) {
             match.forEach( selector => {
@@ -1049,24 +1048,50 @@ Slim.__initRepeater = function() {
             this.clones = [];
         }
 
-        renderList() {
+        updateExistingList() {
             let targetPropName = this.getAttribute('target-attr');
-            if (!this.sourceNode) return;
-            this.clearList();
-            //noinspection JSUnusedGlobalSymbols
+            this.clones.forEach( (clone, idx) => {
+                clone[targetPropName] = this.sourceData[idx];
+            });
+            this._executeBindings();
+        }
 
-            this.sourceData.registerSlimRepeater(this);
-            this.sourceData.forEach( (dataItem, index) => {
+        renderList() {
+            if (!this.sourceNode) return;
+            if (this.clones && this.clones.length >= this.sourceData.length) {
+                this.updateExistingList();
+                let leftovers = this.clones.splice(this.sourceData.length);
+                leftovers.forEach(leftover => {
+                    Slim.removeChild(leftover);
+                });
+                return;
+            }
+            // if (this.clones && this.clones.length < this.sourceData.length) {
+            //     this.updateExistingList();
+            //     let remaining = this.sourceData.splice(this.clones.length);
+            //     this.createItems(remaining);
+            //     return;
+            // }
+            this.clearList();
+            this.createItems(this.sourceData);
+        }
+
+        createItems(sourceData) {
+            let targetPropName = this.getAttribute('target-attr');
+            const offset = this.clones.length;
+
+            sourceData.registerSlimRepeater(this);
+            sourceData.forEach( (dataItem, index) => {
                 let clone = this.sourceNode.cloneNode(true);
                 clone.removeAttribute('slim-repeat');
                 clone.removeAttribute('slim-repeat-as');
-                clone.setAttribute('slim-repeat-index', index);
+                clone.setAttribute('slim-repeat-index', index + offset);
                 if (!Slim.__isWCSupported) {
                     this.insertAdjacentHTML('beforeEnd', clone.outerHTML);
                     clone = this.find('*[slim-repeat-index="' + index.toString() + '"]')
                 }
                 clone[targetPropName] = dataItem;
-                clone.data_index = index;
+                clone.data_index = index + offset;
                 clone.data_source = this.sourceData;
                 clone.sourceText = clone.innerText;
                 if (Slim.__isWCSupported) {
