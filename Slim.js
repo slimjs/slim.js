@@ -1342,14 +1342,14 @@ Slim.__initRepeater = function () {
             value: function renderList() {
                 if (!this.sourceNode) return;
                 this.sourceData.registerSlimRepeater(this);
-                if (this.clones && this.clones.length >= this.sourceData.length) {
-                    this.updateExistingList();
-                    var leftovers = this.clones.splice(this.sourceData.length);
-                    leftovers.forEach(function (leftover) {
-                        Slim.removeChild(leftover);
-                    });
-                    return;
-                }
+                // if (this.clones && this.clones.length >= this.sourceData.length) {
+                //     this.updateExistingList();
+                //     let leftovers = this.clones.splice(this.sourceData.length);
+                //     leftovers.forEach(leftover => {
+                //         Slim.removeChild(leftover);
+                //     });
+                //     return;
+                // }
                 // if (this.clones && this.clones.length < this.sourceData.length) {
                 //     this.updateExistingList();
                 //     let remaining = this.sourceData.splice(this.clones.length);
