@@ -6,19 +6,34 @@
     <script src="../../src/Slim3.js"></script>
 </head>
 <body>
-    <my-tag><div t2="[[s2]]">Content here</div></my-tag>
-    <script>
-        Slim.tag('my-tag',
+<script>
+    Slim.tag('my-tag',
         `<h1 t1="[[s1]]">Hello</h1>
-        <slim-content></slim-content>`,
+        <slim-content></slim-content>
+        <h2 camel-case="[[double(deep.value)]]">World</h2>
+        <h3 my-sum="[[sum(deep.value, s2)]]">slim.js</h3>
+        <div bind>[[sum(deep.value, s2)]] this is a text node [[s2]]</div>
+        `,
         class extends Slim {
             get useShadow() { return false; }
 
             onBeforeCreated() {
                 this.s1 = 1111;
                 this.s2 = 2222;
+                this.deep = {
+                    value: 123
+                };
+            }
+
+            double(what) {
+                return what * 2;
+            }
+
+            sum(a, b) {
+                return a + b;
             }
         });
-    </script>
+</script>
+<my-tag><div t2="[[s2]]">Content here</div></my-tag>
 </body>
 </html>
