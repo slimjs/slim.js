@@ -1058,6 +1058,7 @@ Slim.__initRepeater = function() {
 
         renderList() {
             if (!this.sourceNode) return;
+            this.sourceData.registerSlimRepeater(this);
             if (this.clones && this.clones.length >= this.sourceData.length) {
                 this.updateExistingList();
                 let leftovers = this.clones.splice(this.sourceData.length);
@@ -1079,8 +1080,6 @@ Slim.__initRepeater = function() {
         createItems(sourceData) {
             let targetPropName = this.getAttribute('target-attr');
             const offset = this.clones.length;
-
-            sourceData.registerSlimRepeater(this);
             sourceData.forEach( (dataItem, index) => {
                 let clone = this.sourceNode.cloneNode(true);
                 clone.removeAttribute('slim-repeat');
