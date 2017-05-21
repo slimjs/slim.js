@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Render</title>
+    <script src="../../src/Slim3.js"></script>
+</head>
+<body>
+    <my-tag><div t2="[[s2]]">Content here</div></my-tag>
+    <script>
+        Slim.tag('my-tag',
+        `<h1 t1="[[s1]]">Hello</h1>
+        <slim-content></slim-content>`,
+        class extends Slim {
+            get useShadow() { return false; }
+
+            onBeforeCreated() {
+                this.s1 = 1111;
+                this.s2 = 2222;
+            }
+        });
+    </script>
+</body>
+</html>
