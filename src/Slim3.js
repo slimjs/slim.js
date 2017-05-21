@@ -7,7 +7,7 @@ class PropertyBinding {
     }
 
     execute() {
-        const value = Slim.__lookup(this.source, this.expression).obj;
+        const value = Slim.__repeaterLookup(this.target, this.source, this.expression).obj;
         this.target.setAttribute(this.attributeName, value);
         this.target[Slim.__dashToCamel(this.attributeName)] = value;
     }
@@ -27,7 +27,7 @@ class PropertyMethodBinding {
 
     execute() {
         const values = this.expressions.map( expression => {
-            return Slim.__lookup(this.source, expression).obj
+            return Slim.__repeaterLookup(this.target, this.source, expression).obj
         });
         const value = this.source[ this.methodName ].apply( this.source, values );
         this.target.setAttribute(this.attributeName, value);
@@ -49,7 +49,7 @@ class TextBinding {
             const methodName = matches[1];
             const props = matches[3].split(' ').join('').split(',');
             const values = props.map( expr => {
-                return Slim.__lookup(this.source, expr ).obj;
+                return Slim.__repeaterLookup(this.target, this.source, expr ).obj;
             });
             const value = this.source[ methodName ].apply( this.source, values );
             this.target.innerText = this.target.innerText.replace(expression, value);
@@ -57,7 +57,7 @@ class TextBinding {
         match = this.target.innerText.match(Slim.rxTextProp);
         match && match.forEach( expression => {
             const deepProperty = expression.match(Slim.rxProp)[1];
-            const value = Slim.__lookup(this.source, deepProperty).obj;
+            const value = Slim.__repeaterLookup(this.target, this.source, deepProperty).obj;
             this.target.innerText = this.target.innerText.replace(expression, value);
         });
     }
@@ -88,7 +88,9 @@ class Slim extends HTMLElement {
         //     Slim.__initRepeater();
         // }
         setTimeout( () => {
-            window.customElements.define(tag, clazz);
+            // const customElements = window.customElements || window.CustomElements;
+            // customElements.define(tag, clazz);
+            document.registerElement(tag, clazz);
         }, 0);
     }
 
@@ -129,6 +131,15 @@ class Slim extends HTMLElement {
         return {source: desc, prop:prop, obj:obj};
     }
 
+    static __repeaterLookup(element, scopeElement, expression) {
+        const r = Slim.__lookup(element, expression);
+        const s = Slim.__lookup(scopeElement, expression);
+        if (r.obj) {
+            return r;
+        }
+        return s;
+    }
+
     constructor() {
         super();
         this.createdCallback();
@@ -158,21 +169,33 @@ class Slim extends HTMLElement {
     static executeBindings(target) {
         target._root && target._root.querySelectorAll('*').forEach( node => {
             if (node._bindings) {
-                Object.values(node._bindings).forEach( binding => {
+                const values = Object.keys(node._bindings).map(key => node._bindings[key]);
+                values.forEach( binding => {
                     binding.forEach( bind => bind.execute() );
                 });
             }
         });
     }
 
-    static executeSingleBindings(target, property) {
-        target._bindings && target._bindings[property] && target._bindings[property].forEach( executor => {
-            executor();
-        });
-    }
-
     static captureBindings(target) {
         target._root && target._root.querySelectorAll('*').forEach(child => {
+
+            // check for repeater
+            if (child.hasAttribute('slim-repeat')) {
+                const repeater = document.createElement('slim-repeat');
+                repeater.sourceNode = child;
+                repeater.setAttribute('repeat-source', child.getAttribute('slim-repeat'));
+                repeater.setAttribute('repeat-as', child.getAttribute('slim-repeat-as') || 'data');
+                repeater.boundParent = target;
+                child.removeAttribute('slim-repeat');
+                child.removeAttribute('slim-repeat-as');
+                child.parentNode.insertBefore(repeater, child);
+                child.parentNode.removeChild(child);
+                repeater.renderList();
+                return;
+            }
+
+            // not a repeater
             for (let i = 0; i < child.attributes.length; i++) {
                 const attribute = child.attributes[i];
 
@@ -328,31 +351,34 @@ class SlimRepeater extends Slim {
     clearList() {
         if (this.clones) {
             this.clones.forEach( clone => {
-                Slim.removeChild(clone);
-            })
+                clone.parentNode && clone.parentNode.removeChild(clone);
+            });
         }
         this.clones = [];
     }
 
+    get dataSource() {
+        const expression = this.getAttribute('repeat-source');
+        return Slim.__lookup(this.boundParent, expression).obj || [];
+    }
+
+    get useShadow() { return false; }
+
     renderList() {
+        const targetProp = this.getAttribute('repeat-as');
         if (this.isRendering) return;
         this.isRendering = true;
         this.clearList();
         this.dataSource.forEach( (dataItem, idx) => {
             const clone = this.sourceNode.cloneNode(true);
-            this.clones.push(clone);
-            this.root.appendChild(clone);
             clone.setAttribute('slim-repeat-index', idx);
-            [clone].concat(Slim.findAll(clone, '*')).forEach( element => {
-                element.__boundParent = this.__boundParent;
-                element.__isRepeated = true;
-                element[this.targetProp] = dataItem;
-                element.data_index = idx;
-            });
+            clone[targetProp] = dataItem;
+            clone._isRepeated = true;
+            this.clones.push(clone);
+            this.insertAdjacentElement('beforeEnd', clone);
         });
-        Slim.captureBindings(this.__boundParent);
-        Slim.applyBindings(this.__boundParent);
-        Slim.renderElement(this.__boundParent);
+        Slim.captureBindings(this.boundParent);
+        Slim.executeBindings(this.boundParent);
         this.isRendering = false;
     }
 }
