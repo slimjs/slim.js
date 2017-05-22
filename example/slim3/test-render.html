@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Test Render</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents-lite.min.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.24/webcomponents-lite.min.js"></script>-->
     <script src="../../src/Slim3.js"></script>
 </head>
 <body>
@@ -14,7 +14,9 @@
         <h2 camel-case="[[double(deep.value)]]">World</h2>
         <h3 my-sum="[[sum(deep.value, s2)]]">slim.js</h3>
         <div bind>[[sum(deep.value, s2)]] this is a text node [[s2]]</div>
-        <div slim-repeat="items" bind>[[data]]</div>
+        <div slim-repeat="items">
+            <span bind>[[data.text]] >>>> [[data.value]]</span>
+        </div>
         `,
         class extends Slim {
             get useShadow() { return false; }
@@ -25,7 +27,31 @@
                 this.deep = {
                     value: 123
                 };
-                this.items = [1,2,3,4,5,6,7,8,9,10];
+                this.items = [
+                    { text: '111111', value: 'aaaaaaaaa' },
+                    { text: '222222', value: 'bbbbbbbbb' }
+                ];
+                window.unit = this;
+            }
+
+            stop() {
+                clearInterval(this.interval);
+            }
+
+            start() {
+                this.interval = setInterval( this.createRandomArray.bind(this), 500 );
+            }
+
+            createRandomArray() {
+                const items = [];
+                const l = Math.random() * 10;
+                while (items.length < l) {
+                    items.push({
+                        text: (Math.random() * 16).toString(16),
+                        value: Math.random()
+                    });
+                }
+                this.items = items;
             }
 
             double(what) {
