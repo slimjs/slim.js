@@ -2,7 +2,7 @@ Slim.tag('stargazers-demo',
 
     `<h1 bind>[[repoName]] Stargazers!</h1>
     <div>
-        <input slim-id="myInput" type="text" placeholder="user/repo" />
+        <input slim-id="myInput" type="text" placeholder="user/repo" value="[[repoName]]"/>
         <button click="search">Search...</button>
         <hr/>
         <button click="makeBig">256x256</button>
@@ -60,7 +60,6 @@ Slim.tag('stargazers-demo',
 
         search() {
             this.repoName = this.myInput.value;
-            this.stargazers = [];
             this.runQuery();
         }
 

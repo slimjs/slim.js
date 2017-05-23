@@ -883,8 +883,13 @@ class Slim extends HTMLElement {
                 return 0
             });
 
+            child._boundProperties = {};
+
             descriptors.forEach(
                 descriptor => {
+                    descriptor.properties && descriptor.properties.forEach( prop => {
+                        child._boundProperties[prop] = true;
+                    });
                     if (descriptor.type === 'P' || descriptor.type === 'M' || descriptor.type === 'C') {
                         this.__bind(descriptor)
                     } else if (descriptor.type === 'I') {
@@ -1050,8 +1055,31 @@ Slim.__initRepeater = function() {
 
         updateExistingList() {
             let targetPropName = this.getAttribute('target-attr');
+            const sourceData = this.sourceData;
             this.clones.forEach( (clone, idx) => {
                 clone[targetPropName] = this.sourceData[idx];
+                clone.data_index = idx;
+                clone.data_source = sourceData;
+                Slim.selectorToArr(clone, '*').forEach( element => {
+                    element[targetPropName] = sourceData[idx];
+                    element.data_index = idx;
+                    element.data_source = sourceData;
+                });
+                if (clone.isSlim) {
+                    clone.update();
+                }
+            });
+            this.clones[0]._boundProperties && Object.keys(this.clones[0]._boundProperties).forEach( prop => {
+                try {
+                    this._boundParent._executeBindings(prop.split('.')[0]);
+                }
+                catch (err) { /* swallow error */ }
+            });
+            Slim.selectorToArr(this.clones[0], '*').forEach( element => {
+                try {
+                    this._boundParent._executeBindings(prop.split('.')[0]);
+                }
+                catch (err) { /* swallow error */ }
             });
             this._executeBindings();
         }
@@ -1059,20 +1087,26 @@ Slim.__initRepeater = function() {
         renderList() {
             if (!this.sourceNode) return;
             this.sourceData.registerSlimRepeater(this);
-            // if (this.clones && this.clones.length >= this.sourceData.length) {
-            //     this.updateExistingList();
-            //     let leftovers = this.clones.splice(this.sourceData.length);
-            //     leftovers.forEach(leftover => {
-            //         Slim.removeChild(leftover);
-            //     });
-            //     return;
-            // }
-            // if (this.clones && this.clones.length < this.sourceData.length) {
-            //     this.updateExistingList();
-            //     let remaining = this.sourceData.splice(this.clones.length);
-            //     this.createItems(remaining);
-            //     return;
-            // }
+
+            if (this.clones && this.clones.length === this.sourceData.length && this.sourceData.length > 0) {
+                this.updateExistingList();
+                return;
+            }
+
+            if (this.clones && this.clones.length > this.sourceData.length && this.sourceData.length > 0) {
+                const leftovers = this.clones.splice(this.sourceData.length);
+                leftovers.forEach( leftover => {
+                    Slim.removeChild(leftover);
+                });
+                this.updateExistingList();
+                return;
+            }
+            if (this.clones && this.clones.length < this.sourceData.length && this.clones.length > 0) {
+                this.updateExistingList();
+                let remaining = this.sourceData.slice(this.clones.length);
+                this.createItems(remaining);
+                return;
+            }
             this.clearList();
             this.createItems(this.sourceData);
         }
@@ -1080,6 +1114,7 @@ Slim.__initRepeater = function() {
         createItems(sourceData) {
             let targetPropName = this.getAttribute('target-attr');
             const offset = this.clones.length;
+            const newClones = [];
             sourceData.forEach( (dataItem, index) => {
                 let clone = this.sourceNode.cloneNode(true);
                 clone.removeAttribute('slim-repeat');
@@ -1096,10 +1131,10 @@ Slim.__initRepeater = function() {
                 if (Slim.__isWCSupported) {
                     this.insertAdjacentElement('beforeEnd', clone)
                 }
-                this.clones.push(clone)
+                newClones.push(clone)
             });
             if (this._virtualDOM) this._captureBindings();
-            for (let clone of this.clones) {
+            for (let clone of newClones) {
                 clone[targetPropName] = clone[targetPropName];
                 clone._boundRepeaterParent = this._boundParent;
                 if (Slim.__prototypeDict[clone.localName] !== undefined || clone.isSlim) {
@@ -1112,10 +1147,15 @@ Slim.__initRepeater = function() {
                     element._boundParent = clone._boundParent;
                     element._boundRepeaterParent = clone._boundRepeaterParent;
                     element[targetPropName] = clone[targetPropName];
-                    element.data_index = clone.data_index;
+                    element.data_index = clone.data_index + offset;
                     element.data_source = clone.data_source;
                 })
             }
+
+            if (!this.clones) {
+                this.clones = [];
+            }
+            this.clones = this.clones.concat(newClones);
 
             this._executeBindings();
             if (this._isAdjacentRepeater) {
