@@ -28,14 +28,8 @@ Slim.tag('stargazers-demo',
             window.unit = this;
             this.repoName = 'eavichay/slim.js';
             this.stargazers = [];
-            this._avatarSize = 128;
+            this.avatarSize = 128;
             this.isLoading = false;
-        }
-
-        get avatarSize() { return this._avatarSize; }
-        set avatarSize(value) {
-            // console.log('Changing avatar size to ' + value);
-            this._avatarSize = value;
         }
 
         makeBig() {

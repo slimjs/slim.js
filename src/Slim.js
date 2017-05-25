@@ -363,7 +363,7 @@ class Slim extends HTMLElement {
                             targets = descriptor.target.repeater.clones;
                         }
                         if (targets) {
-                            let sourceRef = descriptor.target._boundRepeaterParent;
+                            let sourceRef = descriptor.target._boundRepeaterParent || descriptor.target._boundParent;
                             let value = Slim.__lookup((sourceRef || source), prop).obj || Slim.__lookup(descriptor.target, prop).obj;
                             const attrName = Slim.__dashToCamel(descriptor.attribute);
                             targets.forEach(target => {
@@ -408,7 +408,8 @@ class Slim extends HTMLElement {
                     }
                 } else if (descriptor.type === 'R') {
                     executor = () => {
-                        descriptor.repeater.renderList()
+                        descriptor.repeater.registerForRender();
+                        // !descriptor.repeater.isRendering && descriptor.repeater.renderList()
                     }
                 } else if (descriptor.type === 'W') {
                     executor = () => {
@@ -1028,7 +1029,7 @@ Slim.__initRepeater = function() {
             if (!this.uq_index) {
                 this.createdCallback();
             }
-            this.renderList();
+            this.checkoutRender();
         }
 
         onRemoved() {
@@ -1066,6 +1067,9 @@ Slim.__initRepeater = function() {
                     element[targetPropName] = sourceData[idx];
                     element.data_index = idx;
                     element.data_source = sourceData;
+                    if (element.isSlim) {
+                        element.update();
+                    }
                 });
                 if (clone.isSlim) {
                     clone.update();
@@ -1073,12 +1077,14 @@ Slim.__initRepeater = function() {
             });
             this.clones[0]._boundProperties && Object.keys(this.clones[0]._boundProperties).forEach( prop => {
                 try {
+                    this.clones[0]._boundParent._executeBindings(prop.split('.')[0]);
                     this._boundParent._executeBindings(prop.split('.')[0]);
                 }
                 catch (err) { /* swallow error */ }
             });
             Slim.selectorToArr(this.clones[0], '*').forEach( element => {
                 try {
+                    element._boundParent._executeBindings(prop.split('.')[0]);
                     this._boundParent._executeBindings(prop.split('.')[0]);
                 }
                 catch (err) { /* swallow error */ }
@@ -1087,11 +1093,17 @@ Slim.__initRepeater = function() {
         }
 
         renderList() {
-            if (!this.sourceNode) return;
+            if (this.isRendering) return;
+            this.isRendering = true;
+            if (!this.sourceNode) {
+                this.isRendering = false;
+                return;
+            }
             this.sourceData.registerSlimRepeater(this);
 
             if (this.clones && this.clones.length === this.sourceData.length && this.sourceData.length > 0) {
                 this.updateExistingList();
+                this.isRendering = false;
                 return;
             }
 
@@ -1101,16 +1113,19 @@ Slim.__initRepeater = function() {
                     Slim.removeChild(leftover);
                 });
                 this.updateExistingList();
+                this.isRendering = false;
                 return;
             }
             if (this.clones && this.clones.length < this.sourceData.length && this.clones.length > 0) {
                 this.updateExistingList();
                 let remaining = this.sourceData.slice(this.clones.length);
                 this.createItems(remaining);
+                this.isRendering = false;
                 return;
             }
             this.clearList();
             this.createItems(this.sourceData);
+            this.isRendering = false;
         }
 
         createItems(sourceData) {

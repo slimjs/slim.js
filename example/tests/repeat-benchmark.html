@@ -58,7 +58,7 @@
         while (arr.length < ARR_LENGTH) {
             const random = Math.random();
             arr.push(random);
-            let child = document.createElement('div');
+            const child = document.createElement('div');
             child.innerText = random.toString();
             el.appendChild(child);
         }
