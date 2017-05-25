@@ -38,7 +38,9 @@ var Slim = function (_CustomElement2) {
          */
         value: function polyfill(url) {
             if (Slim.__isWCSupported) return;
-            document.write('<script src="' + url + '"></script>');
+            var scriptTag = document.createElement('script');
+            scriptTag.src = url;
+            document.getElementsByTagName('head')[0].appendChild(scriptTag);
         }
 
         /**

@@ -15,7 +15,9 @@ class Slim extends HTMLElement {
      */
     static polyfill(url) {
         if (Slim.__isWCSupported) return;
-        document.write('<script src="' + url + '"></script>');
+        const scriptTag = document.createElement('script');
+        scriptTag.src = url;
+        document.getElementsByTagName('head')[0].appendChild(scriptTag);
     }
 
     /**
