@@ -1126,7 +1126,7 @@ var Slim = function (_CustomElement2) {
                 type: 'R',
                 target: child,
                 targetAttribute: child.getAttribute('slim-repeat-as') ? child.getAttribute('slim-repeat-as') : 'data',
-                repeatAdjacent: child.hasAttribute('slim-repeat-adjacent') || child.localName === 'option',
+                repeatAdjacent: child.hasAttribute('slim-repeat-adjacent') || child.localName === 'option' || child.localName === 'tr' || child.localName === 'th' || child.localName === 'td',
                 attribute: attribute.nodeName,
                 properties: [attribute.nodeValue],
                 source: child._boundParent
