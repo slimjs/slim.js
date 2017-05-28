@@ -40,7 +40,8 @@ class Slim extends HTMLElement {
             Slim.__initRepeater();
         }
         setTimeout( () => {
-            document.registerElement(tag, clazz);
+            customElements.define(tag, clazz);
+            // document.registerElement(tag, clazz);
         }, 0);
     }
 

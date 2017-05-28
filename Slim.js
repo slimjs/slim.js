@@ -66,7 +66,8 @@ var Slim = function (_CustomElement2) {
                 Slim.__initRepeater();
             }
             setTimeout(function () {
-                document.registerElement(_tag, clazz);
+                customElements.define(_tag, clazz);
+                // document.registerElement(tag, clazz);
             }, 0);
         }
 
