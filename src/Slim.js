@@ -6,7 +6,7 @@ class Slim extends HTMLElement {
      * Best practice to call polyfill in <head> section of the HTML
      * @example
      *      <head>
-     *          <script src="./path/to/slim/Slim.min.js></script>
+     *          <script src="./path/to/slim/Slim.min.js"></script>
      *          <script>
      *              Slim.polyfill('./path/to/web-components-polyfill.js');
      *          </script>
