@@ -256,7 +256,7 @@ class Slim extends HTMLElement {
 
     //noinspection JSUnusedGlobalSymbols
     findAll(selector) {
-        return Slim.selectorToArr(this.rootElemnt, selector);
+        return Slim.selectorToArr(this.rootElement, selector);
     }
 
     watch(prop, executor) {

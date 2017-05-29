@@ -62,8 +62,8 @@ Slim.tag('stargazers-demo',
             fetch(`https://api.github.com/repos/${this.repoName}/stargazers?page=1&per_page=100`)
                 .then(response => response.json() )
                 .then(stargazers => {
-                    this.stargazers = stargazers;
                     this.isLoading = false;
+                    this.stargazers = stargazers;
                 });
         }
 });
