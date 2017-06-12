@@ -834,7 +834,6 @@ var Slim = function (_CustomElement2) {
                 child._boundParent = child._boundParent || _this4;
                 self._boundChildren = _this4._boundChildren || [];
                 self._boundChildren.push(child);
-                self._boundChildren.push(child);
                 if (child.localName === 'style' && _this4.useShadow) {
                     Slim.__processStyleNode(child, _this4.localName, _this4.uq_index);
                 }

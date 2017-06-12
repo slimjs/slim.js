@@ -853,7 +853,6 @@ class Slim extends HTMLElement {
             child._boundParent = child._boundParent || this;
             self._boundChildren = this._boundChildren || [];
             self._boundChildren.push(child);
-            self._boundChildren.push(child);
             if (child.localName === 'style' && this.useShadow) {
                 Slim.__processStyleNode(child, this.localName, this.uq_index);
             }
