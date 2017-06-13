@@ -39,10 +39,7 @@ class Slim extends HTMLElement {
         if (Slim.__prototypeDict['slim-repeat'] === undefined) {
             Slim.__initRepeater();
         }
-        setTimeout( () => {
-            customElements.define(tag, clazz);
-            // document.registerElement(tag, clazz);
-        }, 0);
+        customElements.define(tag, clazz);
     }
 
     //noinspection JSUnusedGlobalSymbols

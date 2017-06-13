@@ -65,10 +65,7 @@ var Slim = function (_CustomElement2) {
             if (Slim.__prototypeDict['slim-repeat'] === undefined) {
                 Slim.__initRepeater();
             }
-            setTimeout(function () {
-                customElements.define(_tag, clazz);
-                // document.registerElement(tag, clazz);
-            }, 0);
+            customElements.define(_tag, clazz);
         }
 
         //noinspection JSUnusedGlobalSymbols

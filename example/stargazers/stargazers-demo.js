@@ -24,6 +24,11 @@ Slim.tag('stargazers-demo',
     class extends Slim {
         get useShadow() { return true; }
 
+        constructor() {
+            super();
+            console.log('hello');
+        }
+
         onBeforeCreated() {
             window.unit = this;
             this.repoName = 'eavichay/slim.js';
