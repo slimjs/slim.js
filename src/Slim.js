@@ -716,7 +716,7 @@ class Slim extends HTMLElement {
      * Part of the standard web-component lifecycle. Overriding it is not recommended.
      */
     connectedCallback() {
-        this.attachedCallback();
+        this.onAdded();
     }
 
     /**
@@ -724,14 +724,6 @@ class Slim extends HTMLElement {
      */
     disconnectedCallback() {
         this.detachedCallback();
-    }
-
-    //noinspection JSUnusedGlobalSymbols
-    /**
-     * Part of the standard web-component lifecycle. Overriding it is not recommended.
-     */
-    attachedCallback() {
-        this.onAdded();
     }
 
     attributeChangedCallback(attr, oldValue, newValue) {
