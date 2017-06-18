@@ -584,18 +584,6 @@ var Slim = function (_CustomElement2) {
             this.update();
         }
 
-        //noinspection JSUnusedGlobalSymbols
-        /**
-         * Part of the standard web-component lifecycle. Overriding it is not recommended.
-         */
-
-    }, {
-        key: 'detachedCallback',
-        value: function detachedCallback() {
-            Slim.__runPlugins('beforeRemove', this);
-            this.onRemoved();
-        }
-
         /**
          *
          * @private
@@ -658,7 +646,7 @@ var Slim = function (_CustomElement2) {
     }, {
         key: 'connectedCallback',
         value: function connectedCallback() {
-            this.attachedCallback();
+            this.onAdded();
         }
 
         /**
@@ -668,18 +656,8 @@ var Slim = function (_CustomElement2) {
     }, {
         key: 'disconnectedCallback',
         value: function disconnectedCallback() {
-            this.detachedCallback();
-        }
-
-        //noinspection JSUnusedGlobalSymbols
-        /**
-         * Part of the standard web-component lifecycle. Overriding it is not recommended.
-         */
-
-    }, {
-        key: 'attachedCallback',
-        value: function attachedCallback() {
-            this.onAdded();
+            Slim.__runPlugins('beforeRemove', this);
+            this.onRemoved();
         }
     }, {
         key: 'attributeChangedCallback',

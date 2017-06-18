@@ -6,8 +6,6 @@ export declare class Slim extends HTMLElement {
     static registerCustomAttribute(attr:string, fn:Function):void;
 
     createdCallback():void;
-    attachedCallback():void;
-    detachedCallback():void;
     connectedCallback():void;
     disconnectedCallback():void;
 

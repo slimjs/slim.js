@@ -647,15 +647,6 @@ class Slim extends HTMLElement {
         this.update()
     }
 
-    //noinspection JSUnusedGlobalSymbols
-    /**
-     * Part of the standard web-component lifecycle. Overriding it is not recommended.
-     */
-    detachedCallback() {
-        Slim.__runPlugins('beforeRemove', this);
-        this.onRemoved()
-    }
-
     /**
      *
      * @private
@@ -716,22 +707,15 @@ class Slim extends HTMLElement {
      * Part of the standard web-component lifecycle. Overriding it is not recommended.
      */
     connectedCallback() {
-        this.attachedCallback();
+        this.onAdded();
     }
 
     /**
      * Part of the standard web-component lifecycle. Overriding it is not recommended.
      */
     disconnectedCallback() {
-        this.detachedCallback();
-    }
-
-    //noinspection JSUnusedGlobalSymbols
-    /**
-     * Part of the standard web-component lifecycle. Overriding it is not recommended.
-     */
-    attachedCallback() {
-        this.onAdded();
+        Slim.__runPlugins('beforeRemove', this);
+        this.onRemoved()
     }
 
     attributeChangedCallback(attr, oldValue, newValue) {
