@@ -957,7 +957,7 @@ Slim.__plugins = {
 
 try {
     Slim.__isWCSupported = (function() {
-        return ('registerElement' in document
+        return ('customElements' in window
         && 'import' in document.createElement('link')
         && 'content' in document.createElement('template'))
     })()
