@@ -7,7 +7,9 @@ module.exports = {
 
     template: function(tpl) {
         return function(target) {
-            target.prototype.__defineGetter__('template', function() { return tpl; });
+            target.prototype.__defineGetter__('template', function() {
+                return tpl;
+            });
         }
     },
 
@@ -16,4 +18,13 @@ module.exports = {
             target.prototype.__defineGetter__('useShadow', function() { return value; })
         }
     }
+
+    // bindable: function() {
+    //     const args = Array.prototype.slice.call(arguments)
+    //     return function(target) {
+    //         target.prototype._isPropertyBindable = function (prop) {
+    //             return args.indexOf(prop) >= 0
+    //         }
+    //     }
+    // }
 };

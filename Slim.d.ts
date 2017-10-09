@@ -25,7 +25,7 @@ export declare class Slim extends HTMLElement {
     find(selector:string):HTMLElement;
     findAll(selector:string):HTMLElement[];
     watch(prop:string, executor:Function):void;
-    callAttribute(attributeName:string, value:any);
+    callAttribute(attributeName:string, value:any):void;
     useShadow:boolean;
     isInteractive:boolean;
     template:string;
