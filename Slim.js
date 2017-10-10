@@ -83,6 +83,11 @@ var Slim = function (_CustomElement2) {
             }
         }
     }, {
+        key: 'getClass',
+        value: function getClass(tag) {
+            return Slim.__prototypeDict[tag];
+        }
+    }, {
         key: '__createUqIndex',
         value: function __createUqIndex() {
             Slim.__uqIndex++;
@@ -662,10 +667,12 @@ var Slim = function (_CustomElement2) {
     }, {
         key: 'attributeChangedCallback',
         value: function attributeChangedCallback(attr, oldValue, newValue) {
+            var camelCased = Slim.__dashToCamel(attr);
             if (oldValue === newValue) return;
             if (!this._bindings) return;
-            if (this._bindings[attr]) {
-                this[Slim.__dashToCamel(attr)] = newValue;
+            if (this._bindings[camelCased] || this._bindables && this._bindables.hasOwnProperty(camelCased)) {
+                this[camelCased] = newValue;
+                this._executeBindings(camelCased);
             }
         }
     }, {

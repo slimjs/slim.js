@@ -55,6 +55,10 @@ class Slim extends HTMLElement {
         }
     }
 
+    static getClass(tag) {
+        return Slim.__prototypeDict[tag]
+    }
+
     static __createUqIndex() {
         Slim.__uqIndex++;
         return Slim.__uqIndex.toString(16);
@@ -719,10 +723,12 @@ class Slim extends HTMLElement {
     }
 
     attributeChangedCallback(attr, oldValue, newValue) {
+        const camelCased = Slim.__dashToCamel(attr)
         if (oldValue === newValue) return;
         if (!this._bindings) return;
-        if (this._bindings[attr]) {
-            this[Slim.__dashToCamel(attr)] = newValue;
+        if (this._bindings[camelCased] || (this._bindables && this._bindables.hasOwnProperty(camelCased))) {
+            this[camelCased] = newValue;
+            this._executeBindings(camelCased)
         }
     }
 

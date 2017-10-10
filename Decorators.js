@@ -1,3 +1,5 @@
+import {Slim} from "./Slim"
+
 module.exports = {
     tag: function(selector) {
         return function(target) {
@@ -17,14 +19,10 @@ module.exports = {
         return function(target) {
             target.prototype.__defineGetter__('useShadow', function() { return value; })
         }
-    }
+    },
 
-    // bindable: function() {
-    //     const args = Array.prototype.slice.call(arguments)
-    //     return function(target) {
-    //         target.prototype._isPropertyBindable = function (prop) {
-    //             return args.indexOf(prop) >= 0
-    //         }
-    //     }
-    // }
+    attribute: function(target, key) {
+        target.constructor.observedAttributes = target.constructor.observedAttributes || []
+        target.constructor.observedAttributes.push(Slim.__camelToDash(key))
+    }
 };
