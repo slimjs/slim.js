@@ -1,5 +1,3 @@
-import {Slim} from "./Slim"
-
 module.exports = {
     tag: function(selector) {
         return function(target) {
@@ -23,7 +21,7 @@ module.exports = {
 
     attribute: function(target, key, descriptor) {
         target.constructor.observedAttributes = target.constructor.observedAttributes || [];
-        target.constructor.observedAttributes.push(Slim.__camelToDash(key));
+        target.constructor.observedAttributes.push(window.Slim.__camelToDash(key));
         descriptor.configurable = true;
         descriptor.writable = true;
         return descriptor;
