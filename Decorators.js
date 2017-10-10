@@ -17,12 +17,15 @@ module.exports = {
 
     useShadow: function(value) {
         return function(target) {
-            target.prototype.__defineGetter__('useShadow', function() { return value; })
+            target.prototype.__defineGetter__('useShadow', function() { return value; });
         }
     },
 
-    attribute: function(target, key) {
-        target.constructor.observedAttributes = target.constructor.observedAttributes || []
-        target.constructor.observedAttributes.push(Slim.__camelToDash(key))
+    attribute: function(target, key, descriptor) {
+        target.constructor.observedAttributes = target.constructor.observedAttributes || [];
+        target.constructor.observedAttributes.push(Slim.__camelToDash(key));
+        descriptor.configurable = true;
+        descriptor.writable = true;
+        return descriptor;
     }
 };

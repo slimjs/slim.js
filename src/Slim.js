@@ -248,7 +248,7 @@ class Slim extends HTMLElement {
 
     constructor() {
         super();
-        this.createdCallback();
+        Slim.__invokeAsap(this.createdCallback.bind(this))
     }
 
     find(selector) {
@@ -303,9 +303,9 @@ class Slim extends HTMLElement {
         }
     }
 
-    __propertyChanged(property, value) {
+    __propertyChanged(property, value, oldValue) {
         if (typeof this[property + 'Changed'] === 'function') {
-            this[property + 'Changed'](value);
+            this[property + 'Changed'](value, oldValue);
         }
     }
 
@@ -329,17 +329,19 @@ class Slim extends HTMLElement {
                         value: source[rootProp],
                         executors: []
                     };
+                const originalValue = source[rootProp];
+                const originalSetter = source.__lookupSetter__(rootProp);
                 if (!source.__lookupGetter__(rootProp)) source.__defineGetter__(rootProp, function() {
                     return this._bindings[rootProp].value
                 });
-                const originalSetter = source.__lookupSetter__(rootProp);
                 const newSetter = function(x) {
+                    const oldValue = this._bindings[rootProp].value;
                     this._bindings[rootProp].value = x;
                     if (descriptor.sourceText) {
                         descriptor.target.innerText = descriptor.sourceText
                     }
                     this._executeBindings(rootProp);
-                    this.__propertyChanged(rootProp, x);
+                    this.__propertyChanged(rootProp, x, oldValue);
                 };
                 newSetter.isBindingSetter = true;
                 if (!originalSetter) {
@@ -441,6 +443,7 @@ class Slim extends HTMLElement {
                 }
                 executor.descriptor = descriptor;
                 source._bindings[rootProp].executors.push( executor )
+                newSetter.call(source, originalValue);
             }
         )
     }
@@ -667,6 +670,9 @@ class Slim extends HTMLElement {
     initialize() {
         this.uq_index = Slim.__createUqIndex();
         this.setAttribute('slim-uq', this.uq_index);
+        this.constructor.observedAttributes && this.constructor.observedAttributes.forEach(attr => {
+            this[Slim.__dashToCamel(attr)] = this.getAttribute(attr);
+        })
         this._bindings = this._bindings || {};
         this._boundChildren = this._boundChildren || [];
         this._initInteractiveEvents();
