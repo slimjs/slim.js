@@ -1,10 +1,7 @@
 # Introduction
 
 ## What is slim.js?
-Slim.js is a lightweight web component library that provides extended capabilities for components, such as data binding,
-using es6 native class inheritance. This library is focused for providing the developer
-the ability to write robust and native web components without the hassle of dependencies and
-an overhead of a framework.
+Slim.js is a lightweight web component library that provides extended capabilities for components (such as data binding) using es6 native class inheritance. This library is focused on providing the developer with the ability to write robust web components without the hassle of unnecessary dependencies and the overhead of a framework.
 
 ## Getting started
 ```bash
