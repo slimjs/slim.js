@@ -842,8 +842,10 @@ var Slim = function (_CustomElement2) {
                         child.__eventsInitialized = true;
                     }
                     var desc = Slim.__processAttribute(child.attributes[i], child);
-                    if (desc) descriptors.push(desc);
-                    child[Slim.__dashToCamel(child.attributes[i].nodeName)] = child.attributes[i].nodeValue;
+                    if (desc) {
+                        descriptors.push(desc);
+                        child[Slim.__dashToCamel(child.attributes[i].nodeName)] = child.attributes[i].nodeValue;
+                    }
                     if (child.attributes[i].nodeName.indexOf('#') == '0') {
                         var refName = child.attributes[i].nodeName.slice(1);
                         _this5[refName] = child;
