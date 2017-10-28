@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../src/slim.js"></script>
+</head>
+<body>
+    <test-tag></test-tag>
+    <script>
+
+    </script>
+    <script>
+        Slim.tag(
+          `test-tag`,
+          `
+            <div bind:prop-a="AAA" prop-b="BBB" bind:m-prop="multiply(AAA, BBB)">Hello</div>
+            <ul>
+                <li bind>{{AAA}} hello {{BBB}}</li>
+                <li click="handleClick">123456</li>
+            </ul>
+          `,
+          class extends Slim {
+            multiply(a, b) {
+              return a * b
+            }
+            onBeforeCreated() {
+              this.AAA = 1
+              this.BBB = 1
+              setInterval(() => {
+                this.AAA++
+                this.BBB += 0.5
+              }, 1000)
+            }
+            onCreated () {
+              window.unit = this.find('div')
+            }
+          })
+    </script>
+</body>
+</html>
