@@ -14,14 +14,15 @@
 
         `
         <ul>
-            <li slim-repeat="items" bind>[[data.label]]</li>
-            <repeater-child slim-repeat="items" slim-repeat-as="item"></repeater-child>
+            <li slim:repeat="items" bind>{{title}} > {{data.label}} >> {{reverse(data.label)}}</li>
+            <repeater-child slim:repeat="items as item"></repeater-child>
         </ul>
         `,
 
         class extends Slim {
             onBeforeCreated() {
                 window.unit = this;
+                this.title = 'Hello'
                 this.items = [
                     { label: "item 0", text: "text 0" },
                     { label: "item 1", text: "text 1" },
@@ -29,12 +30,16 @@
                 ];
             }
 
+            reverse(value) {
+              return value.split('').reverse().join('')
+            }
+
             addOne() {
                 this.items.push( { label: "item " + this.items.length, text: "text " + this.items.length });
             }
         });
 
-        Slim.tag('repeater-child', '<span prop="[[item.label]]" bind>[[item.text]]</span>', class extends Slim {});
+        Slim.tag('repeater-child', '<span bind:prop="item.label" bind>{{item.text}}</span>', class extends Slim {});
     </script>
 </body>
 </html>

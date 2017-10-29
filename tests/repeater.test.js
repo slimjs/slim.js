@@ -23,11 +23,13 @@ module.exports = {
         browser.waitForElementNotPresent('repeater-child span[prop="item 3"]');
         browser.execute(`
             window.unit.addOne();
+            window.unit.items = window.unit.items.concat()
         `);
         browser.assert.containsText('li[slim-repeat-index="3"]', "item 3");
         browser.assert.containsText('repeater-child span[prop="item 3"]', "text 3");
         browser.execute(`
-            window.unit.items.pop();
+            window.unit.items.pop()
+            window.unit.items = window.unit.items.concat()
         `);
         browser.assert.containsText('li[slim-repeat-index="0"]', "item 0");
         browser.assert.containsText('li[slim-repeat-index="1"]', "item 1");
