@@ -142,9 +142,9 @@
         return Slim.lookup(target, rxP[1], maybeRepeated)
       }
       const rxM = this.rxMethod.exec(expression)
-      const args = rxM[3].replace(' ','').split(',').map(arg => Slim.lookup(target, arg, maybeRepeated))
       if (rxM) {
         const fn = Slim.lookup(target, rxM[1])
+        const args = rxM[3].replace(' ','').split(',').map(arg => Slim.lookup(target, arg, maybeRepeated))
         fn.apply(target, args)
       }
     }
@@ -225,7 +225,10 @@
       })
     }
 
-    static selectRecursive(target) {
+    static selectRecursive(target, excludeParent) {
+      if (excludeParent) {
+        return Slim.qSelectAll(target, '*')
+      }
       return [target].concat(Slim.qSelectAll(target, '*'))
     }
 
@@ -322,6 +325,7 @@
       if (!this._isInContext) return
       this._initialize()
       this.onBeforeCreated()
+      Slim.executePlugins('create', this)
       this._render()
       this[_$].createdCallbackInvoked = true
       Slim.asap(() => {
@@ -330,11 +334,13 @@
     }
 
     connectedCallback () {
-
+      this.onAdded()
+      Slim.executePlugins('added', this)
     }
 
     disconnectedCallback () {
-
+      this.onRemoved()
+      Slim.executePlugins('removed', this)
     }
 
     // Slim internal API
@@ -423,6 +429,9 @@
       this.onBeforeRender()
       this[_$].hasCustomTemplate = customTemplate
       this._resetBindings()
+      if (typeof customTemplate === 'string') {
+        this.innerHTML = ''
+      }
       this._captureBindings()
       this._executeBindings()
       this.onRender()
@@ -534,6 +543,8 @@
   })
 
   Slim.customDirective(/^slim:repeat$/, (source, target, attribute) => {
+    const repeaterId = Slim.createUniqueIndex()
+    const hook = document.createElement('slim-repeater-hook');
     let path = attribute.nodeValue
     let tProp = 'data'
     if (path.indexOf(' as' )) {
@@ -541,12 +552,14 @@
       path = path.split(' as ')[0]
     }
     let template = target.cloneNode(true)
-    template.removeAttribute(attribute.nodeName)
+    template.removeAttribute('slim:repeat')
+    template.setAttribute('slim-repeat-hook', repeaterId)
     const startAnchor = document.createComment(`repeat:${path} start`)
     const endAnchor = document.createComment(`repeat:${path} end`)
     let clones = []
     target.parentNode.insertBefore(startAnchor, target)
     target.parentNode.insertBefore(endAnchor, target)
+    target.parentNode.insertBefore(hook, endAnchor)
     Slim.removeChild(target)
     const dataSourceChanged = (target, dataSource) => {
       // get rid of existing clones
@@ -557,15 +570,21 @@
         })
       })
       // create new clones
-      clones = dataSource.map( (dataItem) => {
-        const clone = template.cloneNode(true)
+      clones = dataSource.map( (dataItem, index) => {
+        hook.insertAdjacentHTML('afterEnd', template.outerHTML)
+        const clone = startAnchor.parentNode.querySelector(`*[slim-repeat-hook="${repeaterId}"]`)
+        clone.removeAttribute('slim-repeat-hook')
         Slim._$(clone).repeater[tProp] = dataItem
+        clone.setAttribute('slim-repeat-index', index.toString())
+        clone[tProp] = dataItem
+        Slim.selectRecursive(clone).forEach(e => {
+          source._bindChildren([e], {
+            values: [attribute.nodeValue],
+            directives: [attribute.nodeName]
+          })
+        })
         startAnchor.parentNode.insertBefore(clone, endAnchor)
         return clone
-      })
-      source._bindChildren(clones, {
-        values: [attribute.nodeValue],
-        directives: [attribute.nodeName]
       })
       source.dispatchEvent(new Event(`__${tProp}-changed`))
     }
@@ -644,7 +663,10 @@
     if (rxM) {
       const pNames = rxM[3].replace(' ','').split(',')
       pNames.forEach( pName => {
-        Slim.bind(source, target, pName, (target, value) => {
+        Slim.bind(source, target, pName, (target) => {
+          const fn = Slim.extract(source, rxM[1], target)
+          const args = pNames.map(prop => Slim.extract(source, prop, target))
+          const value = fn.apply(source, args)
           target[tProp] = value
           target.setAttribute(tAttr, value)
         })
