@@ -33,6 +33,7 @@ module.exports = {
       browser.assert.containsText('#list > li:nth-child('+(i+offset)+')', t)
     })
 
+    browser.waitForElementPresent('#re-render')
     browser.click('#re-render')
     phase2.forEach((t, i) => {
       const offset = 21
@@ -40,6 +41,7 @@ module.exports = {
       browser.assert.containsText('#list > li:nth-child('+(i+offset)+')', t)
     })
 
+    browser.waitForElementPresent('#remove')
     browser.click('#remove')
     phase3.forEach((t, i) => {
       const offset = 32
