@@ -155,21 +155,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return camel.replace(/([A-Z])/g, '-$1').toLowerCase();
       }
     }, {
-      key: 'search',
-      value: function search( /* object */obj, /* string */path) {
-        var arr = path.split('.');
-        var prop = path[0];
-        while (obj && arr.length) {
-          obj = obj[prop = arr.shift()];
-        }
-        return {
-          path: path,
-          prop: prop,
-          obj: obj,
-          value: value
-        };
-      }
-    }, {
       key: 'lookup',
       value: function lookup(target, expression, maybeRepeated) {
         var chain = expression.split('.');
@@ -198,8 +183,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           var args = rxM[3].replace(' ', '').split(',').map(function (arg) {
             return Slim.lookup(target, arg, maybeRepeated);
           });
-          fn.apply(target, args);
+          return fn.apply(target, args);
         }
+        return undefined;
       }
       // noinspection JSUnresolvedVariable
 
@@ -301,6 +287,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             }
           }
         }
+        return false;
       }
     }, {
       key: 'customDirective',
@@ -797,9 +784,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
               var args = pNames.map(function (path) {
                 return Slim.lookup(source, path, target);
               });
-              var _value = source[fnName].apply(source, args);
-              target.innerText = target.innerText.split(expression).join(_value || '');
-            } catch (err) {}
+              var value = source[fnName].apply(source, args);
+              target.innerText = target.innerText.split(expression).join(value || '');
+            } catch (err) {/* gracefully ignore */}
           };
           return;
         }
@@ -809,9 +796,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           aggProps[path] = true;
           textBinds[expression] = function (target) {
             try {
-              var _value2 = Slim.lookup(source, path, target);
-              target.innerText = target.innerText.split(expression).join(_value2 || '');
-            } catch (err) {}
+              var value = Slim.lookup(source, path, target);
+              target.innerText = target.innerText.split(expression).join(value || '');
+            } catch (err) {/* gracefully ignore */}
           };
         }
       });
@@ -904,11 +891,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           Slim.unbind(_this7.boundParent, e);
         });
         if (!this.dataSource || !this.templateNode || !this.boundParent) {
-          return _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, '');
+          _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, '');
+        } else {
+          var newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('');
+          this.innerHTML = '';
+          _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, newTemplate);
         }
-        var newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('');
-        this.innerHTML = '';
-        _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, newTemplate);
       }
     }, {
       key: 'dataSource',

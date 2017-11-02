@@ -105,19 +105,7 @@
     static camelToDash (camel) {
       return camel.replace(/([A-Z])/g, '-$1').toLowerCase();
     }
-    static search (/* object */ obj, /* string */ path) {
-      const arr = path.split('.')
-      let prop = path[0]
-      while (obj && arr.length) {
-        obj = obj[prop = arr.shift()]
-      }
-      return {
-        path: path,
-        prop: prop,
-        obj: obj,
-        value: value
-      }
-    }
+
     static get rxInject () { return /\{(.+[^(\((.+)\))])\}/ }
     static get rxProp() { return /(.+[^(\((.+)\))])/ }
     static get rxMethod () { return /(.+)(\((.+)\)){1}/ }
@@ -144,8 +132,9 @@
       if (rxM) {
         const fn = Slim.lookup(target, rxM[1])
         const args = rxM[3].replace(' ','').split(',').map(arg => Slim.lookup(target, arg, maybeRepeated))
-        fn.apply(target, args)
+        return fn.apply(target, args)
       }
+      return undefined
     }
     // noinspection JSUnresolvedVariable
     static _$ (target) {
@@ -209,6 +198,7 @@
           }
         }
       }
+      return false
     }
 
     static customDirective (directiveStr, fn, isBlocking) {
@@ -645,7 +635,7 @@
               const value = source[fnName].apply(source, args)
               target.innerText = target.innerText.split(expression).join(value || '')
             }
-            catch (err) {}
+            catch (err) { /* gracefully ignore */ }
           }
           return
         }
@@ -658,7 +648,7 @@
               const value = Slim.lookup(source, path, target)
               target.innerText = target.innerText.split(expression).join(value || '')
             }
-            catch (err) {}
+            catch (err) { /* gracefully ignore */ }
           }
         }
       })
@@ -742,19 +732,21 @@
       this.boundParent && this.boundParent._bindChildren(tree)
       this.boundParent._executeBindings()
     }
-    render(...args) {
+    render() {
       if (!this.boundParent) return
       Slim.qSelectAll(this, '*').forEach(e => {
         Slim.unbind(this.boundParent, e)
       })
       if (!this.dataSource || !this.templateNode || !this.boundParent) {
-        return super.render('')
+        super.render('')
+      } else {
+        const newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('')
+        this.innerHTML = '';
+        super.render(newTemplate)
       }
-      const newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('')
-      this.innerHTML = '';
-      super.render(newTemplate)
     }
   }
+
   Slim.tag('slim-repeat', SlimRepeater)
 
 
