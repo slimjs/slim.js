@@ -366,12 +366,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
       }
     }, {
-      key: 'convertToComment',
-      value: function convertToComment(target) {
-        target.outerHTML = '<!-- [slim:if]' + target.outerHTML + ' -->';
-        return target;
-      }
-    }, {
       key: 'wrapGetterSetter',
       value: function wrapGetterSetter(element, expression) {
         var pName = expression.split('.')[0];
@@ -743,7 +737,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     handler = null;
   });
 
-  Slim.customDirective(/^slim:repeat$/, function (source, templateNode, attribute) {
+  Slim.customDirective(/^s:repeat$/, function (source, templateNode, attribute) {
     var path = attribute.nodeValue;
     var tProp = 'data';
     if (path.indexOf(' as')) {
@@ -754,8 +748,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var repeater = document.createElement('slim-repeat');
     repeater[_$2].boundParent = source;
     repeater.dataProp = tProp;
+    repeater.dataPath = attribute.nodeValue;
     repeater.templateNode = templateNode.cloneNode(true);
-    repeater.templateNode.removeAttribute('slim:repeat');
+    repeater.templateNode.removeAttribute('s:repeat');
     templateNode.parentNode.insertBefore(repeater, templateNode);
     Slim.removeChild(templateNode);
     Slim.bind(source, repeater, path, function (repeater, dataSource) {
@@ -765,7 +760,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     // source._executeBindings()
   }, true);
 
-  Slim.customDirective(/^slim:if$/, function (source, target, attribute) {
+  Slim.customDirective(/^s:if$/, function (source, target, attribute) {
     var path = attribute.nodeValue;
     var anchor = document.createComment('if:' + path);
     target.parentNode.insertBefore(anchor, target);
@@ -882,6 +877,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           return child.parentNode.localName === 'slim-root-fragment';
         });
         directChildren.forEach(function (child, index) {
+          child.setAttribute('s:iterate', _this6.dataPath + ' : ' + index);
           Slim.selectRecursive(child).forEach(function (e) {
             Slim._$(e).repeater[_this6.dataProp] = _this6.dataSource[index];
             if (e instanceof Slim) {

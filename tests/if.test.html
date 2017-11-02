@@ -10,7 +10,7 @@
 
     <script>
         Slim.tag('slim-test',
-        `<div id="slimIfTest" slim:if="toggle"></div>`,
+        `<div id="slimIfTest" s:if="toggle"></div>`,
         class extends Slim {
             onBeforeCreated() {
                 window.unit = this;

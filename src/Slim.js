@@ -267,11 +267,6 @@
       }
     }
 
-    static convertToComment (target) {
-      target.outerHTML = '<!-- [slim:if]' + target.outerHTML + ' -->'
-      return target
-    }
-
     static wrapGetterSetter (element, expression) {
       const pName = expression.split('.')[0]
       const descriptor = Object.getOwnPropertyDescriptor(element, pName)
@@ -572,7 +567,7 @@
 
 
 
-  Slim.customDirective(/^slim:repeat$/, (source, templateNode, attribute) => {
+  Slim.customDirective(/^s:repeat$/, (source, templateNode, attribute) => {
     let path = attribute.nodeValue
     let tProp = 'data'
     if (path.indexOf(' as' )) {
@@ -583,8 +578,9 @@
     const repeater = document.createElement('slim-repeat')
     repeater[_$].boundParent = source
     repeater.dataProp = tProp
+    repeater.dataPath = attribute.nodeValue
     repeater.templateNode = templateNode.cloneNode(true)
-    repeater.templateNode.removeAttribute('slim:repeat')
+    repeater.templateNode.removeAttribute('s:repeat')
     templateNode.parentNode.insertBefore(repeater, templateNode)
     Slim.removeChild(templateNode)
     Slim.bind(source, repeater, path, (repeater, dataSource) => {
@@ -615,7 +611,7 @@
 
 
 
-  Slim.customDirective(/^slim:if$/, (source, target, attribute) => {
+  Slim.customDirective(/^s:if$/, (source, target, attribute) => {
     const path = attribute.nodeValue
     const anchor = document.createComment(`if:${path}`)
     target.parentNode.insertBefore(anchor, target)
@@ -731,6 +727,7 @@
       const directChildren = Array.prototype
         .filter.call(tree, child => child.parentNode.localName === 'slim-root-fragment')
       directChildren.forEach((child, index) => {
+        child.setAttribute('s:iterate', `${this.dataPath} : ${index}`)
         Slim.selectRecursive(child).forEach(e => {
           Slim._$(e).repeater[this.dataProp] = this.dataSource[index]
           if (e instanceof Slim) {

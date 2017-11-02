@@ -15,7 +15,7 @@
   Slim.tag('n-r', `
             <div bind:title="item.title" bind>{{item.title}}</div>
             <ul>
-                <n-r slim:repeat="item.children as item"></n-r>
+                <n-r s:repeat="item.children as item"></n-r>
             </ul>
         `
     , class extends Slim {
@@ -24,19 +24,19 @@
   Slim.tag(`repeater-test`,
     `
         <ul>
-            <li slim:repeat="items" bind>{{title}} > {{data.label}} >> {{reverse(data.label)}}</li>
-            <li slim:repeat="items as item">
-                <span bind>{{item.label}} >> {{title}}</span>
-            </li>
+            <li s:repeat="items" bind:iteration="getIndex(data)" bind>{{title}} > {{data.label}} >> {{reverse(data.label)}}</li>
         </ul>
-        <repeater-child slim:repeat="items as item"></repeater-child>
-        <n-r slim:repeat="nested as item"></n-r>
+        <repeater-child s:repeat="items as item"></repeater-child>
+        <n-r s:repeat="nested as item"></n-r>
         `,
 
     class extends Slim {
       constructor() {
         super()
         window.unit = this;
+      }
+
+      onBeforeCreated() {
         this.title = 'Hello'
         this.items = [
           { label: "item 0", text: "text 0" },
@@ -56,6 +56,10 @@
             { title: '2.2', children: [] }
           ]},
         ];
+      }
+
+      getIndex(e) {
+        return this.items.indexOf(e)
       }
 
       reverse(value) {
