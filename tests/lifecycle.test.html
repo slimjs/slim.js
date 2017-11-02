@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../src/Slim.js"></script>
+    <style>
+        * {
+            font-family: monospace;
+        }
+        li {
+            list-style: none;
+        }
+        li:before {
+            content: attr(data-prefix);
+            display: inline-block;
+            width: 3em;
+        }
+
+        li[data-prefix="A"] {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<lifecycle-test></lifecycle-test>
+<ul id="list">
+    <span id="anchor"></span>
+</ul>
+<script>
+    [ 'create', 'added', 'beforeRender', 'afterRender', 'removed' ].forEach(phase => {
+      Slim.plugin(phase, e => {
+        if (e !== window.unit) {
+          document.querySelector('#list').remove()
+        }
+        $$$('P ' + phase + ' (plugin)')
+      })
+    })
+
+    const anchor = document.querySelector('#anchor')
+    window.$$$ = text => {
+      const li = document.createElement('li')
+      li.setAttribute('data-prefix', text.slice(0,1))
+      li.innerText = text.slice(2)
+      document.querySelector('#list').insertBefore(li, anchor)
+    }
+    Slim.tag('lifecycle-test',
+    `
+        <h1>Slim element's lifecycle</h1>
+        <button id="re-render" click="handleRenderClick">Click here to manually execute render()</button>
+        <button id="remove" click="handleRemoveClick">Click here to remove me</button>
+    `,
+    class extends Slim {
+
+      handleRemoveClick () {
+        this.remove()
+      }
+
+      handleRenderClick () {
+        this.render(`
+            <p>I have been rendered. All child nodes replaced and their state is lost</p>
+            <p>Go over the lifecycle and see what was changed.</p>
+            <button id="remove" click="handleRemoveClick">Click here to remove me</button>`)
+      }
+
+      constructor () {
+        $$$('* ctor')
+        super()
+        $$$('* ctor ended')
+      }
+
+      connectedCallback () {
+        $$$('N connectedCallback started')
+        super.connectedCallback()
+        $$$('N connectedCallback complete')
+      }
+
+      disconnectedCallback () {
+        $$$('N disconnectedCallback started')
+        super.disconnectedCallback()
+        $$$('N disconnectedCallback complete')
+      }
+
+      _initialize () {
+        $$$('i _initialize')
+        super._initialize()
+      }
+
+      onAdded () {
+        $$$('A onAdded')
+      }
+
+      onRemoved() {
+        $$$('A onRemoved')
+      }
+
+      onBeforeCreated () {
+        window.unit = this
+        $$$('A onBeforeCreated')
+      }
+
+      createdCallback () {
+        $$$('N createdCallback')
+        super.createdCallback()
+      }
+      onCreated () {
+        $$$('A onCreated')
+      }
+      onBeforeRender () {
+        $$$('A onBeforeRender')
+      }
+
+      render (...args) {
+        $$$('* render started')
+        super.render(...args)
+        $$$('* render complete')
+      }
+
+      onRender () {
+        $$$('A onRender')
+      }
+
+      _render (...args) {
+        $$$('i _render started')
+        super._render(...args)
+        $$$('i _render complete')
+      }
+
+      _executeBindings (...args) {
+        $$$('i _executeBindings ' + args.join(', '))
+        super._executeBindings(...args)
+      }
+
+      _bindChildren (...args) {
+        $$$('i _bindChildren ' + args.join(', '))
+        super._bindChildren(...args)
+      }
+
+      _captureBindings (...args) {
+        $$$('i _captureBindings')
+        super._captureBindings(...args)
+      }
+    })
+</script>
+</body>
+</html>

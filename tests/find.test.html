@@ -11,19 +11,17 @@
     <script>
         Slim.tag('test-find',
         `
-        <div id="output" bind>[[data]]</div>
+        <div id="output" bind>{{data}}</div>
         <input type="text" id="inp" />
         <button click="doit" id="btn"></button>
         `,
         class extends Slim {
-                onAfterRender() {
-                    window.unit = this;
-                }
                doit() {
                    this.data = this.find('#inp').value;
                }     
                onBeforeCreated() {
                    this.data = 'before123';
+                   window.unit = this;
                }
                get useShadow() {
                    return true;

@@ -6,35 +6,70 @@
     <script src="../src/Slim.js"></script>
 </head>
 <body>
-    <repeater-test>
-    </repeater-test>
+<repeater-test>
+</repeater-test>
 
-    <script>
-        Slim.tag(`repeater-test`,
-
+<script>
+  Slim.debug = console.log;
+  Slim.tag('repeater-child', '<span bind:prop="item.label" bind>{{item.text}}</span>', class extends Slim {});
+  Slim.tag('n-r', `
+            <div bind:title="item.title" bind>{{item.title}}</div>
+            <ul>
+                <n-r s:repeat="item.children as item"></n-r>
+            </ul>
         `
+    , class extends Slim {
+
+    })
+  Slim.tag(`repeater-test`,
+    `
         <ul>
-            <li slim-repeat="items" bind>[[data.label]]</li>
-            <repeater-child slim-repeat="items" slim-repeat-as="item"></repeater-child>
+            <li s:repeat="items" bind:iteration="getIndex(data)" bind>{{title}} > {{data.label}} >> {{reverse(data.label)}}</li>
         </ul>
+        <repeater-child s:repeat="items as item"></repeater-child>
+        <n-r s:repeat="nested as item"></n-r>
         `,
 
-        class extends Slim {
-            onBeforeCreated() {
-                window.unit = this;
-                this.items = [
-                    { label: "item 0", text: "text 0" },
-                    { label: "item 1", text: "text 1" },
-                    { label: "item 2", text: "text 2" }
-                ];
-            }
+    class extends Slim {
+      constructor() {
+        super()
+        window.unit = this;
+      }
 
-            addOne() {
-                this.items.push( { label: "item " + this.items.length, text: "text " + this.items.length });
-            }
-        });
+      onBeforeCreated() {
+        this.title = 'Hello'
+        this.items = [
+          { label: "item 0", text: "text 0" },
+          { label: "item 1", text: "text 1" },
+          { label: "item 2", text: "text 2" }
+        ];
+        this.nested = [
+          { title: '1', children: [
+            { title: '1.1', children: [] },
+            { title: '1.2', children: [
+              { title: '1.2.1' },
+              { title: '1.2.2' }
+            ] }
+          ]},
+          { title: '2', children: [
+            { title: '2.1', children: [] },
+            { title: '2.2', children: [] }
+          ]},
+        ];
+      }
 
-        Slim.tag('repeater-child', '<span prop="[[item.label]]" bind>[[item.text]]</span>', class extends Slim {});
-    </script>
+      getIndex(e) {
+        return this.items.indexOf(e)
+      }
+
+      reverse(value) {
+        return value.split('').reverse().join('')
+      }
+
+      addOne() {
+        this.items.push( { label: "item " + this.items.length, text: "text " + this.items.length });
+      }
+    });
+</script>
 </body>
 </html>

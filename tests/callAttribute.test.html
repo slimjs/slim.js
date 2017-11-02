@@ -12,7 +12,7 @@
     <script>
         Slim.tag('parent-node',
         `
-        <div bind>[[myMessage]]</div>
+        <div bind>{{myMessage}}</div>
         <child-node delegate="onDelegate"></child-node>
         `,
         class extends Slim {
