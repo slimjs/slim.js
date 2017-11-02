@@ -1,5 +1,9 @@
 'use strict';
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -47,6 +51,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     this.rootElement = null;
     this.createdCallbackInvoked = false;
     this.sourceText = null;
+    // this.isExecutingBindings = false
   };
 
   var Binding = function () {
@@ -90,8 +95,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
         Binding.pending.push(this.executor.bind(this.source, this.target, Slim.extract(this.source, this.expression, this.target)));
         Binding.executePending();
-        // Slim.asap( () => {
-        // })
       }
     }, {
       key: 'init',
@@ -259,11 +262,53 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         this.plugins[phase].push(_plugin);
       }
     }, {
+      key: 'checkCreationBlocking',
+      value: function checkCreationBlocking(element) {
+        if (element.attributes) {
+          for (var i = 0, n = element.attributes.length; i < n; i++) {
+            var attribute = element.attributes[i];
+            var attributeName = attribute.localName;
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+              for (var _iterator = Slim[_$2].customDirectives[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var _ref = _step.value;
+
+                var _ref2 = _slicedToArray(_ref, 2);
+
+                var matcher = _ref2[0];
+                var fn = _ref2[1];
+
+                if (new RegExp(matcher).exec(attributeName) && fn.isBlocking) {
+                  return true;
+                }
+              }
+            } catch (err) {
+              _didIteratorError = true;
+              _iteratorError = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                  _iterator.return();
+                }
+              } finally {
+                if (_didIteratorError) {
+                  throw _iteratorError;
+                }
+              }
+            }
+          }
+        }
+      }
+    }, {
       key: 'customDirective',
-      value: function customDirective(directiveStr, fn) {
+      value: function customDirective(directiveStr, fn, isBlocking) {
         if (this[_$2].customDirectives.has(directiveStr)) {
           throw new SlimError('Cannot register custom directive: ' + directiveStr + ' already registered');
         }
+        fn.isBlocking = isBlocking;
         this[_$2].customDirectives.set(directiveStr, fn);
       }
     }, {
@@ -290,11 +335,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       }
     }, {
       key: 'selectRecursive',
-      value: function selectRecursive(target, excludeParent) {
-        if (excludeParent) {
-          return Slim.qSelectAll(target, '*');
-        }
-        return [target].concat(Slim.qSelectAll(target, '*'));
+      value: function selectRecursive(target) {
+        return [target].concat(Array.prototype.slice.call(Slim.qSelectAll(target, '*')));
       }
     }, {
       key: 'removeChild',
@@ -333,7 +375,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       key: 'wrapGetterSetter',
       value: function wrapGetterSetter(element, expression) {
         var pName = expression.split('.')[0];
-        var oSetter = element.__lookupSetter__(pName);
+        var descriptor = Object.getOwnPropertyDescriptor(element, pName);
+        var oSetter = descriptor && descriptor.set;
         if (oSetter && oSetter[_$2]) return pName;
         if (typeof oSetter === 'undefined') {
           oSetter = function oSetter() {};
@@ -406,29 +449,30 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
       var _this2 = _possibleConstructorReturn(this, (Slim.__proto__ || Object.getPrototypeOf(Slim)).call(this));
 
+      Slim.debug('ctor', _this2.localName);
+      if (Slim.checkCreationBlocking(_this2)) {
+        return _possibleConstructorReturn(_this2);
+      }
       _this2.createdCallback();
       return _this2;
     }
 
-    // Native DOM Api
+    // Native DOM Api V1
 
     _createClass(Slim, [{
       key: 'createdCallback',
       value: function createdCallback() {
-        var _this3 = this;
-
-        Slim._$(this);
-        if (this[_$2].createdCallbackInvoked) return;
-        if (!this._isInContext) return;
+        if (this[_$2] && this[_$2].createdCallbackInvoked) return;
         this._initialize();
+        this[_$2].createdCallbackInvoked = true;
         this.onBeforeCreated();
         Slim.executePlugins('create', this);
-        this._render();
-        this[_$2].createdCallbackInvoked = true;
-        Slim.asap(function () {
-          _this3.onCreated();
-        });
+        this.render();
+        this.onCreated();
       }
+
+      // Native DOM Api V2
+
     }, {
       key: 'connectedCallback',
       value: function connectedCallback() {
@@ -447,37 +491,44 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: '_executeBindings',
       value: function _executeBindings(prop) {
+        Slim.debug('_executeBindings', this.localName);
         var all = this[_$2].bindings;
         if (prop) {
           all = _defineProperty({}, prop, true);
         }
+        if (!prop && this[_$2].isExecutingBindings) {
+          return;
+        }
+        // this[_$].isExecutingBindings = true
         for (var pName in all) {
           var o = this[_$2].bindings[pName];
           o.chain.forEach(function (binding) {
             binding.execute();
           });
         }
+        // this[_$].isExecutingBindings = false
       }
     }, {
       key: '_bindChildren',
       value: function _bindChildren(children, exclude) {
-        var _this4 = this;
+        var _this3 = this;
 
+        Slim.debug('_bindChildren', this.localName);
         if (!children) {
           children = Slim.qSelectAll(this, '*');
         }
 
         var _loop = function _loop(child) {
           Slim._$(child);
-          if (child[_$2].boundParent === _this4) return 'continue';
-          child[_$2].boundParent = _this4;
+          if (child[_$2].boundParent === _this3) return 'continue';
+          child[_$2].boundParent = child[_$2].boundParent || _this3;
 
           // todo: child.localName === 'style' && this.useShadow -> processStyleNodeInShadowMode
           // todo: handle slim-id
 
           if (child.attributes) {
             var _loop2 = function _loop2(i, n) {
-              var source = _this4;
+              var source = _this3;
               var attribute = child.attributes[i];
               var attributeName = attribute.localName;
               if (exclude && exclude.directive && exclude.directives.indexOf(attributeName) >= 0) return 'continue';
@@ -498,69 +549,56 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           }
         };
 
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
 
         try {
-          for (var _iterator = children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var child = _step.value;
+          for (var _iterator2 = children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var child = _step2.value;
 
             var _ret = _loop(child);
 
             if (_ret === 'continue') continue;
           }
         } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
             }
           } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
+            if (_didIteratorError2) {
+              throw _iteratorError2;
             }
           }
         }
       }
     }, {
-      key: '_captureBindings',
-      value: function _captureBindings() {
-        var _this5 = this;
-
-        var template = this[_$2].hasCustomTemplate || this.template;
-        if (!template) {
-          return;
-        }
-        var frag = void 0;
-        if (template && typeof template === 'string') {
-          frag = document.createRange().createContextualFragment(template);
-        }
-        Slim.asap(function () {
-          Slim.moveChildren(frag, _this5[_$2].rootElement || _this5);
-        });
-        var allChildren = Slim.qSelectAll(frag, '*');
-        this._bindChildren(allChildren);
-      }
-    }, {
       key: '_resetBindings',
       value: function _resetBindings() {
+        Slim.debug('_resetBindings', this.localName);
         this[_$2].bindings = {};
         this.dispatchEvent(new CustomEvent('__reset-bindings'));
       }
     }, {
       key: '_render',
       value: function _render(customTemplate) {
+        Slim.debug('_render', this.localName);
         Slim.executePlugins('beforeRender', this);
-        this.onBeforeRender();
         this[_$2].hasCustomTemplate = customTemplate;
         this._resetBindings();
-        if (typeof customTemplate === 'string') {
-          this.innerHTML = '';
+        this[_$2].rootElement.innerHTML = '';
+        var template = this[_$2].hasCustomTemplate || this.template;
+        if (template && typeof template === 'string') {
+          var frag = document.createElement('slim-root-fragment');
+          frag.innerHTML = template || '';
+          var scopedChildren = Slim.qSelectAll(frag, '*');
+          this._bindChildren(scopedChildren);
+          Slim.moveChildren(frag, this[_$2].rootElement || this);
         }
-        this._captureBindings();
         this._executeBindings();
         this.onRender();
         Slim.executePlugins('afterRender', this);
@@ -568,21 +606,23 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: '_initialize',
       value: function _initialize() {
-        var _this6 = this;
+        var _this4 = this;
 
+        Slim.debug('_initialize', this.localName);
+        Slim._$(this);
         this[_$2].uniqueIndex = Slim.createUniqueIndex();
         if (this.useShadow) {
-          this.createShadowRoot();
-          this[_$2].rootElement = this.shadowRoot;
+          // this.[_$].rootElement = this.attachShadow({mode:'open'})
+          this[_$2].rootElement = this.createShadowRoot();
         } else {
           this[_$2].rootElement = this;
         }
-        this.setAttribute('slim-uq', this[_$2].uniqueIndex);
+        // this.setAttribute('slim-uq', this[_$].uniqueIndex)
         var observedAttributes = this.constructor.observedAttributes;
         if (observedAttributes) {
           observedAttributes.forEach(function (attr) {
             var pName = Slim.dashToCamel(attr);
-            _this6[pName] = _this6.getAttribute(attr);
+            _this4[pName] = _this4.getAttribute(attr);
           });
         }
       }
@@ -594,9 +634,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function render(tpl) {
         this._render(tpl);
       }
-    }, {
-      key: 'onBeforeRender',
-      value: function onBeforeRender() {}
     }, {
       key: 'onRender',
       value: function onRender() {}
@@ -615,7 +652,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'find',
       value: function find(selector) {
-        return (this[_$2].rootElement || this).querySelector(selector);
+        return this[_$2].rootElement.querySelector(selector);
       }
     }, {
       key: 'findAll',
@@ -673,6 +710,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     'removed': []
   };
 
+  Slim.debug = function () {};
+
   Slim.asap = window && window.requestAnimationFrame ? function (cb) {
     return window.requestAnimationFrame(cb);
   } : typeof setImmediate !== 'undefined' ? setImmediate : function (cb) {
@@ -704,54 +743,27 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     handler = null;
   });
 
-  Slim.customDirective(/^slim:repeat$/, function (source, target, attribute) {
-    var repeaterId = Slim.createUniqueIndex();
-    var hook = document.createElement('slim-repeater-hook');
+  Slim.customDirective(/^slim:repeat$/, function (source, templateNode, attribute) {
     var path = attribute.nodeValue;
     var tProp = 'data';
     if (path.indexOf(' as')) {
       tProp = path.split(' as ')[1] || tProp;
       path = path.split(' as ')[0];
     }
-    var template = target.cloneNode(true);
-    template.removeAttribute('slim:repeat');
-    template.setAttribute('slim-repeat-hook', repeaterId);
-    var startAnchor = document.createComment('repeat:' + path + ' start');
-    var endAnchor = document.createComment('repeat:' + path + ' end');
-    var clones = [];
-    target.parentNode.insertBefore(startAnchor, target);
-    target.parentNode.insertBefore(endAnchor, target);
-    target.parentNode.insertBefore(hook, endAnchor);
-    Slim.removeChild(target);
-    var dataSourceChanged = function dataSourceChanged(target, dataSource) {
-      // get rid of existing clones
-      clones.forEach(function (clone) {
-        Slim.selectRecursive(clone).forEach(function (e) {
-          Slim.unbind(source, e);
-          Slim.removeChild(e);
-        });
-      });
-      // create new clones
-      clones = dataSource.map(function (dataItem, index) {
-        hook.insertAdjacentHTML('afterEnd', template.outerHTML);
-        var clone = startAnchor.parentNode.querySelector('*[slim-repeat-hook="' + repeaterId + '"]');
-        clone.removeAttribute('slim-repeat-hook');
-        Slim._$(clone).repeater[tProp] = dataItem;
-        clone.setAttribute('slim-repeat-index', index.toString());
-        clone[tProp] = dataItem;
-        Slim.selectRecursive(clone).forEach(function (e) {
-          source._bindChildren([e], {
-            values: [attribute.nodeValue],
-            directives: [attribute.nodeName]
-          });
-        });
-        startAnchor.parentNode.insertBefore(clone, endAnchor);
-        return clone;
-      });
-      source.dispatchEvent(new Event('__' + tProp + '-changed'));
-    };
-    Slim.bind(source, target, path, dataSourceChanged);
-  });
+
+    var repeater = document.createElement('slim-repeat');
+    repeater[_$2].boundParent = source;
+    repeater.dataProp = tProp;
+    repeater.templateNode = templateNode.cloneNode(true);
+    repeater.templateNode.removeAttribute('slim:repeat');
+    templateNode.parentNode.insertBefore(repeater, templateNode);
+    Slim.removeChild(templateNode);
+    Slim.bind(source, repeater, path, function (repeater, dataSource) {
+      repeater.dataSource = dataSource;
+    });
+
+    // source._executeBindings()
+  }, true);
 
   Slim.customDirective(/^slim:if$/, function (source, target, attribute) {
     var path = attribute.nodeValue;
@@ -765,7 +777,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       }
     };
     Slim.bind(source, target, path, fn);
-  });
+  }, true);
 
   // bind (text nodes)
   Slim.customDirective(/^bind$/, function (source, target) {
@@ -791,7 +803,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 return Slim.lookup(source, path, target);
               });
               var _value = source[fnName].apply(source, args);
-              target.innerText = target.innerText.split(expression).join(_value);
+              target.innerText = target.innerText.split(expression).join(_value || '');
             } catch (err) {}
           };
           return;
@@ -803,7 +815,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           textBinds[expression] = function (target) {
             try {
               var _value2 = Slim.lookup(source, path, target);
-              target.innerText = target.innerText.replace(new RegExp(expression, 'g'), _value2);
+              target.innerText = target.innerText.split(expression).join(_value2 || '');
             } catch (err) {}
           };
         }
@@ -850,6 +862,80 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       });
     }
   });
+
+  var SlimRepeater = function (_Slim) {
+    _inherits(SlimRepeater, _Slim);
+
+    function SlimRepeater() {
+      _classCallCheck(this, SlimRepeater);
+
+      return _possibleConstructorReturn(this, (SlimRepeater.__proto__ || Object.getPrototypeOf(SlimRepeater)).apply(this, arguments));
+    }
+
+    _createClass(SlimRepeater, [{
+      key: '_bindChildren',
+      value: function _bindChildren(tree) {
+        var _this6 = this;
+
+        tree = Array.prototype.slice.call(tree);
+        var directChildren = Array.prototype.filter.call(tree, function (child) {
+          return child.parentNode.localName === 'slim-root-fragment';
+        });
+        directChildren.forEach(function (child, index) {
+          Slim.selectRecursive(child).forEach(function (e) {
+            Slim._$(e).repeater[_this6.dataProp] = _this6.dataSource[index];
+            if (e instanceof Slim) {
+              e[_this6.dataProp] = _this6.dataSource[index];
+            }
+          });
+        });
+      }
+    }, {
+      key: 'onRender',
+      value: function onRender() {
+        if (!this.boundParent) return;
+        var tree = Slim.selectRecursive(this);
+        this.boundParent && this.boundParent._bindChildren(tree);
+        this.boundParent._executeBindings();
+      }
+    }, {
+      key: 'render',
+      value: function render() {
+        var _this7 = this;
+
+        if (!this.boundParent) return;
+        Slim.qSelectAll(this, '*').forEach(function (e) {
+          Slim.unbind(_this7.boundParent, e);
+        });
+        if (!this.dataSource || !this.templateNode || !this.boundParent) {
+          return _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, '');
+        }
+        var newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('');
+        this.innerHTML = '';
+        _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, newTemplate);
+      }
+    }, {
+      key: 'dataSource',
+      get: function get() {
+        return this._dataSource;
+      },
+      set: function set(v) {
+        if (this._dataSource !== v) {
+          this._dataSource = v;
+          this.render();
+        }
+      }
+    }, {
+      key: 'boundParent',
+      get: function get() {
+        return this[_$2].boundParent;
+      }
+    }]);
+
+    return SlimRepeater;
+  }(Slim);
+
+  Slim.tag('slim-repeat', SlimRepeater);
 
   if (window) {
     window['Slim'] = Slim;

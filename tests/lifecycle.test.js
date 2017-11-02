@@ -9,7 +9,7 @@ module.exports = {
     global.staticServer.stop();
   },
 
-  repeater: function(browser) {
+  lifecycle: function(browser) {
     const expectedOrderOfLifecycleEvents = [
       'ctor', 'createdCallback', '_initialize', 'onBeforeCreated', 'create (plugin)',
       '_render started', 'beforeRender (plugin)', 'onBeforeRender', '_captureBindings',

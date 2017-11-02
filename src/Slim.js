@@ -31,6 +31,7 @@
       this.rootElement = null
       this.createdCallbackInvoked = false
       this.sourceText = null
+      // this.isExecutingBindings = false
     }
   }
 
@@ -66,8 +67,6 @@
       }
       Binding.pending.push(this.executor.bind(this.source, this.target, Slim.extract(this.source, this.expression, this.target)))
       Binding.executePending()
-      // Slim.asap( () => {
-      // })
     }
 
     init () {
@@ -198,10 +197,25 @@
       this.plugins[phase].push(plugin)
     }
 
-    static customDirective (directiveStr, fn) {
+    static checkCreationBlocking(element) {
+      if (element.attributes) {
+        for (let i = 0, n = element.attributes.length; i < n; i++) {
+          const attribute = element.attributes[i]
+          const attributeName = attribute.localName
+          for (let [matcher, fn] of Slim[_$].customDirectives) {
+            if (new RegExp(matcher).exec(attributeName) && fn.isBlocking) {
+              return true
+            }
+          }
+        }
+      }
+    }
+
+    static customDirective (directiveStr, fn, isBlocking) {
       if (this[_$].customDirectives.has(directiveStr)) {
         throw new SlimError(`Cannot register custom directive: ${directiveStr} already registered`)
       }
+      fn.isBlocking = isBlocking
       this[_$].customDirectives.set(directiveStr, fn)
     }
 
@@ -225,11 +239,8 @@
       })
     }
 
-    static selectRecursive(target, excludeParent) {
-      if (excludeParent) {
-        return Slim.qSelectAll(target, '*')
-      }
-      return [target].concat(Slim.qSelectAll(target, '*'))
+    static selectRecursive(target) {
+      return [target].concat(Array.prototype.slice.call(Slim.qSelectAll(target, '*')))
     }
 
     static removeChild (target) {
@@ -263,7 +274,8 @@
 
     static wrapGetterSetter (element, expression) {
       const pName = expression.split('.')[0]
-      let oSetter = element.__lookupSetter__(pName)
+      const descriptor = Object.getOwnPropertyDescriptor(element, pName)
+      let oSetter = descriptor && descriptor.set
       if (oSetter && oSetter[_$]) return pName
       if (typeof oSetter === 'undefined') {
         oSetter = () => {}
@@ -313,24 +325,26 @@
 
     constructor () {
       super()
+      Slim.debug('ctor', this.localName)
+      if (Slim.checkCreationBlocking(this)) {
+        return
+      }
       this.createdCallback()
     }
 
-    // Native DOM Api
+    // Native DOM Api V1
 
     createdCallback () {
-      Slim._$(this)
-      if (this[_$].createdCallbackInvoked) return
-      if (!this._isInContext) return
+      if (this[_$] && this[_$].createdCallbackInvoked) return
       this._initialize()
+      this[_$].createdCallbackInvoked = true
       this.onBeforeCreated()
       Slim.executePlugins('create', this)
-      this._render()
-      this[_$].createdCallbackInvoked = true
-      Slim.asap(() => {
-        this.onCreated()
-      })
+      this.render()
+      this.onCreated()
     }
+
+    // Native DOM Api V2
 
     connectedCallback () {
       this.onAdded()
@@ -360,26 +374,33 @@
 
 
     _executeBindings (prop) {
+      Slim.debug('_executeBindings', this.localName)
       let all = this[_$].bindings
       if (prop) {
         all = {[prop]: true}
       }
+      if (!prop && this[_$].isExecutingBindings) {
+        return
+      }
+      // this[_$].isExecutingBindings = true
       for (let pName in all) {
         const o = this[_$].bindings[pName]
         o.chain.forEach(binding => {
           binding.execute()
         })
       }
+      // this[_$].isExecutingBindings = false
     }
 
     _bindChildren(children, exclude) {
+      Slim.debug('_bindChildren', this.localName)
       if (!children) {
         children = Slim.qSelectAll(this, '*')
       }
       for (let child of children) {
         Slim._$(child)
         if (child[_$].boundParent === this) continue
-        child[_$].boundParent = this
+        child[_$].boundParent = child[_$].boundParent || this
 
         // todo: child.localName === 'style' && this.useShadow -> processStyleNodeInShadowMode
         // todo: handle slim-id
@@ -402,50 +423,42 @@
       }
     }
 
-    _captureBindings () {
-      const template = this[_$].hasCustomTemplate || this.template
-      if (!template) {
-        return
-      }
-      let frag
-      if (template && typeof template === 'string') {
-        frag = document.createRange().createContextualFragment(template)
-      }
-      Slim.asap( () => {
-        Slim.moveChildren(frag, this[_$].rootElement || this)
-      })
-      const allChildren = Slim.qSelectAll(frag, '*')
-      this._bindChildren(allChildren)
-    }
-
     _resetBindings () {
+      Slim.debug('_resetBindings', this.localName)
       this[_$].bindings = {}
       this.dispatchEvent(new CustomEvent('__reset-bindings'))
     }
 
     _render (customTemplate) {
+      Slim.debug('_render', this.localName)
       Slim.executePlugins('beforeRender', this)
-      this.onBeforeRender()
       this[_$].hasCustomTemplate = customTemplate
       this._resetBindings()
-      if (typeof customTemplate === 'string') {
-        this.innerHTML = ''
+      this[_$].rootElement.innerHTML = ''
+      const template = this[_$].hasCustomTemplate || this.template
+      if (template && typeof template === 'string') {
+        const frag = document.createElement('slim-root-fragment')
+        frag.innerHTML = template || ''
+        const scopedChildren = Slim.qSelectAll(frag, '*')
+        this._bindChildren(scopedChildren)
+        Slim.moveChildren(frag, this[_$].rootElement || this)
       }
-      this._captureBindings()
       this._executeBindings()
       this.onRender()
       Slim.executePlugins('afterRender', this)
     }
 
     _initialize () {
+      Slim.debug('_initialize', this.localName)
+      Slim._$(this)
       this[_$].uniqueIndex = Slim.createUniqueIndex()
       if (this.useShadow) {
-        this.createShadowRoot()
-        this[_$].rootElement = this.shadowRoot
+        // this.[_$].rootElement = this.attachShadow({mode:'open'})
+        this[_$].rootElement = this.createShadowRoot()
       } else {
         this[_$].rootElement = this
       }
-      this.setAttribute('slim-uq', this[_$].uniqueIndex)
+      // this.setAttribute('slim-uq', this[_$].uniqueIndex)
       const observedAttributes = this.constructor.observedAttributes
       if (observedAttributes) {
         observedAttributes.forEach( attr => {
@@ -461,7 +474,6 @@
       this._render(tpl)
     }
 
-    onBeforeRender () {}
     onRender() {}
     onBeforeCreated () {}
     onCreated() {}
@@ -469,7 +481,7 @@
     onRemoved() {}
 
     find (selector) {
-      return (this[_$].rootElement || this).querySelector(selector)
+      return (this[_$].rootElement).querySelector(selector)
     }
 
     findAll (selector) {
@@ -503,6 +515,8 @@
     'afterRender': [],
     'removed': []
   }
+
+  Slim.debug = () => {}
 
   Slim.asap = (window && window.requestAnimationFrame)
     ? cb => window.requestAnimationFrame(cb)
@@ -541,54 +555,65 @@
     handler = null
   })
 
-  Slim.customDirective(/^slim:repeat$/, (source, target, attribute) => {
-    const repeaterId = Slim.createUniqueIndex()
-    const hook = document.createElement('slim-repeater-hook');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Slim.customDirective(/^slim:repeat$/, (source, templateNode, attribute) => {
     let path = attribute.nodeValue
     let tProp = 'data'
     if (path.indexOf(' as' )) {
       tProp = path.split(' as ')[1] || tProp
       path = path.split(' as ')[0]
     }
-    let template = target.cloneNode(true)
-    template.removeAttribute('slim:repeat')
-    template.setAttribute('slim-repeat-hook', repeaterId)
-    const startAnchor = document.createComment(`repeat:${path} start`)
-    const endAnchor = document.createComment(`repeat:${path} end`)
-    let clones = []
-    target.parentNode.insertBefore(startAnchor, target)
-    target.parentNode.insertBefore(endAnchor, target)
-    target.parentNode.insertBefore(hook, endAnchor)
-    Slim.removeChild(target)
-    const dataSourceChanged = (target, dataSource) => {
-      // get rid of existing clones
-      clones.forEach(clone => {
-        Slim.selectRecursive(clone).forEach(e => {
-          Slim.unbind(source, e)
-          Slim.removeChild(e)
-        })
-      })
-      // create new clones
-      clones = dataSource.map( (dataItem, index) => {
-        hook.insertAdjacentHTML('afterEnd', template.outerHTML)
-        const clone = startAnchor.parentNode.querySelector(`*[slim-repeat-hook="${repeaterId}"]`)
-        clone.removeAttribute('slim-repeat-hook')
-        Slim._$(clone).repeater[tProp] = dataItem
-        clone.setAttribute('slim-repeat-index', index.toString())
-        clone[tProp] = dataItem
-        Slim.selectRecursive(clone).forEach(e => {
-          source._bindChildren([e], {
-            values: [attribute.nodeValue],
-            directives: [attribute.nodeName]
-          })
-        })
-        startAnchor.parentNode.insertBefore(clone, endAnchor)
-        return clone
-      })
-      source.dispatchEvent(new Event(`__${tProp}-changed`))
-    }
-    Slim.bind(source, target, path, dataSourceChanged)
-  })
+
+    const repeater = document.createElement('slim-repeat')
+    repeater[_$].boundParent = source
+    repeater.dataProp = tProp
+    repeater.templateNode = templateNode.cloneNode(true)
+    repeater.templateNode.removeAttribute('slim:repeat')
+    templateNode.parentNode.insertBefore(repeater, templateNode)
+    Slim.removeChild(templateNode)
+    Slim.bind(source, repeater, path, (repeater, dataSource) => {
+      repeater.dataSource = dataSource
+    })
+
+    // source._executeBindings()
+  }, true)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   Slim.customDirective(/^slim:if$/, (source, target, attribute) => {
     const path = attribute.nodeValue
@@ -602,7 +627,7 @@
       }
     }
     Slim.bind(source, target, path, fn)
-  })
+  }, true)
 
   // bind (text nodes)
   Slim.customDirective(/^bind$/, (source, target) => {
@@ -622,7 +647,7 @@
             try {
               const args = pNames.map(path => Slim.lookup(source, path, target))
               const value = source[fnName].apply(source, args)
-              target.innerText = target.innerText.split(expression).join(value)
+              target.innerText = target.innerText.split(expression).join(value || '')
             }
             catch (err) {}
           }
@@ -635,7 +660,7 @@
           textBinds[expression] = target => {
             try {
               const value = Slim.lookup(source, path, target)
-              target.innerText = target.innerText.replace(new RegExp(expression, 'g'), value)
+              target.innerText = target.innerText.split(expression).join(value || '')
             }
             catch (err) {}
           }
@@ -681,6 +706,72 @@
       })
     }
   })
+
+
+
+
+
+
+
+
+
+
+
+  class SlimRepeater extends Slim {
+    get dataSource () { return this._dataSource }
+    set dataSource (v) {
+      if (this._dataSource !== v) {
+        this._dataSource = v;
+        this.render()
+      }
+    }
+    get boundParent () { return this[_$].boundParent }
+    _bindChildren(tree) {
+      tree = Array.prototype.slice.call(tree)
+      const directChildren = Array.prototype
+        .filter.call(tree, child => child.parentNode.localName === 'slim-root-fragment')
+      directChildren.forEach((child, index) => {
+        Slim.selectRecursive(child).forEach(e => {
+          Slim._$(e).repeater[this.dataProp] = this.dataSource[index]
+          if (e instanceof Slim) {
+            e[this.dataProp] = this.dataSource[index]
+          }
+        })
+      })
+    }
+    onRender() {
+      if (!this.boundParent) return
+      const tree = Slim.selectRecursive(this)
+      this.boundParent && this.boundParent._bindChildren(tree)
+      this.boundParent._executeBindings()
+    }
+    render(...args) {
+      if (!this.boundParent) return
+      Slim.qSelectAll(this, '*').forEach(e => {
+        Slim.unbind(this.boundParent, e)
+      })
+      if (!this.dataSource || !this.templateNode || !this.boundParent) {
+        return super.render('')
+      }
+      const newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('')
+      this.innerHTML = '';
+      super.render(newTemplate)
+    }
+  }
+  Slim.tag('slim-repeat', SlimRepeater)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   if (window) {
     window['Slim'] = Slim
