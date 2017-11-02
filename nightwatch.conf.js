@@ -38,8 +38,7 @@ module.exports = {
     "host": "127.0.0.1",
     "port": 4444,
     "cli_args": {
-      "webdriver.chrome.driver": "./bin/chromedriver",
-      "webdriver.phantomjs.driver": "./node_modules/phantomjs/bin/phantomjs"
+      "webdriver.chrome.driver": "./bin/chromedriver"
     }
   },
 
