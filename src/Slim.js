@@ -41,7 +41,14 @@
       this.isExecuting = true
       Binding.running = Binding.pending.concat()
       Binding.pending = []
-      Binding.running.forEach(x => x())
+      Binding.running.forEach(x => {
+        try {
+          x.doExecute()
+        }
+        catch (err) {
+          console.warn('Could not execute bind: ', err)
+        }
+      })
       this.isExecuting = false
       if (Binding.pending.length) {
         Binding.executePending()
@@ -65,8 +72,13 @@
         this.destroy()
         return
       }
-      Binding.pending.push(this.executor.bind(this.source, this.target, Slim.extract(this.source, this.expression, this.target)))
+      // Binding.pending.push(this.executor.bind(this.source, this.target, Slim.extract(this.source, this.expression, this.target)))
+      Binding.pending.push(this)
       Binding.executePending()
+    }
+
+    doExecute() {
+      this.executor(this.target, Slim.extract(this.source, this.expression, this.target))
     }
 
     init () {
@@ -229,8 +241,19 @@
       })
     }
 
-    static selectRecursive(target) {
-      return [target].concat(Array.prototype.slice.call(Slim.qSelectAll(target, '*')))
+    static selectRecursive(target, force) {
+      const collection = []
+      const search = function(node, force) {
+        collection.push(node)
+        const allow = (node instanceof Slim && !node.template) || force
+        if (allow) {
+          Array.prototype.slice.call(node.children).forEach(childNode => {
+            search(childNode, force)
+          })
+        }
+      }
+      search(target, force)
+      return collection
     }
 
     static removeChild (target) {
@@ -273,7 +296,6 @@
       }
       element[_$].bindings[pName].value = srcValue
       const newSetter = function (v) {
-        if (this[pName] === v) return
         oSetter(v)
         this[_$].bindings[pName].value = v
         this.dispatchEvent(new Event(`__${pName}-changed`))
@@ -285,11 +307,7 @@
     }
 
     static bindOwn(target, expression, executor) {
-      Slim._$(target)
-      const pName = this.wrapGetterSetter(target, expression)
-      const binding = new Binding(target, target, expression, executor)
-      target[_$].bindings[pName].chain.push(binding)
-      return binding
+      Slim.bind(target, target, expression, executor)
     }
 
     static bind (source, target, expression, executor) {
@@ -364,23 +382,18 @@
       if (prop) {
         all = {[prop]: true}
       }
-      if (!prop && this[_$].isExecutingBindings) {
-        return
-      }
-      // this[_$].isExecutingBindings = true
       for (let pName in all) {
         const o = this[_$].bindings[pName]
         o.chain.forEach(binding => {
           binding.execute()
         })
       }
-      // this[_$].isExecutingBindings = false
     }
 
     _bindChildren(children, exclude) {
       Slim.debug('_bindChildren', this.localName)
       if (!children) {
-        children = Slim.qSelectAll(this, '*')
+        children = Slim.selectRecursive(this)
       }
       for (let child of children) {
         Slim._$(child)
@@ -388,7 +401,6 @@
         child[_$].boundParent = child[_$].boundParent || this
 
         // todo: child.localName === 'style' && this.useShadow -> processStyleNodeInShadowMode
-        // todo: handle slim-id
 
         if (child.attributes) {
           for (let i = 0, n = child.attributes.length; i < n; i++) {
@@ -426,11 +438,13 @@
         frag.innerHTML = template || ''
         const scopedChildren = Slim.qSelectAll(frag, '*')
         this._bindChildren(scopedChildren)
-        Slim.moveChildren(frag, this[_$].rootElement || this)
+        Slim.asap( () => {
+          Slim.moveChildren(frag, this[_$].rootElement || this)
+          this._executeBindings()
+          this.onRender()
+          Slim.executePlugins('afterRender', this)
+        })
       }
-      this._executeBindings()
-      this.onRender()
-      Slim.executePlugins('afterRender', this)
     }
 
     _initialize () {
@@ -602,10 +616,19 @@
 
 
   Slim.customDirective(/^s:if$/, (source, target, attribute) => {
-    const path = attribute.nodeValue
-    const anchor = document.createComment(`if:${path}`)
+    let expression = attribute.nodeValue
+    let path = expression
+    let isNegative = false
+    if (path.charAt(0) === '!') {
+      path = path.slice(1)
+      isNegative = true
+    }
+    const anchor = document.createComment(`if:${expression}`)
     target.parentNode.insertBefore(anchor, target)
     const fn = (target, value) => {
+      if (isNegative) {
+        value = !value
+      }
       if (value) {
         anchor.parentNode.insertBefore(target, anchor.nextSibling)
       } else {
@@ -664,6 +687,10 @@
     }
   })
 
+  Slim.customDirective(/^s:id$/, (source, target, attribute, match) => {
+    Slim._$(target).boundParent[attribute.nodeValue] = target
+  })
+
   // bind:property
   Slim.customDirective(/^(bind):(\S+)/, (source, target, attribute, match) => {
     const tAttr = match[2]
@@ -718,7 +745,7 @@
         .filter.call(tree, child => child.parentNode.localName === 'slim-root-fragment')
       directChildren.forEach((child, index) => {
         child.setAttribute('s:iterate', `${this.dataPath} : ${index}`)
-        Slim.selectRecursive(child).forEach(e => {
+        Slim.selectRecursive(child, true).forEach(e => {
           Slim._$(e).repeater[this.dataProp] = this.dataSource[index]
           if (e instanceof Slim) {
             e[this.dataProp] = this.dataSource[index]

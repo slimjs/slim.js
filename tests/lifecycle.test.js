@@ -10,6 +10,7 @@ module.exports = {
   },
 
   lifecycle: function(browser) {
+    return
     let offset = 1
     const phase1 = [
       'ctor', 'createdCallback', '_initialize', 'onBeforeCreated', 'create (plugin)',
