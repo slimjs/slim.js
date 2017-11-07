@@ -16,6 +16,7 @@
       this.boundParent = null
       this.repeater = {}
       this.bindings = {}
+      this.reversed = {}
       this.inbounds = {}
       this.eventHandlers = {}
       this.internetExploderClone = null
@@ -243,7 +244,9 @@
       executor.source = source
       executor.target = target
       const pName = this.wrapGetterSetter(source, expression)
-      source[_$].bindings[pName].chain.push(executor)
+      if (!source[_$].reversed[pName]) {
+        source[_$].bindings[pName].chain.push(executor)
+      }
       target[_$].inbounds[pName] = target[_$].inbounds[pName] || []
       target[_$].inbounds[pName].push(executor)
       return executor
@@ -486,19 +489,17 @@
       path = path.split(' as ')[0]
     }
     let clones = []
-
-    const hook2 = document.createElementNS('s','repeat-start')
-    const hook1 = document.createElementNS('s','repeat-end')
-    Slim._$(hook1)
+    source[_$].reversed[tProp] = true
+    const hook = document.createElementNS('s','repeat-end')
+    Slim._$(hook)
     Slim.selectRecursive(templateNode, true).forEach(e => Slim._$(e).excluded = true)
-    templateNode.parentElement.insertBefore(hook2, templateNode)
-    templateNode.parentElement.insertBefore(hook1, templateNode)
+    templateNode.parentElement.insertBefore(hook, templateNode)
     templateNode.remove()
     Slim.unbind(source, templateNode)
     Slim.asap( () => {
       templateNode.removeAttribute('s:repeat')
     })
-    Slim.bind(source, hook1, path, () => {
+    Slim.bind(source, hook, path, () => {
       const dataSource = Slim.lookup(source, path) || []
       const guid = Slim.createUniqueIndex()
       templateNode.setAttribute('repeat-unique-id', guid)
@@ -531,7 +532,7 @@
       restOfData.forEach(() => {
         html += templateNode.outerHTML
       })
-      hook1.insertAdjacentHTML('beforeBegin', html)
+      hook.insertAdjacentHTML('beforeBegin', html)
       let all = []
       source.findAll(`${templateNode.localName}[repeat-unique-id="${guid}"]`).forEach((e, index) => {
         clones.push(e)

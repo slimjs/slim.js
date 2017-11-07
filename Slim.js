@@ -674,13 +674,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }
     var clones = [];
 
-    var hook2 = document.createElementNS('s', 'repeat-start');
     var hook1 = document.createElementNS('s', 'repeat-end');
     Slim._$(hook1);
     Slim.selectRecursive(templateNode, true).forEach(function (e) {
       return Slim._$(e).excluded = true;
     });
-    templateNode.parentElement.insertBefore(hook2, templateNode);
     templateNode.parentElement.insertBefore(hook1, templateNode);
     templateNode.remove();
     Slim.unbind(source, templateNode);
