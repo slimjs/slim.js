@@ -10,6 +10,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 function _CustomElement() {
   return Reflect.construct(HTMLElement, [], this.__proto__.constructor);
 }
@@ -17,10 +21,6 @@ function _CustomElement() {
 ;
 Object.setPrototypeOf(_CustomElement.prototype, HTMLElement.prototype);
 Object.setPrototypeOf(_CustomElement, HTMLElement);
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -56,21 +56,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     this.excluded = false;
   };
 
-  var SlimError = function (_Error) {
-    _inherits(SlimError, _Error);
-
-    function SlimError(message) {
-      _classCallCheck(this, SlimError);
-
-      var _this = _possibleConstructorReturn(this, (SlimError.__proto__ || Object.getPrototypeOf(SlimError)).call(this, message));
-
-      _this.flags = __flags;
-      return _this;
-    }
-
-    return SlimError;
-  }(Error);
-
   var Slim = function (_CustomElement2) {
     _inherits(Slim, _CustomElement2);
 
@@ -102,23 +87,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
         return o;
       }
-    }, {
-      key: 'extract',
-      value: function extract(target, expression, maybeRepeated) {
-        var rxP = this.rxProp.exec(expression);
-        if (rxP) {
-          return Slim.lookup(target, rxP[1], maybeRepeated);
-        }
-        var rxM = this.rxMethod.exec(expression);
-        if (rxM) {
-          var fn = Slim.lookup(target, rxM[1]);
-          var args = rxM[3].replace(' ', '').split(',').map(function (arg) {
-            return Slim.lookup(target, arg, maybeRepeated);
-          });
-          return fn.apply(target, args);
-        }
-        return undefined;
-      }
+
       // noinspection JSUnresolvedVariable
 
     }, {
@@ -144,7 +113,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       key: 'tag',
       value: function tag(tagName, tplOrClazz, clazz) {
         if (this.tagToClassDict.has(tagName)) {
-          throw new SlimError('Unable to define tag: ' + tagName + ' already defined');
+          throw new Error('Unable to define tag: ' + tagName + ' already defined');
         }
         if (clazz === undefined) {
           clazz = tplOrClazz;
@@ -175,7 +144,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       key: 'plugin',
       value: function plugin(phase, _plugin) {
         if (!this.plugins[phase]) {
-          throw new SlimError('Cannot attach plugin: ' + phase + ' is not a supported phase');
+          throw new Error('Cannot attach plugin: ' + phase + ' is not a supported phase');
         }
         this.plugins[phase].push(_plugin);
       }
@@ -225,7 +194,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       key: 'customDirective',
       value: function customDirective(testFn, fn, isBlocking) {
         if (this[_$2].customDirectives.has(testFn)) {
-          throw new SlimError('Cannot register custom directive: ' + testFn + ' already registered');
+          throw new Error('Cannot register custom directive: ' + testFn + ' already registered');
         }
         fn.isBlocking = isBlocking;
         this[_$2].customDirectives.set(testFn, fn);
@@ -405,15 +374,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     function Slim() {
       _classCallCheck(this, Slim);
 
-      var _this2 = _possibleConstructorReturn(this, (Slim.__proto__ || Object.getPrototypeOf(Slim)).call(this));
+      var _this = _possibleConstructorReturn(this, (Slim.__proto__ || Object.getPrototypeOf(Slim)).call(this));
 
-      _this2.__isSlim = true;
-      Slim.debug('ctor', _this2.localName);
-      if (Slim.checkCreationBlocking(_this2)) {
-        return _possibleConstructorReturn(_this2);
+      _this.__isSlim = true;
+      Slim.debug('ctor', _this.localName);
+      if (Slim.checkCreationBlocking(_this)) {
+        return _possibleConstructorReturn(_this);
       }
-      _this2.createdCallback();
-      return _this2;
+      _this.createdCallback();
+      return _this;
     }
 
     // Native DOM Api V1
@@ -451,7 +420,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: '_executeBindings',
       value: function _executeBindings(prop) {
-        var _this3 = this;
+        var _this2 = this;
 
         Slim.debug('_executeBindings', this.localName);
         var all = this[_$2].bindings;
@@ -459,7 +428,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           all = _defineProperty({}, prop, true);
         }
         Object.keys(all).forEach(function (pName) {
-          var o = _this3[_$2].bindings[pName];
+          var o = _this2[_$2].bindings[pName];
           o && o.chain.forEach(function (binding) {
             return binding();
           });
@@ -554,7 +523,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: '_render',
       value: function _render(customTemplate) {
-        var _this4 = this;
+        var _this3 = this;
 
         Slim.debug('_render', this.localName);
         Slim.executePlugins('beforeRender', this);
@@ -568,18 +537,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           var scopedChildren = Slim.qSelectAll(frag, '*');
           this._bindChildren(scopedChildren);
           Slim.asap(function () {
-            Slim.moveChildren(frag, _this4[_$2].rootElement || _this4);
-            _this4._executeBindings();
-            _this4.onRender();
-            Slim.executePlugins('afterRender', _this4);
-            _this4.dispatchEvent(new Event('afterRender'));
+            Slim.moveChildren(frag, _this3[_$2].rootElement || _this3);
+            _this3._executeBindings();
+            _this3.onRender();
+            Slim.executePlugins('afterRender', _this3);
+            _this3.dispatchEvent(new Event('afterRender'));
           });
         }
       }
     }, {
       key: '_initialize',
       value: function _initialize() {
-        var _this5 = this;
+        var _this4 = this;
 
         Slim.debug('_initialize', this.localName);
         Slim._$(this);
@@ -595,7 +564,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         if (observedAttributes) {
           observedAttributes.forEach(function (attr) {
             var pName = Slim.dashToCamel(attr);
-            _this5[pName] = _this5.getAttribute(attr);
+            _this4[pName] = _this4.getAttribute(attr);
           });
         }
       }
@@ -830,7 +799,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         Slim.bind(source, target, pName, function () {
           var fn = Slim.lookup(source, rxM[1], target);
           var args = pNames.map(function (prop) {
-            return Slim.extract(source, prop, target);
+            return Slim.lookup(source, prop, target);
           });
           var value = fn.apply(source, args);
           if (oldValue === value) return;
@@ -994,18 +963,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     _createClass(SlimRepeater, [{
       key: '_bindChildren',
       value: function _bindChildren(tree) {
-        var _this7 = this;
+        var _this6 = this;
 
         tree = Array.prototype.slice.call(tree);
         var directChildren = Array.prototype.filter.call(tree, function (child) {
           return child.parentNode.localName === 'slim-root-fragment';
         });
         directChildren.forEach(function (child, index) {
-          child.setAttribute('s:iterate', _this7.dataPath + ' : ' + index);
+          child.setAttribute('s:iterate', _this6.dataPath + ' : ' + index);
           Slim.selectRecursive(child).forEach(function (e) {
-            Slim._$(e).repeater[_this7.dataProp] = _this7.dataSource[index];
+            Slim._$(e).repeater[_this6.dataProp] = _this6.dataSource[index];
             if (e instanceof Slim) {
-              e[_this7.dataProp] = _this7.dataSource[index];
+              e[_this6.dataProp] = _this6.dataSource[index];
             }
           });
         });
@@ -1021,11 +990,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'render',
       value: function render() {
-        var _this8 = this;
+        var _this7 = this;
 
         if (!this.boundParent) return;
         Slim.qSelectAll(this, '*').forEach(function (e) {
-          Slim.unbind(_this8.boundParent, e);
+          Slim.unbind(_this7.boundParent, e);
         });
         if (!this.dataSource || !this.templateNode || !this.boundParent) {
           return _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, '');
