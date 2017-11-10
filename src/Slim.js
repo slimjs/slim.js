@@ -5,13 +5,19 @@
     'import' in document.createElement('link') &&
     'content' in document.createElement('template'),
     isIE11: !!window['MSInputMethodContext'] && !!document['documentMode'],
+    isChrome: undefined,
+    isEdge: undefined
   }
 
   try {
     __flags.isChrome = /Chrome/.test(navigator.userAgent)
-  } catch (err) {
-    __flags.isChrome = false
-  }
+    __flags.isEdge = /Edge/.test(navigator.userAgent)
+
+    if (__flags.isIE11 || __flags.isEdge) {
+      __flags.isChrome = false
+      Object.defineProperty(Node.prototype, 'children', function() { return this.childNodes })
+    }
+  } catch (err) {}
 
   const _$ = '_slim_internals_'//Symbol('Slim')
 
