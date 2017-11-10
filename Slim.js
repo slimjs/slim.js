@@ -31,7 +31,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     isIE11: !!window['MSInputMethodContext'] && !!document['documentMode']
   };
 
-  var _$2 = Symbol('Slim');
+  try {
+    __flags.isChrome = /Chrome/.test(navigator.userAgent);
+  } catch (err) {
+    __flags.isChrome = false;
+  }
+
+  var _$2 = '_slim_internals_'; //Symbol('Slim')
 
   var Internals = function Internals() {
     _classCallCheck(this, Internals);
@@ -257,7 +263,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         var collection = [];
         var search = function search(node, force) {
           collection.push(node);
-          var allow = !(node instanceof Slim) || node instanceof Slim && !node.template || force;
+          var allow = !node.__isSlim || node.__isSlim && !node.template || force;
           if (allow) {
             [].concat(_toConsumableArray(node.children)).forEach(function (childNode) {
               search(childNode, force);
@@ -401,6 +407,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
       var _this2 = _possibleConstructorReturn(this, (Slim.__proto__ || Object.getPrototypeOf(Slim)).call(this));
 
+      _this2.__isSlim = true;
       Slim.debug('ctor', _this2.localName);
       if (Slim.checkCreationBlocking(_this2)) {
         return _possibleConstructorReturn(_this2);
@@ -694,115 +701,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     );
   }, function () {}, true);
 
-  Slim.customDirective(function (attr) {
-    return (/^s:repeat$/.test(attr.nodeName)
-    );
-  }, function (source, templateNode, attribute) {
-    var path = attribute.nodeValue;
-    var tProp = 'data';
-    if (path.indexOf(' as')) {
-      tProp = path.split(' as ')[1] || tProp;
-      path = path.split(' as ')[0];
-    }
-
-    var clones = [];
-    var hook = document.createComment(templateNode.localName + ' s:repeat="' + attribute.nodeValue + '"');
-    Slim._$(hook);
-    Slim.selectRecursive(templateNode, true).forEach(function (e) {
-      return Slim._$(e).excluded = true;
-    });
-    templateNode.parentElement.insertBefore(hook, templateNode);
-    templateNode.remove();
-    Slim.unbind(source, templateNode);
-    Slim.asap(function () {
-      templateNode.setAttribute('s:iterate', '');
-      templateNode.removeAttribute('s:repeat');
-    });
-    var oldDataSource = [];
-    Slim.bind(source, hook, path, function () {
-      var dataSource = Slim.lookup(source, path) || [];
-      var offset = 0;
-      var restOfData = [];
-      // get the diff
-      var diff = Array(dataSource.length);
-      dataSource.forEach(function (d, i) {
-        if (oldDataSource[i] !== d) {
-          diff[i] = true;
-        }
-      });
-      oldDataSource = dataSource.concat();
-      var indices = Object.keys(diff);
-      if (dataSource.length < clones.length) {
-        var disposables = clones.slice(dataSource.length);
-        clones = clones.slice(0, dataSource.length);
-        disposables.forEach(function (clone) {
-          return clone.remove();
-        });
-        // unbind disposables?
-        indices.forEach(function (index) {
-          var clone = clones[index];[clone].concat(Slim.qSelectAll(clone, '*')).forEach(function (t) {
-            t[_$2].repeater[tProp] = dataSource[index];
-            Slim.commit(t, tProp);
-          });
-        });
-      } else {
-        // recycle
-        clones.length && indices.forEach(function (index) {
-          var clone = clones[index];
-          if (!clone) return;
-          [clone].concat(Slim.qSelectAll(clone, '*')).forEach(function (t) {
-            t[_$2].repeater[tProp] = dataSource[index];
-            Slim.commit(t, tProp);
-          });
-        });
-        restOfData = dataSource.slice(clones.length);
-        offset = clones.length;
-      }
-      if (!restOfData.length) return;
-      // new clones
-      var range = document.createRange();
-      range.setStartBefore(hook);
-      var html = Array(restOfData.length).fill(templateNode.outerHTML).join('');
-      var frag = range.createContextualFragment(html);
-      var all = [];
-      var i = 0;
-      while (i < frag.children.length) {
-        var e = frag.children.item(i);
-        clones.push(e);
-        all.push(e);
-        Slim._$(e).repeater[tProp] = dataSource[i + offset];
-        var subTree = Slim.qSelectAll(e, '*');
-        subTree.forEach(function (t) {
-          all.push(t);
-          Slim._$(t).repeater[tProp] = dataSource[i + offset];
-          Slim.commit(t, tProp);
-        });
-        i++;
-      }
-      source._bindChildren(all);
-      all.forEach(function (t) {
-        if (t instanceof Slim) {
-          t.createdCallback();
-          Slim.asap(function () {
-            Slim.commit(t, tProp);
-            t[tProp] = t[_$2].repeater[tProp];
-          });
-        } else {
-          Slim.commit(t, tProp);
-          t[tProp] = t[_$2].repeater[tProp];
-        }
-      });
-      hook.parentElement.insertBefore(frag, hook);
-    });
-    source[_$2].reversed[tProp] = true;
-  }, true);
-
   // supported events (i.e. click, mouseover, change...)
   Slim.customDirective(function (attr) {
     return Slim[_$2].supportedNativeEvents.indexOf(attr.nodeName) >= 0;
   }, function (source, target, attribute) {
     var eventName = attribute.nodeName;
-    var delegate = attribute.nodeValue;
+    var delegate = attribute.value;
     Slim._$(target).eventHandlers = target[_$2].eventHandlers || {};
     var allHandlers = target[_$2].eventHandlers;
     allHandlers[eventName] = allHandlers[eventName] || [];
@@ -823,7 +727,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     return (/^s:if$/.exec(attr.nodeName)
     );
   }, function (source, target, attribute) {
-    var expression = attribute.nodeValue;
+    var expression = attribute.value;
     var path = expression;
     var isNegative = false;
     if (path.charAt(0) === '!') {
@@ -907,7 +811,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     return (/^s:id$/.test(attr.nodeName)
     );
   }, function (source, target, attribute) {
-    Slim._$(target).boundParent[attribute.nodeValue] = target;
+    Slim._$(target).boundParent[attribute.value] = target;
   });
 
   // bind:property
@@ -917,7 +821,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   }, function (source, target, attribute, match) {
     var tAttr = match[2];
     var tProp = Slim.dashToCamel(tAttr);
-    var expression = attribute.nodeValue;
+    var expression = attribute.value;
     var oldValue = void 0;
     var rxM = Slim.rxMethod.exec(expression);
     if (rxM) {
@@ -948,6 +852,136 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }
   });
 
+  __flags.isChrome && Slim.customDirective(function (attr) {
+    return (/^s:repeat$/.test(attr.nodeName)
+    );
+  }, function (source, templateNode, attribute) {
+    var path = attribute.value;
+    var tProp = 'data';
+    if (path.indexOf(' as')) {
+      tProp = path.split(' as ')[1] || tProp;
+      path = path.split(' as ')[0];
+    }
+
+    var clones = [];
+    var hook = document.createComment(templateNode.localName + ' s:repeat="' + attribute.value + '"');
+    Slim._$(hook);
+    Slim.selectRecursive(templateNode, true).forEach(function (e) {
+      return Slim._$(e).excluded = true;
+    });
+    templateNode.parentElement.insertBefore(hook, templateNode);
+    templateNode.remove();
+    Slim.unbind(source, templateNode);
+    Slim.asap(function () {
+      templateNode.setAttribute('s:iterate', '');
+      templateNode.removeAttribute('s:repeat');
+    });
+    var oldDataSource = [];
+    Slim.bind(source, hook, path, function () {
+      var dataSource = Slim.lookup(source, path) || [];
+      var offset = 0;
+      var restOfData = [];
+      // get the diff
+      var diff = Array(dataSource.length);
+      dataSource.forEach(function (d, i) {
+        if (oldDataSource[i] !== d) {
+          diff[i] = true;
+        }
+      });
+      oldDataSource = dataSource.concat();
+      var indices = Object.keys(diff);
+      if (dataSource.length < clones.length) {
+        var disposables = clones.slice(dataSource.length);
+        clones = clones.slice(0, dataSource.length);
+        disposables.forEach(function (clone) {
+          return clone.remove();
+        });
+        // unbind disposables?
+        indices.forEach(function (index) {
+          var clone = clones[index];[clone].concat(Slim.qSelectAll(clone, '*')).forEach(function (t) {
+            t[_$2].repeater[tProp] = dataSource[index];
+            Slim.commit(t, tProp);
+          });
+        });
+      } else {
+        // recycle
+        clones.length && indices.forEach(function (index) {
+          var clone = clones[index];
+          if (!clone) return;
+          [clone].concat(Slim.qSelectAll(clone, '*')).forEach(function (t) {
+            t[_$2].repeater[tProp] = dataSource[index];
+            Slim.commit(t, tProp);
+          });
+        });
+        restOfData = dataSource.slice(clones.length);
+        offset = clones.length;
+      }
+      if (!restOfData.length) return;
+      // new clones
+      var range = document.createRange();
+      range.setStartBefore(hook);
+      var html = Array(restOfData.length).fill(templateNode.outerHTML).join('');
+      var frag = range.createContextualFragment(html);
+      var all = [];
+      var i = 0;
+      while (i < frag.children.length) {
+        var e = frag.children.item(i);
+        clones.push(e);
+        all.push(e);
+        Slim._$(e).repeater[tProp] = dataSource[i + offset];
+        var subTree = Slim.qSelectAll(e, '*');
+        subTree.forEach(function (t) {
+          all.push(t);
+          Slim._$(t).repeater[tProp] = dataSource[i + offset];
+          Slim.commit(t, tProp);
+        });
+        i++;
+      }
+      source._bindChildren(all);
+      all.forEach(function (t) {
+        if (t.__isSlim) {
+          t.createdCallback();
+          Slim.asap(function () {
+            Slim.commit(t, tProp);
+            t[tProp] = t[_$2].repeater[tProp];
+          });
+        } else {
+          Slim.commit(t, tProp);
+          t[tProp] = t[_$2].repeater[tProp];
+        }
+      });
+      hook.parentElement.insertBefore(frag, hook);
+    });
+    source[_$2].reversed[tProp] = true;
+  }, true);
+
+  !__flags.isChrome && Slim.customDirective(function (attr) {
+    return (/^s:repeat$/.test(attr.nodeName)
+    );
+  }, function (source, templateNode, attribute) {
+    var path = attribute.nodeValue;
+    var tProp = 'data';
+    if (path.indexOf(' as')) {
+      tProp = path.split(' as ')[1] || tProp;
+      path = path.split(' as ')[0];
+    }
+
+    var repeater = document.createElement('slim-repeat');
+    repeater[_$2].boundParent = source;
+    repeater.dataProp = tProp;
+    repeater.dataPath = attribute.nodeValue;
+    repeater.templateNode = templateNode.cloneNode(true);
+    repeater.templateNode.removeAttribute('s:repeat');
+    templateNode.parentNode.insertBefore(repeater, templateNode);
+    Slim.removeChild(templateNode);
+    Slim.bind(source, repeater, path, function () {
+      var dataSource = Slim.lookup(source, path);
+      repeater.dataSource = dataSource || [];
+    });
+
+    // source._executeBindings()
+  }, true);
+
   var SlimRepeater = function (_Slim) {
     _inherits(SlimRepeater, _Slim);
 
@@ -968,7 +1002,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         });
         directChildren.forEach(function (child, index) {
           child.setAttribute('s:iterate', _this7.dataPath + ' : ' + index);
-          Slim.selectRecursive(child, true).forEach(function (e) {
+          Slim.selectRecursive(child).forEach(function (e) {
             Slim._$(e).repeater[_this7.dataProp] = _this7.dataSource[index];
             if (e instanceof Slim) {
               e[_this7.dataProp] = _this7.dataSource[index];
@@ -994,12 +1028,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           Slim.unbind(_this8.boundParent, e);
         });
         if (!this.dataSource || !this.templateNode || !this.boundParent) {
-          _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, '');
-        } else {
-          var newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('');
-          this.innerHTML = '';
-          _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, newTemplate);
+          return _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, '');
         }
+        var newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('');
+        this.innerHTML = '';
+        _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, newTemplate);
       }
     }, {
       key: 'dataSource',

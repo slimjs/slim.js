@@ -5,10 +5,16 @@
     isWCSupported: 'customElements' in window &&
     'import' in document.createElement('link') &&
     'content' in document.createElement('template'),
-    isIE11: !!window['MSInputMethodContext'] && !!document['documentMode']
+    isIE11: !!window['MSInputMethodContext'] && !!document['documentMode'],
   }
 
-  const _$ = Symbol('Slim')
+  try {
+    __flags.isChrome = /Chrome/.test(navigator.userAgent)
+  } catch (err) {
+    __flags.isChrome = false
+  }
+
+  const _$ = '_slim_internals_'//Symbol('Slim')
 
   class Internals {
     constructor() {
@@ -173,7 +179,7 @@
           const collection = []
           const search = function(node, force) {
             collection.push(node)
-            const allow = !(node instanceof Slim) || (node instanceof Slim && !node.template) || force
+            const allow = !(node.__isSlim) || (node.__isSlim && !node.template) || force
             if (allow) {
               [...node.children].forEach(childNode => {
                 search(childNode, force)
@@ -287,6 +293,7 @@
 
           constructor () {
             super()
+            this.__isSlim = true
             Slim.debug('ctor', this.localName)
             if (Slim.checkCreationBlocking(this)) {
               return
@@ -497,117 +504,11 @@
       Slim.customDirective(attr => /^s:iterate$/.test(attr.nodeName), () => {}, true)
 
 
-      Slim.customDirective(attr => /^s:repeat$/.test(attr.nodeName), (source, templateNode, attribute) => {
-        let path = attribute.nodeValue
-        let tProp = 'data'
-        if (path.indexOf(' as' )) {
-          tProp = path.split(' as ')[1] || tProp
-          path = path.split(' as ')[0]
-        }
-
-        let clones = []
-        const hook = document.createComment(`${templateNode.localName} s:repeat="${attribute.nodeValue}"`)
-        Slim._$(hook)
-        Slim.selectRecursive(templateNode, true).forEach(e => Slim._$(e).excluded = true)
-        templateNode.parentElement.insertBefore(hook, templateNode)
-        templateNode.remove()
-        Slim.unbind(source, templateNode)
-        Slim.asap( () => {
-          templateNode.setAttribute('s:iterate', '')
-          templateNode.removeAttribute('s:repeat')
-        })
-        let oldDataSource = []
-        Slim.bind(source, hook, path, () => {
-          const dataSource = Slim.lookup(source, path) || []
-          let offset = 0
-          let restOfData = []
-          // get the diff
-          const diff = Array(dataSource.length)
-          dataSource.forEach((d, i) => {
-            if (oldDataSource[i] !== d) {
-              diff[i] = true
-            }
-          })
-          oldDataSource = dataSource.concat()
-          let indices = Object.keys(diff)
-          if (dataSource.length < clones.length) {
-            const disposables = clones.slice(dataSource.length)
-            clones = clones.slice(0, dataSource.length)
-            disposables.forEach(clone => clone.remove())
-            // unbind disposables?
-            indices.forEach(index => {
-              const clone = clones[index]
-              ;[clone].concat(Slim.qSelectAll(clone, '*')).forEach(t => {
-                t[_$].repeater[tProp] = dataSource[index]
-                Slim.commit(t, tProp)
-              })
-            })
-          } else {
-            // recycle
-            clones.length && indices.forEach(index => {
-              const clone = clones[index]
-              if (!clone) return
-              [clone].concat(Slim.qSelectAll(clone, '*')).forEach(t => {
-                t[_$].repeater[tProp] = dataSource[index]
-                Slim.commit(t, tProp)
-              })
-            })
-            restOfData = dataSource.slice(clones.length)
-            offset = clones.length
-          }
-          if (!restOfData.length) return
-          // new clones
-          const range = document.createRange()
-          range.setStartBefore(hook)
-          let html = Array(restOfData.length).fill(templateNode.outerHTML).join('')
-          const frag = range.createContextualFragment(html)
-          let all = []
-          let i = 0;
-          while (i < frag.children.length) {
-            const e = frag.children.item(i)
-            clones.push(e)
-            all.push(e)
-            Slim._$(e).repeater[tProp] = dataSource[i + offset]
-            const subTree = Slim.qSelectAll(e, '*')
-            subTree.forEach(t => {
-              all.push(t)
-              Slim._$(t).repeater[tProp] = dataSource[i + offset]
-              Slim.commit(t, tProp)
-            })
-            i++
-          }
-          source._bindChildren(all)
-          all.forEach(t => {
-            if (t instanceof Slim) {
-              t.createdCallback()
-              Slim.asap( () => {
-                Slim.commit(t, tProp)
-                t[tProp] = t[_$].repeater[tProp]
-              })
-            } else {
-              Slim.commit(t, tProp)
-              t[tProp] = t[_$].repeater[tProp]
-            }
-          })
-          hook.parentElement.insertBefore(frag, hook)
-        })
-        source[_$].reversed[tProp] = true
-      }, true)
-
-
-
-
-
-
-
-
-
-
       // supported events (i.e. click, mouseover, change...)
       Slim.customDirective((attr) => Slim[_$].supportedNativeEvents.indexOf(attr.nodeName) >= 0,
         (source, target, attribute) => {
           const eventName = attribute.nodeName
-          const delegate = attribute.nodeValue
+          const delegate = attribute.value
           Slim._$(target).eventHandlers = target[_$].eventHandlers || {}
           const allHandlers = target[_$].eventHandlers
           allHandlers[eventName] = allHandlers[eventName] || []
@@ -667,7 +568,7 @@
       Slim.customDirective(attr => {
         return /^s:if$/.exec(attr.nodeName)
       }, (source, target, attribute) => {
-        let expression = attribute.nodeValue
+        let expression = attribute.value
         let path = expression
         let isNegative = false
         if (path.charAt(0) === '!') {
@@ -739,14 +640,14 @@
       })
 
       Slim.customDirective(attr => /^s:id$/.test(attr.nodeName), (source, target, attribute) => {
-        Slim._$(target).boundParent[attribute.nodeValue] = target
+        Slim._$(target).boundParent[attribute.value] = target
       })
 
       // bind:property
       Slim.customDirective(attr => /^(bind):(\S+)/.exec(attr.nodeName), (source, target, attribute, match) => {
         const tAttr = match[2]
         const tProp = Slim.dashToCamel(tAttr)
-        const expression = attribute.nodeValue
+        const expression = attribute.value
         let oldValue
         const rxM = Slim.rxMethod.exec(expression)
         if (rxM) {
@@ -778,8 +679,129 @@
 
 
 
+      __flags.isChrome && Slim.customDirective(attr => /^s:repeat$/.test(attr.nodeName), (source, templateNode, attribute) => {
+        let path = attribute.value
+        let tProp = 'data'
+        if (path.indexOf(' as' )) {
+          tProp = path.split(' as ')[1] || tProp
+          path = path.split(' as ')[0]
+        }
+
+        let clones = []
+        const hook = document.createComment(`${templateNode.localName} s:repeat="${attribute.value}"`)
+        Slim._$(hook)
+        Slim.selectRecursive(templateNode, true).forEach(e => Slim._$(e).excluded = true)
+        templateNode.parentElement.insertBefore(hook, templateNode)
+        templateNode.remove()
+        Slim.unbind(source, templateNode)
+        Slim.asap( () => {
+          templateNode.setAttribute('s:iterate', '')
+          templateNode.removeAttribute('s:repeat')
+        })
+        let oldDataSource = []
+        Slim.bind(source, hook, path, () => {
+          const dataSource = Slim.lookup(source, path) || []
+          let offset = 0
+          let restOfData = []
+          // get the diff
+          const diff = Array(dataSource.length)
+          dataSource.forEach((d, i) => {
+            if (oldDataSource[i] !== d) {
+              diff[i] = true
+            }
+          })
+          oldDataSource = dataSource.concat()
+          let indices = Object.keys(diff)
+          if (dataSource.length < clones.length) {
+            const disposables = clones.slice(dataSource.length)
+            clones = clones.slice(0, dataSource.length)
+            disposables.forEach(clone => clone.remove())
+            // unbind disposables?
+            indices.forEach(index => {
+              const clone = clones[index]
+              ;[clone].concat(Slim.qSelectAll(clone, '*')).forEach(t => {
+                t[_$].repeater[tProp] = dataSource[index]
+                Slim.commit(t, tProp)
+              })
+            })
+          } else {
+            // recycle
+            clones.length && indices.forEach(index => {
+              const clone = clones[index]
+              if (!clone) return
+              [clone].concat(Slim.qSelectAll(clone, '*')).forEach(t => {
+                t[_$].repeater[tProp] = dataSource[index]
+                Slim.commit(t, tProp)
+              })
+            })
+            restOfData = dataSource.slice(clones.length)
+            offset = clones.length
+          }
+          if (!restOfData.length) return
+          // new clones
+          const range = document.createRange()
+          range.setStartBefore(hook)
+          let html = Array(restOfData.length).fill(templateNode.outerHTML).join('')
+          const frag = range.createContextualFragment(html)
+          let all = []
+          let i = 0;
+          while (i < frag.children.length) {
+            const e = frag.children.item(i)
+            clones.push(e)
+            all.push(e)
+            Slim._$(e).repeater[tProp] = dataSource[i + offset]
+            const subTree = Slim.qSelectAll(e, '*')
+            subTree.forEach(t => {
+              all.push(t)
+              Slim._$(t).repeater[tProp] = dataSource[i + offset]
+              Slim.commit(t, tProp)
+            })
+            i++
+          }
+          source._bindChildren(all)
+          all.forEach(t => {
+            if (t.__isSlim) {
+              t.createdCallback()
+              Slim.asap( () => {
+                Slim.commit(t, tProp)
+                t[tProp] = t[_$].repeater[tProp]
+              })
+            } else {
+              Slim.commit(t, tProp)
+              t[tProp] = t[_$].repeater[tProp]
+            }
+          })
+          hook.parentElement.insertBefore(frag, hook)
+        })
+        source[_$].reversed[tProp] = true
+      }, true)
 
 
+
+
+      !__flags.isChrome && Slim.customDirective(attr => /^s:repeat$/.test(attr.nodeName), (source, templateNode, attribute) => {
+        let path = attribute.nodeValue
+        let tProp = 'data'
+        if (path.indexOf(' as' )) {
+          tProp = path.split(' as ')[1] || tProp
+          path = path.split(' as ')[0]
+        }
+
+        const repeater = document.createElement('slim-repeat')
+        repeater[_$].boundParent = source
+        repeater.dataProp = tProp
+        repeater.dataPath = attribute.nodeValue
+        repeater.templateNode = templateNode.cloneNode(true)
+        repeater.templateNode.removeAttribute('s:repeat')
+        templateNode.parentNode.insertBefore(repeater, templateNode)
+        Slim.removeChild(templateNode)
+        Slim.bind(source, repeater, path, () => {
+          const dataSource = Slim.lookup(source, path)
+          repeater.dataSource = dataSource || []
+        })
+
+        // source._executeBindings()
+      }, true)
 
       class SlimRepeater extends Slim {
         get dataSource () { return this._dataSource }
@@ -793,10 +815,10 @@
         _bindChildren(tree) {
           tree = Array.prototype.slice.call(tree)
           const directChildren = Array.prototype
-          .filter.call(tree, child => child.parentNode.localName === 'slim-root-fragment')
+            .filter.call(tree, child => child.parentNode.localName === 'slim-root-fragment')
           directChildren.forEach((child, index) => {
             child.setAttribute('s:iterate', `${this.dataPath} : ${index}`)
-            Slim.selectRecursive(child, true).forEach(e => {
+            Slim.selectRecursive(child).forEach(e => {
               Slim._$(e).repeater[this.dataProp] = this.dataSource[index]
               if (e instanceof Slim) {
                 e[this.dataProp] = this.dataSource[index]
@@ -806,29 +828,24 @@
         }
         onRender() {
           if (!this.boundParent) return
-            const tree = Slim.selectRecursive(this)
+          const tree = Slim.selectRecursive(this)
           this.boundParent && this.boundParent._bindChildren(tree)
           this.boundParent._executeBindings()
         }
-        render() {
+        render(...args) {
           if (!this.boundParent) return
-            Slim.qSelectAll(this, '*').forEach(e => {
-              Slim.unbind(this.boundParent, e)
-            })
+          Slim.qSelectAll(this, '*').forEach(e => {
+            Slim.unbind(this.boundParent, e)
+          })
           if (!this.dataSource || !this.templateNode || !this.boundParent) {
-            super.render('')
-          } else {
-            const newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('')
-            this.innerHTML = '';
-            super.render(newTemplate)
+            return super.render('')
           }
+          const newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('')
+          this.innerHTML = '';
+          super.render(newTemplate)
         }
       }
-
       Slim.tag('slim-repeat', SlimRepeater)
-
-
-
 
 
 
