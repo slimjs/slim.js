@@ -235,14 +235,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         });
       }
     }, {
+      key: 'root',
+      value: function root(target) {
+        return target.__isSlim && target.useShadow ? target[_$2].rootElement : target;
+      }
+    }, {
       key: 'selectRecursive',
       value: function selectRecursive(target, force) {
         var collection = [];
         var search = function search(node, force) {
           collection.push(node);
-          var allow = !node.__isSlim || node.__isSlim && !node.template || force;
+          var allow = !node.__isSlim || node.__isSlim && !node.template || node.__isSlim && node === target || force;
           if (allow) {
-            [].concat(_toConsumableArray(node.children)).forEach(function (childNode) {
+            var children = [].concat(_toConsumableArray(Slim.root(node).children));
+            children.forEach(function (childNode) {
               search(childNode, force);
             });
           }
@@ -326,6 +332,26 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         target[_$2].inbounds[pName] = target[_$2].inbounds[pName] || [];
         target[_$2].inbounds[pName].push(executor);
         return executor;
+      }
+    }, {
+      key: 'update',
+      value: function update(target) {
+        var children = Slim.selectRecursive(target);
+
+        for (var _len = arguments.length, props = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+          props[_key - 1] = arguments[_key];
+        }
+
+        if (props.length === 0) {
+          return children.forEach(function (child) {
+            Slim.commit(child);
+          });
+        }
+        props.forEach(function (prop) {
+          children.forEach(function (child) {
+            Slim.commit(child, prop);
+          });
+        });
       }
     }, {
       key: 'commit',
@@ -537,15 +563,24 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         Slim.executePlugins('beforeRender', this);
         this[_$2].hasCustomTemplate = customTemplate;
         this._resetBindings();
-        this[_$2].rootElement.innerHTML = '';
+        this[_$2].rootElement.innerHTML = '';[].concat(_toConsumableArray(this.childNodes)).forEach(function (childNode) {
+          if (childNode.localName === 'style') {
+            _this3[_$2].externalStyle = childNode;
+            childNode.remove();
+          }
+        });
         var template = this[_$2].hasCustomTemplate || this.template;
         if (template && typeof template === 'string') {
           var frag = document.createElement('slim-root-fragment');
           frag.innerHTML = template || '';
           var scopedChildren = Slim.qSelectAll(frag, '*');
+          if (this[_$2].externalStyle) {
+            this._bindChildren([this[_$2].externalStyle]);
+          }
           this._bindChildren(scopedChildren);
           Slim.asap(function () {
             Slim.moveChildren(frag, _this3[_$2].rootElement || _this3);
+            _this3[_$2].externalStyle && _this3[_$2].rootElement.appendChild(_this3[_$2].externalStyle);
             _this3._executeBindings();
             _this3.onRender();
             Slim.executePlugins('afterRender', _this3);
@@ -562,7 +597,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         Slim._$(this);
         this[_$2].uniqueIndex = Slim.createUniqueIndex();
         if (this.useShadow) {
-          // this.[_$].rootElement = this.attachShadow({mode:'open'})
+          // this[_$].rootElement = this.attachShadow({mode:'open'})
           this[_$2].rootElement = this.createShadowRoot();
         } else {
           this[_$2].rootElement = this;
@@ -579,6 +614,24 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
       // Slim public / protected API
 
+    }, {
+      key: 'commit',
+      value: function commit() {
+        for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+          args[_key2] = arguments[_key2];
+        }
+
+        Slim.commit.apply(Slim, [this].concat(args));
+      }
+    }, {
+      key: 'update',
+      value: function update() {
+        for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+          args[_key3] = arguments[_key3];
+        }
+
+        Slim.update.apply(Slim, [this].concat(args));
+      }
     }, {
       key: 'render',
       value: function render(tpl) {
@@ -714,7 +767,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var anchor = document.createComment('if:' + expression);
     target.parentNode.insertBefore(anchor, target);
     var fn = function fn() {
-      var value = Slim.lookup(source, expression, target);
+      var value = Slim.lookup(source, path, target);
       if (isNegative) {
         value = !value;
       }
@@ -842,6 +895,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
     var clones = [];
     var hook = document.createComment(templateNode.localName + ' s:repeat="' + attribute.value + '"');
+    var templateHTML = void 0;
     Slim._$(hook);
     Slim.selectRecursive(templateNode, true).forEach(function (e) {
       return Slim._$(e).excluded = true;
@@ -852,6 +906,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     Slim.asap(function () {
       templateNode.setAttribute('s:iterate', '');
       templateNode.removeAttribute('s:repeat');
+      templateHTML = templateNode.outerHTML;
+      templateNode.innerHTML = '';
     });
     var oldDataSource = [];
     Slim.bind(source, hook, path, function () {
@@ -897,7 +953,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       // new clones
       var range = document.createRange();
       range.setStartBefore(hook);
-      var html = Array(restOfData.length).fill(templateNode.outerHTML).join('');
+      var html = Array(restOfData.length).fill(templateHTML).join('');
       var frag = range.createContextualFragment(html);
       var all = [];
       var i = 0;

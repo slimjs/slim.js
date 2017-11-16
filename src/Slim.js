@@ -161,13 +161,20 @@
       })
     }
 
+    static root(target) {
+      return target.__isSlim && target.useShadow
+        ? target[_$].rootElement
+        : target
+    }
+
     static selectRecursive(target, force) {
       const collection = []
       const search = function(node, force) {
         collection.push(node)
-        const allow = !(node.__isSlim) || (node.__isSlim && !node.template) || force
+        const allow = !(node.__isSlim) || (node.__isSlim && !node.template) || (node.__isSlim && node === target) ||force
         if (allow) {
-          [...node.children].forEach(childNode => {
+          const children = [...Slim.root(node).children]
+          children.forEach(childNode => {
             search(childNode, force)
           })
         }
@@ -243,6 +250,20 @@
       target[_$].inbounds[pName] = target[_$].inbounds[pName] || []
       target[_$].inbounds[pName].push(executor)
       return executor
+    }
+
+    static update (target, ...props) {
+      const children = Slim.selectRecursive(target)
+      if (props.length === 0) {
+        return children.forEach(child => {
+          Slim.commit(child)
+        })
+      }
+      props.forEach(prop => {
+        children.forEach(child => {
+          Slim.commit(child, prop)
+        })
+      })
     }
 
     static commit (target, prop) {
@@ -379,14 +400,24 @@
       this[_$].hasCustomTemplate = customTemplate
       this._resetBindings()
       this[_$].rootElement.innerHTML = ''
+      ;[...this.childNodes].forEach(childNode => {
+        if (childNode.localName === 'style') {
+          this[_$].externalStyle = childNode
+          childNode.remove()
+        }
+      })
       const template = this[_$].hasCustomTemplate || this.template
       if (template && typeof template === 'string') {
         const frag = document.createElement('slim-root-fragment')
         frag.innerHTML = template || ''
         const scopedChildren = Slim.qSelectAll(frag, '*')
+        if (this[_$].externalStyle) {
+          this._bindChildren([this[_$].externalStyle])
+        }
         this._bindChildren(scopedChildren)
         Slim.asap( () => {
           Slim.moveChildren(frag, this[_$].rootElement || this)
+          this[_$].externalStyle && this[_$].rootElement.appendChild(this[_$].externalStyle)
           this._executeBindings()
           this.onRender()
           Slim.executePlugins('afterRender', this)
@@ -400,7 +431,7 @@
       Slim._$(this)
       this[_$].uniqueIndex = Slim.createUniqueIndex()
       if (this.useShadow) {
-        // this.[_$].rootElement = this.attachShadow({mode:'open'})
+        // this[_$].rootElement = this.attachShadow({mode:'open'})
         this[_$].rootElement = this.createShadowRoot()
       } else {
         this[_$].rootElement = this
@@ -415,7 +446,15 @@
       }
     }
 
-      // Slim public / protected API
+    // Slim public / protected API
+
+    commit (...args) {
+      Slim.commit(this, ...args)
+    }
+
+    update (...args) {
+      Slim.update(this, ...args)
+    }
 
     render (tpl) {
       this._render(tpl)
@@ -517,7 +556,7 @@
     const anchor = document.createComment(`if:${expression}`)
     target.parentNode.insertBefore(anchor, target)
     const fn = () => {
-      let value = Slim.lookup(source, expression, target)
+      let value = Slim.lookup(source, path, target)
       if (isNegative) {
         value = !value
       }
@@ -625,6 +664,7 @@
 
     let clones = []
     const hook = document.createComment(`${templateNode.localName} s:repeat="${attribute.value}"`)
+    let templateHTML
     Slim._$(hook)
     Slim.selectRecursive(templateNode, true).forEach(e => Slim._$(e).excluded = true)
     templateNode.parentElement.insertBefore(hook, templateNode)
@@ -633,6 +673,8 @@
     Slim.asap( () => {
       templateNode.setAttribute('s:iterate', '')
       templateNode.removeAttribute('s:repeat')
+      templateHTML = templateNode.outerHTML
+      templateNode.innerHTML = ''
     })
     let oldDataSource = []
     Slim.bind(source, hook, path, () => {
@@ -677,7 +719,7 @@
       // new clones
       const range = document.createRange()
       range.setStartBefore(hook)
-      let html = Array(restOfData.length).fill(templateNode.outerHTML).join('')
+      let html = Array(restOfData.length).fill(templateHTML).join('')
       const frag = range.createContextualFragment(html)
       let all = []
       let i = 0;
