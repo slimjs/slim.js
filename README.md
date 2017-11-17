@@ -26,7 +26,7 @@ But... wait! there's more:
 
 ## Standards compilant
 - es6
-- web-components V2
+- web-components V1
 - no transpiling or compilation required
 
 ## Tools free
