@@ -9,7 +9,8 @@
     "build": "babel src/Slim.js > Slim.js && uglifyjs Slim.js -o Slim.min.js && uglifyjs src/Slim.js -o Slim.es6.js",
     "pretest": "npm run build && node prepare-test.js",
     "test": "nightwatch -- tests",
-    "server": "python -m SimpleHTTPServer 8000"
+    "server": "python -m SimpleHTTPServer 8000",
+    "postinstall": "opencollective postinstall"
   },
   "repository": {
     "type": "git",
@@ -38,5 +39,12 @@
     "static-server": "^2.0.6",
     "uglify-es": "^3.1.5"
   },
-  "dependencies": {}
+  "dependencies": {
+    "opencollective": "^1.0.3"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/slimjs",
+    "logo": "https://opencollective.com/opencollective/logo.txt"
+  }
 }
