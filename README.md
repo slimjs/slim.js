@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/eavichay/slim.js.svg?branch=master)](https://travis-ci.org/eavichay/slim.js)
 [![Build Status](https://semaphoreci.com/api/v1/eavichay/slim-js/branches/master/badge.svg)](https://semaphoreci.com/eavichay/slim-js)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/eavichay/slim.js?branch=master&svg=true)](https://ci.appveyor.com/project/eavichay/slim-js)
 
 [Chat on gitter](https://gitter.im/slim-js/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
