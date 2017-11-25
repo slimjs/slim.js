@@ -35,6 +35,7 @@
       this.createdCallbackInvoked = false
       this.sourceText = null
       this.excluded = false
+      this.autoBoundAttributes = []
     }
   }
 
@@ -195,12 +196,6 @@
       }
     }
 
-    static moveChildrenBefore (source, target) {
-      while (source.firstChild) {
-        target.parentNode.insertBefore(source.firstChild, target)
-      }
-    }
-
     static moveChildren (source, target) {
       while (source.firstChild) {
         target.appendChild(source.firstChild)
@@ -234,7 +229,7 @@
       }
 
     static bindOwn(target, expression, executor) {
-      Slim.bind(target, target, expression, executor)
+      return Slim.bind(target, target, expression, executor)
     }
 
     static bind (source, target, expression, executor) {
@@ -327,6 +322,13 @@
     disconnectedCallback () {
       this.onRemoved()
       Slim.executePlugins('removed', this)
+    }
+
+    attributeChangedCallback(attr, oldValue, newValue) {
+      if (newValue !== oldValue && this[_$].autoBoundAttributes[attr]) {
+        const prop = Slim.dashToCamel(attr)
+        this[prop] = newValue
+      }
     }
 
     // Slim internal API
@@ -477,7 +479,7 @@
     callAttribute (attr, data) {
       const fnName = this.getAttribute(attr)
       if (fnName) {
-        this[_$].boundParent[fnName](data)
+        return this[_$].boundParent[fnName](data)
       }
     }
 

@@ -5,9 +5,11 @@
   "main": "Slim.js",
   "scripts": {
     "prepublish": "npm run build",
+    "postinstall": "npm run build",
     "dev": "babel src/Slim.js --watch --out-file Slim.js",
     "build": "babel src/Slim.js > Slim.js && uglifyjs Slim.js -o Slim.min.js && uglifyjs src/Slim.js -o Slim.es6.js",
-    "pretest": "npm run build && node prepare-test.js",
+    "build:tests": "babel ./tests/decorators/decorators.test-app.js --plugins transform-decorators-legacy,transform-class-properties > ./tests/decorators/decorators.test-app.compiled.js",
+    "pretest": "npm run build && npm run build:tests && node prepare-test.js",
     "test": "nightwatch -- tests",
     "server": "python -m SimpleHTTPServer 8000"
   },
@@ -27,9 +29,20 @@
     "components",
     "binding"
   ],
+  "babel": {
+    "presets": [
+      "env"
+    ],
+    "plugins": [
+      "transform-decorators",
+      "transform-class-properties"
+    ]
+  },
   "devDependencies": {
     "babel-cli": "^6.26.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-custom-element-classes": "^0.1.0",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
     "babel-plugin-transform-es2015-classes": "^6.24.1",
     "babel-preset-env": "^1.6.1",
     "nightwatch": "0.9.8",

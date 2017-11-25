@@ -62,6 +62,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     this.createdCallbackInvoked = false;
     this.sourceText = null;
     this.excluded = false;
+    this.autoBoundAttributes = [];
   };
 
   var Slim = function (_CustomElement2) {
@@ -270,13 +271,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }
       }
     }, {
-      key: 'moveChildrenBefore',
-      value: function moveChildrenBefore(source, target) {
-        while (source.firstChild) {
-          target.parentNode.insertBefore(source.firstChild, target);
-        }
-      }
-    }, {
       key: 'moveChildren',
       value: function moveChildren(source, target) {
         while (source.firstChild) {
@@ -315,7 +309,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'bindOwn',
       value: function bindOwn(target, expression, executor) {
-        Slim.bind(target, target, expression, executor);
+        return Slim.bind(target, target, expression, executor);
       }
     }, {
       key: 'bind',
@@ -447,6 +441,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function disconnectedCallback() {
         this.onRemoved();
         Slim.executePlugins('removed', this);
+      }
+    }, {
+      key: 'attributeChangedCallback',
+      value: function attributeChangedCallback(attr, oldValue, newValue) {
+        if (newValue !== oldValue && this[_$2].autoBoundAttributes[attr]) {
+          var prop = Slim.dashToCamel(attr);
+          this[prop] = newValue;
+        }
       }
 
       // Slim internal API
@@ -667,7 +669,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function callAttribute(attr, data) {
         var fnName = this.getAttribute(attr);
         if (fnName) {
-          this[_$2].boundParent[fnName](data);
+          return this[_$2].boundParent[fnName](data);
         }
       }
     }, {

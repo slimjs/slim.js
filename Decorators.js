@@ -21,7 +21,9 @@ module.exports = {
 
     attribute: function(target, key, descriptor) {
         target.constructor.observedAttributes = target.constructor.observedAttributes || [];
-        target.constructor.observedAttributes.push(window.Slim.__camelToDash(key));
+        const attr = window.Slim.camelToDash(key);
+        target.constructor.observedAttributes.push(attr);
+        Slim._$(target.constructor).autoBoundAttributes.push(key);
         descriptor.configurable = true;
         descriptor.writable = true;
         return descriptor;
