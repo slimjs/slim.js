@@ -10,7 +10,7 @@
     "build": "babel src/Slim.js > Slim.js && uglifyjs Slim.js -o Slim.min.js && uglifyjs src/Slim.js -o Slim.es6.js",
     "build:tests": "babel ./tests/decorators/decorators.test-app.js --plugins transform-decorators-legacy,transform-class-properties > ./tests/decorators/decorators.test-app.compiled.js",
     "pretest": "npm run build && npm run build:tests && node prepare-test.js",
-    "test": "nightwatch -- tests",
+    "test": "nightwatch -- tests/*.test.js",
     "server": "python -m SimpleHTTPServer 8000"
   },
   "repository": {
