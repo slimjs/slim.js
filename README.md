@@ -42,3 +42,4 @@ The documentation site is built with Slim.js. Check out the source code, it's ea
 
 *USE THE PLATFORM*
 
+[![Code Sponsor](https://app.codesponsor.io/embed/tf7UVg5jEu2aQ4dGX7tf9Tma/eavichay/slim.js.svg)](https://app.codesponsor.io/link/tf7UVg5jEu2aQ4dGX7tf9Tma/eavichay/slim.js)
