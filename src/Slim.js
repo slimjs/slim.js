@@ -555,6 +555,7 @@
       path = path.slice(1)
       isNegative = true
     }
+    let oldValue;
     const anchor = document.createComment(`if:${expression}`)
     target.parentNode.insertBefore(anchor, target)
     const fn = () => {
@@ -562,11 +563,13 @@
       if (isNegative) {
         value = !value
       }
+      if (value == oldValue) return;
       if (value) {
         anchor.parentNode.insertBefore(target, anchor.nextSibling)
       } else {
         Slim.removeChild(target)
       }
+      oldValue = value;
     }
     Slim.bind(source, target, path, fn)
   }, true)
