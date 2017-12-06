@@ -314,7 +314,7 @@
     // Native DOM Api V2
 
     connectedCallback () {
-      this.createdCallback()
+      // this.createdCallback()
       this.onAdded()
       Slim.executePlugins('added', this)
     }
@@ -565,6 +565,9 @@
       }
       if (value == oldValue) return;
       if (value) {
+        if (target.__isSlim) {
+            target.createdCallback();
+        }
         anchor.parentNode.insertBefore(target, anchor.nextSibling)
       } else {
         Slim.removeChild(target)
@@ -573,6 +576,33 @@
     }
     Slim.bind(source, target, path, fn)
   }, true)
+
+    Slim.customDirective(attr => {
+    return /^s:switch$/.exec(attr.nodeName)
+  }, (source, target, attribute) => {
+    let expression = attribute.value
+    let oldValue;
+    const anchor = document.createComment(`switch:${expression}`)
+    target.parentNode.insertBefore(anchor, target)
+    let children = [...target.children].reverse();
+    const fn = () => {
+      let value = Slim.lookup(source, expression, target)
+      if (value == oldValue) return;
+        children.forEach((child)=>{
+            if(child.getAttribute("s:case") === value ) {
+                if (child.__isSlim) {
+                    child.createdCallback();
+                }
+                anchor.parentNode.insertBefore(child, anchor.nextSibling);
+            }
+            else Slim.removeChild(child);
+        });
+      oldValue = value;
+    }
+    Slim.bind(source, target, expression, fn)
+  }, false)
+
+  Slim.customDirective(attr => /^s:case$/.exec(attr.nodeName), () => {}, true);
 
   // bind (text nodes)
   Slim.customDirective(attr => /^bind$/.test(attr.nodeName), (source, target) => {

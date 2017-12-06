@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../src/Slim.js"></script>
+</head>
+<body>
+
+    <script>
+        window.x = 1;
+
+        Slim.tag('slim-test',
+        `<div id="slimSwitchTest" s:switch="letter">
+            <div id="caseOne" s:case="a"> option a was selected </div>
+            <div id="caseTwo" s:case="b"> option b was selected </div>
+            <child-el s:case="b"></child-el>
+        </div>
+        <div id="monitor" bind>{{xx}}</div>`,
+
+        class extends Slim {
+            onBeforeCreated() {
+                window.unit = this;
+                this.letter = "a";
+                this.xx = 999;
+            }
+
+            set letter(value) {
+                this._letter = value;
+                this.xx = window.x;
+            }
+
+            get letter() {
+                return this._letter;
+            }
+        });
+
+        Slim.tag('child-el', '<span>12345</span>', class extends Slim {
+            onBeforeCreated() {
+                window.x = 10;
+            }
+        });
+    </script>
+
+    <slim-test></slim-test>
+</body>
+</html>
