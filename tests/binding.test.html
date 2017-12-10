@@ -20,11 +20,20 @@
         class extends Slim {
 
             onBeforeCreated() {
+                window.unit = this;
                 this.myName = "eavichay";
                 this.nested = {
                   value1: 1,
                   text: 'hello'
                 }
+            }
+
+            get myName() {
+              return this._myName;
+            }
+
+            set myName(value) {
+              this._myName = value;
             }
 
             multi(a, b) {

@@ -281,8 +281,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       key: 'wrapGetterSetter',
       value: function wrapGetterSetter(element, expression) {
         var pName = expression.split('.')[0];
-        var descriptor = Object.getOwnPropertyDescriptor(element, pName);
-        var oSetter = descriptor && descriptor.set;
+        var oSetter = element.__lookupSetter__(pName);
         if (oSetter && oSetter[_$2]) return pName;
         if (typeof oSetter === 'undefined') {
           oSetter = function oSetter() {};
@@ -295,7 +294,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         };
         element[_$2].bindings[pName].value = srcValue;
         var newSetter = function newSetter(v) {
-          oSetter(v);
+          oSetter.call(element, v);
           this[_$2].bindings[pName].value = v;
           this._executeBindings(pName);
         };
@@ -859,7 +858,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             var args = pNames.map(function (path) {
               return Slim.lookup(source, path, target);
             });
-            var value = source[fnName].apply(source, args);
+            var fn = source[fnName];
+            var value = fn ? fn.apply(source, args) : undefined;
             if (oldValue === value) return;
             updatedText = updatedText.split(expression).join(value || '');
           };

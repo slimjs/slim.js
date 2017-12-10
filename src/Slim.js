@@ -204,8 +204,7 @@
 
     static wrapGetterSetter (element, expression) {
       const pName = expression.split('.')[0]
-      const descriptor = Object.getOwnPropertyDescriptor(element, pName)
-      let oSetter = descriptor && descriptor.set
+      let oSetter = element.__lookupSetter__(pName)
       if (oSetter && oSetter[_$]) return pName
         if (typeof oSetter === 'undefined') {
           oSetter = () => {}
@@ -218,7 +217,7 @@
         }
         element[_$].bindings[pName].value = srcValue
         const newSetter = function (v) {
-          oSetter(v)
+          oSetter.call(element, v)
           this[_$].bindings[pName].value = v
           this._executeBindings(pName)
         }
@@ -632,7 +631,8 @@
           pNames.map(path => path.split('.')[0]).forEach(p => aggProps[p] = true)
           textBinds[expression] = target => {
             const args = pNames.map(path => Slim.lookup(source, path, target))
-            const value = source[fnName].apply(source, args)
+            const fn = source[fnName]
+            const value = fn ? fn.apply(source, args) : undefined
             if (oldValue === value) return
               updatedText = updatedText.split(expression).join(value || '')
           }
