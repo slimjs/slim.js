@@ -314,7 +314,6 @@
     // Native DOM Api V2
 
     connectedCallback () {
-      this.createdCallback()
       this.onAdded()
       Slim.executePlugins('added', this)
     }
@@ -521,7 +520,47 @@
     ]
   }
 
-  Slim.customDirective(attr => /^s:iterate$/.test(attr.nodeName), () => {}, true)
+  Slim.customDirective(attr => attr.nodeName === 's:switch', (source, target, attribute) => {
+    const expression = attribute.value
+    let oldValue
+    const anchor = document.createComment(`switch:${expression}`)
+    target.appendChild(anchor)
+    const children = [...target.children]
+    const defaultChildren = children.filter(child => child.hasAttribute('s:default'))
+    const fn = () => {
+      let value = Slim.lookup(source, expression, target)
+      if (String(value) === oldValue) return
+      let useDefault = true
+      children.forEach(child => {
+        if (child.getAttribute('s:case') === String(value)) {
+          if (child.__isSlim) {
+            child.createdCallback();
+          }
+          anchor.parentNode.insertBefore(child, anchor)
+          useDefault = false
+        } else {
+          Slim.removeChild(child)
+        }
+      })
+      if (useDefault) {
+        defaultChildren.forEach(child => {
+          if (child.__isSlim) {
+            child.createdCallback();
+          }
+          anchor.parentNode.insertBefore(child, anchor)
+        })
+      } else {
+        defaultChildren.forEach(child => {
+          Slim.removeChild(child)
+        })
+      }
+      oldValue = String(value)
+    }
+    Slim.bind(source, target, expression, fn)
+  });
+
+  Slim.customDirective(attr => /^s:case$/.exec(attr.nodeName), () => {}, true);
+  Slim.customDirective(attr => /^s:default$/.exec(attr.nodeName), () => {}, true);
 
   // supported events (i.e. click, mouseover, change...)
   Slim.customDirective((attr) => Slim[_$].supportedNativeEvents.indexOf(attr.nodeName) >= 0,
@@ -545,9 +584,7 @@
       handler = null
     })
 
-  Slim.customDirective(attr => {
-    return /^s:if$/.exec(attr.nodeName)
-  }, (source, target, attribute) => {
+  Slim.customDirective(attr => attr.nodeName === 's:if', (source, target, attribute) => {
     let expression = attribute.value
     let path = expression
     let isNegative = false
@@ -559,12 +596,15 @@
     const anchor = document.createComment(`if:${expression}`)
     target.parentNode.insertBefore(anchor, target)
     const fn = () => {
-      let value = Slim.lookup(source, path, target)
+      let value = !!Slim.lookup(source, path, target)
       if (isNegative) {
         value = !value
       }
-      if (value == oldValue) return;
+      if (value === oldValue) return;
       if (value) {
+        if (target.__isSlim) {
+          target.createdCallback();
+        }
         anchor.parentNode.insertBefore(target, anchor.nextSibling)
       } else {
         Slim.removeChild(target)
@@ -575,7 +615,7 @@
   }, true)
 
   // bind (text nodes)
-  Slim.customDirective(attr => /^bind$/.test(attr.nodeName), (source, target) => {
+  Slim.customDirective(attr => attr.nodeName === 'bind', (source, target) => {
     Slim._$(target)
     target[_$].sourceText = target.innerText
     let updatedText = ''
@@ -622,7 +662,7 @@
     }
   })
 
-  Slim.customDirective(attr => /^s:id$/.test(attr.nodeName), (source, target, attribute) => {
+  Slim.customDirective(attr => attr.nodeName === 's:id', (source, target, attribute) => {
     Slim._$(target).boundParent[attribute.value] = target
   })
 
@@ -659,7 +699,7 @@
     }
   })
 
-  __flags.isChrome && Slim.customDirective(attr => /^s:repeat$/.test(attr.nodeName), (source, templateNode, attribute) => {
+  __flags.isChrome && Slim.customDirective(attr => attr.nodeName === 's:repeat', (source, templateNode, attribute) => {
     let path = attribute.value
     let tProp = 'data'
     if (path.indexOf(' as' )) {

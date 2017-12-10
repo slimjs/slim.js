@@ -432,7 +432,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'connectedCallback',
       value: function connectedCallback() {
-        this.createdCallback();
         this.onAdded();
         Slim.executePlugins('added', this);
       }
@@ -729,7 +728,54 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   };
 
   Slim.customDirective(function (attr) {
-    return (/^s:iterate$/.test(attr.nodeName)
+    return attr.nodeName === 's:switch';
+  }, function (source, target, attribute) {
+    var expression = attribute.value;
+    var oldValue = void 0;
+    var anchor = document.createComment('switch:' + expression);
+    target.appendChild(anchor);
+    var children = [].concat(_toConsumableArray(target.children));
+    var defaultChildren = children.filter(function (child) {
+      return child.hasAttribute('s:default');
+    });
+    var fn = function fn() {
+      var value = Slim.lookup(source, expression, target);
+      if (String(value) === oldValue) return;
+      var useDefault = true;
+      children.forEach(function (child) {
+        if (child.getAttribute('s:case') === String(value)) {
+          if (child.__isSlim) {
+            child.createdCallback();
+          }
+          anchor.parentNode.insertBefore(child, anchor);
+          useDefault = false;
+        } else {
+          Slim.removeChild(child);
+        }
+      });
+      if (useDefault) {
+        defaultChildren.forEach(function (child) {
+          if (child.__isSlim) {
+            child.createdCallback();
+          }
+          anchor.parentNode.insertBefore(child, anchor);
+        });
+      } else {
+        defaultChildren.forEach(function (child) {
+          Slim.removeChild(child);
+        });
+      }
+      oldValue = String(value);
+    };
+    Slim.bind(source, target, expression, fn);
+  });
+
+  Slim.customDirective(function (attr) {
+    return (/^s:case$/.exec(attr.nodeName)
+    );
+  }, function () {}, true);
+  Slim.customDirective(function (attr) {
+    return (/^s:default$/.exec(attr.nodeName)
     );
   }, function () {}, true);
 
@@ -756,8 +802,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   });
 
   Slim.customDirective(function (attr) {
-    return (/^s:if$/.exec(attr.nodeName)
-    );
+    return attr.nodeName === 's:if';
   }, function (source, target, attribute) {
     var expression = attribute.value;
     var path = expression;
@@ -770,12 +815,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var anchor = document.createComment('if:' + expression);
     target.parentNode.insertBefore(anchor, target);
     var fn = function fn() {
-      var value = Slim.lookup(source, path, target);
+      var value = !!Slim.lookup(source, path, target);
       if (isNegative) {
         value = !value;
       }
-      if (value == oldValue) return;
+      if (value === oldValue) return;
       if (value) {
+        if (target.__isSlim) {
+          target.createdCallback();
+        }
         anchor.parentNode.insertBefore(target, anchor.nextSibling);
       } else {
         Slim.removeChild(target);
@@ -787,8 +835,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   // bind (text nodes)
   Slim.customDirective(function (attr) {
-    return (/^bind$/.test(attr.nodeName)
-    );
+    return attr.nodeName === 'bind';
   }, function (source, target) {
     Slim._$(target);
     target[_$2].sourceText = target.innerText;
@@ -843,8 +890,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   });
 
   Slim.customDirective(function (attr) {
-    return (/^s:id$/.test(attr.nodeName)
-    );
+    return attr.nodeName === 's:id';
   }, function (source, target, attribute) {
     Slim._$(target).boundParent[attribute.value] = target;
   });
@@ -888,8 +934,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   });
 
   __flags.isChrome && Slim.customDirective(function (attr) {
-    return (/^s:repeat$/.test(attr.nodeName)
-    );
+    return attr.nodeName === 's:repeat';
   }, function (source, templateNode, attribute) {
     var path = attribute.value;
     var tProp = 'data';

@@ -11,13 +11,18 @@ module.exports = {
 
     'slim-if': function(browser) {
         browser.waitForElementPresent('#slimIfTest');
+        browser.waitForElementPresent('#monitor');
+        browser.expect.element('#monitor').text.to.equal('Not created');
         browser.execute(`
             window.unit.toggle = false;
         `);
-        browser.waitForElementNotPresent('#slimIfTest')
+        browser.waitForElementNotPresent('#slimIfTest');
+        browser.expect.element('#monitor').text.to.equal('Created');
+        browser.waitForElementPresent('test-child');
         browser.execute(`
             window.unit.toggle = true;
         `);
         browser.waitForElementPresent('#slimIfTest');
+        browser.waitForElementNotPresent('test-child');
     }
 };
