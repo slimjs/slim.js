@@ -597,8 +597,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         Slim._$(this);
         this[_$2].uniqueIndex = Slim.createUniqueIndex();
         if (this.useShadow) {
-          // this[_$].rootElement = this.attachShadow({mode:'open'})
-          this[_$2].rootElement = this.createShadowRoot();
+          if (typeof HTMLElement.prototype.attachShadow === 'undefined') {
+            this[_$2].rootElement = this.createShadowRoot();
+          } else {
+            this[_$2].rootElement = this.attachShadow({ mode: 'open' });
+          }
         } else {
           this[_$2].rootElement = this;
         }

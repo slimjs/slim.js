@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../src/Slim.js"></script>
+</head>
+<body>
+    <test-app>
+        <span>Slotted DIV</span>
+    </test-app>
+
+<script>
+    Slim.tag('test-app', `
+    <h1>Hello</h1>
+    <slot></slot>
+    <h2>Bye</h2>
+    `,
+    class extends Slim {
+      get useShadow() { return true; }
+    })
+</script>
+</body>
+</html>

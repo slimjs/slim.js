@@ -431,8 +431,11 @@
       Slim._$(this)
       this[_$].uniqueIndex = Slim.createUniqueIndex()
       if (this.useShadow) {
-        // this[_$].rootElement = this.attachShadow({mode:'open'})
-        this[_$].rootElement = this.createShadowRoot()
+        if (typeof HTMLElement.prototype.attachShadow === 'undefined') {
+          this[_$].rootElement = this.createShadowRoot();
+        } else {
+          this[_$].rootElement = this.attachShadow({mode:'open'})
+        }
       } else {
         this[_$].rootElement = this
       }
