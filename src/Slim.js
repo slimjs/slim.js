@@ -92,9 +92,8 @@
       }
       this.tagToClassDict.set(tagName, clazz)
       this.classToTagDict.set(clazz, tagName)
-      var alreadyDefined = customElements.get(tagName)
-      if(alreadyDefined){
-        console.warn("Tag name: "+tagName+" is already defined!, maybe Slim.js was included multiple times");
+      if(customElements.get(tagName)){
+        throw new Error(`Tag name: ${tagName} is already defined!, maybe Slim.js was included multiple times`)
       }else{
         customElements.define(tagName, clazz)
       }
