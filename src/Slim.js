@@ -164,7 +164,7 @@
 
     static root(target) {
       return target.__isSlim && target.useShadow
-        ? target[_$].rootElement
+        ? target[_$].rootElement || target
         : target
     }
 

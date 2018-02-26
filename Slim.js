@@ -238,7 +238,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'root',
       value: function root(target) {
-        return target.__isSlim && target.useShadow ? target[_$2].rootElement : target;
+        return target.__isSlim && target.useShadow ? target[_$2].rootElement || target : target;
       }
     }, {
       key: 'selectRecursive',
