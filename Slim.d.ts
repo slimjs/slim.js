@@ -16,8 +16,8 @@ export declare interface SlimInternals {
 
 export declare class Slim extends HTMLElement {
     
-    static dashToCamel(dash: string):string;
-    static camelToDash(camel: string):string;
+    protected static dashToCamel(dash: string):string;
+    protected static camelToDash(camel: string):string;
     static rxInject(): RegExp;
     static rxProp(): RegExp;
     static rxMethod(): RegExp;
@@ -38,7 +38,7 @@ export declare class Slim extends HTMLElement {
     
     static createUniqueIndex (): string;
     
-    static plugin (
+    public static plugin (
         phase: string,
         plugin: (target: Slim) => void
     ): void;
@@ -53,7 +53,7 @@ export declare class Slim extends HTMLElement {
         isBlocking: boolean
     ): void;
     
-    static executePlugins (phase: string, target: Slim):void;
+    private static executePlugins (phase: string, target: Slim):void;
     
     static qSelectAll(target: Element, selector: string):Array<Element>;
     
@@ -63,11 +63,9 @@ export declare class Slim extends HTMLElement {
     
     static selectRecursive (target: Element, force: boolean): Array<Element>;
     
-    static removeChild (target: Element): void;
-    
     static moveChildren (source: Element, target: Element);
     
-    static wrapGetterSetter (element: Element, expression: string): string;
+    private static wrapGetterSetter (element: Element, expression: string): string;
     
     static bindOwn (source:Element, expression: string, executor: Function): Function;
     
@@ -119,7 +117,7 @@ export declare class Slim extends HTMLElement {
     
     public update (...args: string[]): void;
     
-    public render (customTempalte: string): void;
+    public render (customTemplate: string): void;
     
     protected onRender(): void;
     protected onBeforeCreated(): void;
