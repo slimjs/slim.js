@@ -30,12 +30,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     isWCSupported: 'customElements' in window && 'import' in document.createElement('link') && 'content' in document.createElement('template'),
     isIE11: !!window['MSInputMethodContext'] && !!document['documentMode'],
     isChrome: undefined,
-    isEdge: undefined
+    isEdge: undefined,
+    isSafari: undefined
   };
 
   try {
     __flags.isChrome = /Chrome/.test(navigator.userAgent);
     __flags.isEdge = /Edge/.test(navigator.userAgent);
+    __flags.isSafari = /Safari/.test(navigator.userAgent);
 
     if (__flags.isIE11 || __flags.isEdge) {
       __flags.isChrome = false;
@@ -403,12 +405,17 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
       var _this = _possibleConstructorReturn(this, (Slim.__proto__ || Object.getPrototypeOf(Slim)).call(this));
 
-      _this.__isSlim = true;
-      Slim.debug('ctor', _this.localName);
-      if (Slim.checkCreationBlocking(_this)) {
-        return _possibleConstructorReturn(_this);
-      }
-      _this.createdCallback();
+      var init = function init() {
+        _this.__isSlim = true;
+        Slim.debug('ctor', _this.localName);
+        if (Slim.checkCreationBlocking(_this)) {
+          return;
+        }
+        _this.createdCallback();
+      };
+      if (__flags.isSafari) {
+        Slim.asap(init);
+      } else init();
       return _this;
     }
 
@@ -936,7 +943,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }
   });
 
-  __flags.isChrome && Slim.customDirective(function (attr) {
+  !__flags.isIE11 && Slim.customDirective(function (attr) {
     return attr.nodeName === 's:repeat';
   }, function (source, templateNode, attribute) {
     var path = attribute.value;
@@ -1041,7 +1048,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     source[_$2].reversed[tProp] = true;
   }, true);
 
-  !__flags.isChrome && Slim.customDirective(function (attr) {
+  __flags.isIE11 && Slim.customDirective(function (attr) {
     return (/^s:repeat$/.test(attr.nodeName)
     );
   }, function (source, templateNode, attribute) {

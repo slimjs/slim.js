@@ -10,12 +10,16 @@ module.exports = {
     },
 
     find: function(browser) {
+        // this workaround is needed since chrome driver for chrome 65+ has selenium issue
+        const setValueWorkaround = function(selector, value) {
+            document.querySelector(selector).value = value;
+        };
         browser.waitForElementPresent('body');
         browser.waitForElementPresent('test-find');
         browser.useCss().waitForElementPresent('test-find::shadow #output');
-        browser.setValue('test-find::shadow #inp', 'after');
+        browser.execute(setValueWorkaround, ['test-find::shadow #inp', 'after']);
         browser.click('test-find::shadow #btn');
+        browser.waitForElementPresent('test-find::shadow #output');
         browser.assert.containsText('test-find::shadow #output', 'after');
-
     }
 };

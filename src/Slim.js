@@ -6,12 +6,14 @@
     'content' in document.createElement('template'),
     isIE11: !!window['MSInputMethodContext'] && !!document['documentMode'],
     isChrome: undefined,
-    isEdge: undefined
+    isEdge: undefined,
+    isSafari: undefined
   }
 
   try {
     __flags.isChrome = /Chrome/.test(navigator.userAgent)
     __flags.isEdge = /Edge/.test(navigator.userAgent)
+    __flags.isSafari = /Safari/.test(navigator.userAgent)
 
     if (__flags.isIE11 || __flags.isEdge) {
       __flags.isChrome = false
@@ -290,12 +292,17 @@
 
     constructor () {
       super()
-      this.__isSlim = true
-      Slim.debug('ctor', this.localName)
-      if (Slim.checkCreationBlocking(this)) {
-        return
+      const init = () => {
+        this.__isSlim = true
+        Slim.debug('ctor', this.localName)
+        if (Slim.checkCreationBlocking(this)) {
+          return
+        }
+        this.createdCallback()
       }
-      this.createdCallback()
+      if (__flags.isSafari) {
+        Slim.asap(init);
+      } else init();
     }
 
     // Native DOM Api V1
@@ -702,7 +709,7 @@
     }
   })
 
-  __flags.isChrome && Slim.customDirective(attr => attr.nodeName === 's:repeat', (source, templateNode, attribute) => {
+  !__flags.isIE11 && Slim.customDirective(attr => attr.nodeName === 's:repeat', (source, templateNode, attribute) => {
     let path = attribute.value
     let tProp = 'data'
     if (path.indexOf(' as' )) {
@@ -802,7 +809,7 @@
     source[_$].reversed[tProp] = true
   }, true)
 
-  !__flags.isChrome && Slim.customDirective(attr => /^s:repeat$/.test(attr.nodeName), (source, templateNode, attribute) => {
+  __flags.isIE11 && Slim.customDirective(attr => /^s:repeat$/.test(attr.nodeName), (source, templateNode, attribute) => {
     let path = attribute.nodeValue
     let tProp = 'data'
     if (path.indexOf(' as' )) {

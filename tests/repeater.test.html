@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="../src/Slim.js"></script>
+    <script src="../Slim.js"></script>
 </head>
 <body>
 <repeater-test>
@@ -11,7 +11,7 @@
 
 <script>
   Slim.debug = console.log;
-  Slim.tag('repeater-child', '<span bind:prop="item.label" bind>{{item.text}}</span>', class extends Slim {});
+  Slim.tag('repeater-child', '<span bind:prop="item.label" bind>{{item.text}}</span>', Slim);
   Slim.tag('n-r', `
             <div bind:title="item.title" bind>{{item.title}}</div>
             <ul>
@@ -23,10 +23,14 @@
     })
   Slim.tag(`repeater-test`,
     `
+        <select change="handleChange">
+            <option s:repeat="items as item" bind bind:value="item.text">{{title}} > {{item.label}}</option>
+        </select>
+        <h2 bind>{{dataValue}}</h2>
         <ul>
             <li s:repeat="items" bind:iteration="getIndex(data)" bind>{{title}} > {{data.label}} >> {{reverse(data.label)}}</li>
         </ul>
-        <repeater-child s:repeat="items as item"></repeater-child>
+        <repeater-child s:repeat="items as item" bind:item-id="data-index"></repeater-child>
         <n-r s:repeat="nested as item"></n-r>
         `,
 
@@ -36,6 +40,10 @@
         window.unit = this;
       }
 
+      handleChange (e) {
+        this.dataValue = e.target.value;
+      }
+
       onBeforeCreated() {
         this.title = 'Hello'
         this.items = [
@@ -43,6 +51,7 @@
           { label: "item 1", text: "text 1" },
           { label: "item 2", text: "text 2" }
         ];
+        this.dataValue = this.items[0].text;
         this.nested = [
           { title: '1', children: [
             { title: '1.1', children: [] },
@@ -63,7 +72,7 @@
       }
 
       reverse(value) {
-        return value.split('').reverse().join('')
+        return value ? value.split('').reverse().join('') : '';
       }
 
       addOne() {
