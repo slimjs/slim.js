@@ -943,7 +943,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }
   });
 
-  !__flags.isIE11 && Slim.customDirective(function (attr) {
+  if (__flags.isChrome || __flags.isSafari) Slim.customDirective(function (attr) {
     return attr.nodeName === 's:repeat';
   }, function (source, templateNode, attribute) {
     var path = attribute.value;
@@ -1046,9 +1046,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       hook.parentElement.insertBefore(frag, hook);
     });
     source[_$2].reversed[tProp] = true;
-  }, true);
-
-  __flags.isIE11 && Slim.customDirective(function (attr) {
+  }, true);else Slim.customDirective(function (attr) {
     return (/^s:repeat$/.test(attr.nodeName)
     );
   }, function (source, templateNode, attribute) {

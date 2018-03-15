@@ -709,7 +709,7 @@
     }
   })
 
-  !__flags.isIE11 && Slim.customDirective(attr => attr.nodeName === 's:repeat', (source, templateNode, attribute) => {
+  if (__flags.isChrome || __flags.isSafari) Slim.customDirective(attr => attr.nodeName === 's:repeat', (source, templateNode, attribute) => {
     let path = attribute.value
     let tProp = 'data'
     if (path.indexOf(' as' )) {
@@ -809,7 +809,7 @@
     source[_$].reversed[tProp] = true
   }, true)
 
-  __flags.isIE11 && Slim.customDirective(attr => /^s:repeat$/.test(attr.nodeName), (source, templateNode, attribute) => {
+  else Slim.customDirective(attr => /^s:repeat$/.test(attr.nodeName), (source, templateNode, attribute) => {
     let path = attribute.nodeValue
     let tProp = 'data'
     if (path.indexOf(' as' )) {
