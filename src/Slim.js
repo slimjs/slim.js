@@ -96,7 +96,11 @@
       }
       this.tagToClassDict.set(tagName, clazz)
       this.classToTagDict.set(clazz, tagName)
-      customElements.define(tagName, clazz)
+      if(customElements.get(tagName)){
+        throw new Error(`Tag name: ${tagName} is already defined!, maybe Slim.js was included multiple times`)
+      }else{
+        customElements.define(tagName, clazz)
+      }
     }
 
     static tagOf (clazz) {
