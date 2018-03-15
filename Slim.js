@@ -31,13 +31,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     isIE11: !!window['MSInputMethodContext'] && !!document['documentMode'],
     isChrome: undefined,
     isEdge: undefined,
-    isSafari: undefined
+    isSafari: undefined,
+    isFirefox: undefined
   };
 
   try {
     __flags.isChrome = /Chrome/.test(navigator.userAgent);
     __flags.isEdge = /Edge/.test(navigator.userAgent);
     __flags.isSafari = /Safari/.test(navigator.userAgent);
+    __flags.isFirefox = /Firefox/.test(navigator.userAgent);
 
     if (__flags.isIE11 || __flags.isEdge) {
       __flags.isChrome = false;
@@ -905,6 +907,28 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     Slim._$(target).boundParent[attribute.value] = target;
   });
 
+  var wrappedRepeaterExecution = function wrappedRepeaterExecution(source, templateNode, attribute) {
+    var path = attribute.nodeValue;
+    var tProp = 'data';
+    if (path.indexOf(' as')) {
+      tProp = path.split(' as ')[1] || tProp;
+      path = path.split(' as ')[0];
+    }
+
+    var repeater = document.createElement('slim-repeat');
+    repeater[_$2].boundParent = source;
+    repeater.dataProp = tProp;
+    repeater.dataPath = attribute.nodeValue;
+    repeater.templateNode = templateNode.cloneNode(true);
+    repeater.templateNode.removeAttribute('s:repeat');
+    templateNode.parentNode.insertBefore(repeater, templateNode);
+    Slim.removeChild(templateNode);
+    Slim.bind(source, repeater, path, function () {
+      var dataSource = Slim.lookup(source, path);
+      repeater.dataSource = dataSource || [];
+    });
+  };
+
   // bind:property
   Slim.customDirective(function (attr) {
     return (/^(bind):(\S+)/.exec(attr.nodeName)
@@ -943,9 +967,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }
   });
 
-  if (__flags.isChrome || __flags.isSafari) Slim.customDirective(function (attr) {
+  if (__flags.isChrome || __flags.isSafari || __flags.isFirefox) Slim.customDirective(function (attr) {
     return attr.nodeName === 's:repeat';
   }, function (source, templateNode, attribute) {
+    if (__flags.isFirefox) {
+      if (['option', 'td', 'tr', 'th'].indexOf(templateNode.localName) < 0) {
+        return wrappedRepeaterExecution(source, templateNode, attribute);
+      }
+    }
     var path = attribute.value;
     var tProp = 'data';
     if (path.indexOf(' as')) {
@@ -1050,25 +1079,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     return (/^s:repeat$/.test(attr.nodeName)
     );
   }, function (source, templateNode, attribute) {
-    var path = attribute.nodeValue;
-    var tProp = 'data';
-    if (path.indexOf(' as')) {
-      tProp = path.split(' as ')[1] || tProp;
-      path = path.split(' as ')[0];
-    }
-
-    var repeater = document.createElement('slim-repeat');
-    repeater[_$2].boundParent = source;
-    repeater.dataProp = tProp;
-    repeater.dataPath = attribute.nodeValue;
-    repeater.templateNode = templateNode.cloneNode(true);
-    repeater.templateNode.removeAttribute('s:repeat');
-    templateNode.parentNode.insertBefore(repeater, templateNode);
-    Slim.removeChild(templateNode);
-    Slim.bind(source, repeater, path, function () {
-      var dataSource = Slim.lookup(source, path);
-      repeater.dataSource = dataSource || [];
-    });
+    wrappedRepeaterExecution(source, templateNode, attribute);
 
     // source._executeBindings()
   }, true);

@@ -7,13 +7,15 @@
     isIE11: !!window['MSInputMethodContext'] && !!document['documentMode'],
     isChrome: undefined,
     isEdge: undefined,
-    isSafari: undefined
+    isSafari: undefined,
+    isFirefox: undefined
   }
 
   try {
     __flags.isChrome = /Chrome/.test(navigator.userAgent)
     __flags.isEdge = /Edge/.test(navigator.userAgent)
     __flags.isSafari = /Safari/.test(navigator.userAgent)
+    __flags.isFirefox = /Firefox/.test(navigator.userAgent)
 
     if (__flags.isIE11 || __flags.isEdge) {
       __flags.isChrome = false
@@ -676,6 +678,29 @@
     Slim._$(target).boundParent[attribute.value] = target
   })
 
+
+  const wrappedRepeaterExecution = (source, templateNode, attribute) => {
+    let path = attribute.nodeValue
+    let tProp = 'data'
+    if (path.indexOf(' as' )) {
+      tProp = path.split(' as ')[1] || tProp
+      path = path.split(' as ')[0]
+    }
+
+    const repeater = document.createElement('slim-repeat')
+    repeater[_$].boundParent = source
+    repeater.dataProp = tProp
+    repeater.dataPath = attribute.nodeValue
+    repeater.templateNode = templateNode.cloneNode(true)
+    repeater.templateNode.removeAttribute('s:repeat')
+    templateNode.parentNode.insertBefore(repeater, templateNode)
+    Slim.removeChild(templateNode)
+    Slim.bind(source, repeater, path, () => {
+      const dataSource = Slim.lookup(source, path)
+      repeater.dataSource = dataSource || []
+    })
+  }
+
   // bind:property
   Slim.customDirective(attr => /^(bind):(\S+)/.exec(attr.nodeName), (source, target, attribute, match) => {
     const tAttr = match[2]
@@ -709,7 +734,12 @@
     }
   })
 
-  if (__flags.isChrome || __flags.isSafari) Slim.customDirective(attr => attr.nodeName === 's:repeat', (source, templateNode, attribute) => {
+  if (__flags.isChrome || __flags.isSafari || __flags.isFirefox) Slim.customDirective(attr => attr.nodeName === 's:repeat', (source, templateNode, attribute) => {
+    if (__flags.isFirefox) {
+      if (['option', 'td', 'tr', 'th'].indexOf(templateNode.localName) < 0) {
+        return wrappedRepeaterExecution(source, templateNode, attribute);
+      }
+    }
     let path = attribute.value
     let tProp = 'data'
     if (path.indexOf(' as' )) {
@@ -810,25 +840,7 @@
   }, true)
 
   else Slim.customDirective(attr => /^s:repeat$/.test(attr.nodeName), (source, templateNode, attribute) => {
-    let path = attribute.nodeValue
-    let tProp = 'data'
-    if (path.indexOf(' as' )) {
-      tProp = path.split(' as ')[1] || tProp
-      path = path.split(' as ')[0]
-    }
-
-    const repeater = document.createElement('slim-repeat')
-    repeater[_$].boundParent = source
-    repeater.dataProp = tProp
-    repeater.dataPath = attribute.nodeValue
-    repeater.templateNode = templateNode.cloneNode(true)
-    repeater.templateNode.removeAttribute('s:repeat')
-    templateNode.parentNode.insertBefore(repeater, templateNode)
-    Slim.removeChild(templateNode)
-    Slim.bind(source, repeater, path, () => {
-      const dataSource = Slim.lookup(source, path)
-      repeater.dataSource = dataSource || []
-    })
+    wrappedRepeaterExecution(source, templateNode, attribute)
 
     // source._executeBindings()
   }, true)
