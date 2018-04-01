@@ -862,6 +862,7 @@
         child.setAttribute('s:iterate', `${this.dataPath} : ${index}`)
         Slim.selectRecursive(child).forEach(e => {
           Slim._$(e).repeater[this.dataProp] = this.dataSource[index]
+          e[this.dataProp] = this.dataSource[index]
           if (e instanceof Slim) {
             e[this.dataProp] = this.dataSource[index]
           }

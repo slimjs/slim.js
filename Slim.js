@@ -1106,6 +1106,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           child.setAttribute('s:iterate', _this6.dataPath + ' : ' + index);
           Slim.selectRecursive(child).forEach(function (e) {
             Slim._$(e).repeater[_this6.dataProp] = _this6.dataSource[index];
+            e[_this6.dataProp] = _this6.dataSource[index];
             if (e instanceof Slim) {
               e[_this6.dataProp] = _this6.dataSource[index];
             }
