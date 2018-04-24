@@ -19,13 +19,24 @@ module.exports = {
         }
     },
 
-    attribute: function(target, key, descriptor) {
-        target.constructor.observedAttributes = target.constructor.observedAttributes || [];
-        const attr = window.Slim.camelToDash(key);
-        target.constructor.observedAttributes.push(attr);
-        Slim._$(target.constructor).autoBoundAttributes.push(key);
-        descriptor.configurable = true;
-        descriptor.writable = true;
-        return descriptor;
-    }
+    /**
+     * @experimental
+     * Works only with native browser support, as polyfills breaks the prototype chain
+     */
+    // attribute: function(target, key, descriptor) {
+    //     const clazz = target.constructor
+    //     const observedAttributes = target.constructor.observedAttributes || []
+    //     const attr = window.Slim.camelToDash(key);
+    //     observedAttributes.push(attr);
+    //     Slim._$(target).autoBoundAttributes.push(attr);
+    //     Object.defineProperty(clazz, 'observedAttributes', {
+    //         get: () => {
+    //             return [...observedAttributes, ...Slim._$(target).autoBoundAttributes]
+    //         }
+    //     })
+    //     Slim.wrapGetterSetter(target, key)
+    //     descriptor.configurable = true
+    //     descriptor.writable = true
+    //     return descriptor;
+    // }
 };

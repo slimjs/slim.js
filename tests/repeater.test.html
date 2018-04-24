@@ -43,6 +43,11 @@
 
       handleChange (e) {
         this.dataValue = e.target.value;
+        this.nested = [
+          ...this.nested, {
+            title: 'Change detection ' + this.dataValue
+          }
+        ]
       }
 
       onBeforeCreated() {

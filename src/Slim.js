@@ -155,13 +155,7 @@
     static unbind (source, target) {
       const bindings = source[_$].bindings
       Object.keys(bindings).forEach(key => {
-        const chain = bindings[key].chain.filter(binding => {
-          if (binding.target === target) {
-            binding.destroy()
-            return false
-          }
-          return true
-        })
+        const chain = bindings[key].chain.filter(binding => binding.target !== target)
         bindings[key].chain = chain
       })
     }
@@ -332,12 +326,11 @@
     }
 
     attributeChangedCallback(attr, oldValue, newValue) {
-      if (newValue !== oldValue && this[_$].autoBoundAttributes[attr]) {
+      if (newValue !== oldValue && this.autoBoundAttributes.includes[attr]) {
         const prop = Slim.dashToCamel(attr)
         this[prop] = newValue
       }
     }
-
     // Slim internal API
 
     get _isInContext () {
@@ -459,6 +452,10 @@
     }
 
     // Slim public / protected API
+
+    get autoBoundAttributes () {
+      return []
+    }
 
     commit (...args) {
       Slim.commit(this, ...args)
@@ -628,7 +625,7 @@
   // bind (text nodes)
   Slim.customDirective(attr => attr.nodeName === 'bind', (source, target) => {
     Slim._$(target)
-    target[_$].sourceText = target.innerText
+    target[_$].sourceText = target.innerText.split('\n').join(' ')
     let updatedText = ''
     const matches = target.innerText.match(/\{\{([^\}\}]+)+\}\}/g)
     const aggProps = {}

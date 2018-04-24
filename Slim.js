@@ -230,11 +230,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         var bindings = source[_$2].bindings;
         Object.keys(bindings).forEach(function (key) {
           var chain = bindings[key].chain.filter(function (binding) {
-            if (binding.target === target) {
-              binding.destroy();
-              return false;
-            }
-            return true;
+            return binding.target !== target;
           });
           bindings[key].chain = chain;
         });
@@ -452,12 +448,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'attributeChangedCallback',
       value: function attributeChangedCallback(attr, oldValue, newValue) {
-        if (newValue !== oldValue && this[_$2].autoBoundAttributes[attr]) {
+        if (newValue !== oldValue && this.autoBoundAttributes.includes[attr]) {
           var prop = Slim.dashToCamel(attr);
           this[prop] = newValue;
         }
       }
-
       // Slim internal API
 
     }, {
@@ -698,6 +693,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return false;
       }
     }, {
+      key: 'autoBoundAttributes',
+      get: function get() {
+        return [];
+      }
+    }, {
       key: 'useShadow',
       get: function get() {
         return false;
@@ -849,7 +849,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     return attr.nodeName === 'bind';
   }, function (source, target) {
     Slim._$(target);
-    target[_$2].sourceText = target.innerText;
+    target[_$2].sourceText = target.innerText.split('\n').join(' ');
     var updatedText = '';
     var matches = target.innerText.match(/\{\{([^\}\}]+)+\}\}/g);
     var aggProps = {};
