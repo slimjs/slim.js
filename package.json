@@ -36,6 +36,11 @@
       "transform-class-properties"
     ]
   },
+  "standard": {
+    "globals": [
+      "document", "window", "Document", "Event", "customElements", "HTMLElement", "Node"
+    ]
+  },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
