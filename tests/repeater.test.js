@@ -35,6 +35,7 @@ module.exports = {
             window.unit.addOne();
             window.unit.items = window.unit.items.concat()
         `);
+        browser.waitForElementPresent('li[iteration="3"]');
         browser.assert.containsText('li[iteration="3"]', "item 3");
         browser.assert.containsText('repeater-child span[prop="item 3"]', "text 3");
         browser.execute(`
