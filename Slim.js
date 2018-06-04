@@ -62,7 +62,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     this.boundParent = null;
     this.repeater = {};
     this.bindings = {};
-    this.reversed = {};
     this.inbounds = {};
     this.eventHandlers = {};
     this.rootElement = null;
@@ -316,7 +315,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         executor.source = source;
         executor.target = target;
         var pName = this.wrapGetterSetter(source, expression);
-        if (!source[_$2].reversed[pName]) {
+        if (!target[_$2].repeater[pName]) {
           source[_$2].bindings[pName].chain.add(target);
         }
         target[_$2].inbounds[pName] = target[_$2].inbounds[pName] || new Set();
@@ -466,6 +465,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
       var _this = _possibleConstructorReturn(this, (Slim.__proto__ || Object.getPrototypeOf(Slim)).call(this));
 
+      Slim._$(_this);
       _this.__isSlim = true;
       var init = function init() {
         Slim.debug('ctor', _this.localName);
@@ -522,7 +522,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       key: '_executeBindings',
       value: function _executeBindings(prop) {
         Slim.debug('_executeBindings', this.localName, this);
-        this.commit(prop);
+        Slim.commit(this, prop);
       }
     }, {
       key: '_bindChildren',
@@ -641,7 +641,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           _this2.onRender();
           Slim.executePlugins('afterRender', _this2);
         };
-        if (false && this.useShadow) {
+        if (this.useShadow) {
           doRender();
         } else {
           Slim.asap(doRender);
@@ -653,7 +653,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         var _this3 = this;
 
         Slim.debug('_initialize', this.localName);
-        Slim._$(this);
         if (this.useShadow) {
           if (typeof HTMLElement.prototype.attachShadow === 'undefined') {
             this[_$2].rootElement = this.createShadowRoot();
@@ -944,28 +943,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     Slim._$(target).boundParent[attribute.value] = target;
   });
 
-  var wrappedRepeaterExecution = function wrappedRepeaterExecution(source, templateNode, attribute) {
-    var path = attribute.nodeValue;
-    var tProp = 'data';
-    if (path.indexOf(' as')) {
-      tProp = path.split(' as ')[1] || tProp;
-      path = path.split(' as ')[0];
-    }
-
-    var repeater = document.createElement('slim-repeat');
-    repeater[_$2].boundParent = source;
-    repeater.dataProp = tProp;
-    repeater.dataPath = attribute.nodeValue;
-    repeater.templateNode.removeAttribute('s:repeat');
-    repeater.templateNode = templateNode.cloneNode(true);
-    templateNode.parentNode.insertBefore(repeater, templateNode);
-    Slim.removeChild(templateNode);
-    Slim.bind(source, repeater, path, function () {
-      var dataSource = Slim.lookup(source, path);
-      repeater.dataSource = dataSource || [];
-    });
-  };
-
   // bind:property
   Slim.customDirective(function (attr) {
     return (/^(bind):(\S+)/.exec(attr.nodeName)
@@ -1023,132 +1000,107 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
     // create mount point and repeat template
     var mountPoint = document.createComment(repeaterNode.localName + ' s:repeat="' + attribute.value + '"');
-    repeaterNode.parentElement.insertBefore(mountPoint, repeaterNode);
+    var parent = repeaterNode.parentElement || Slim.root(source);
+    parent.insertBefore(mountPoint, repeaterNode);
     repeaterNode.removeAttribute('s:repeat');
-    var clonesTemplate = document.createElement('template');
-    clonesTemplate.innerHTML = repeaterNode.outerHTML;
+    var clonesTemplate = repeaterNode.outerHTML;
     repeaterNode.remove();
 
     // prepare for bind
     var oldDataSource = [];
+
+    var replicate = function replicate(n, text) {
+      var temp = text;
+      var result = '';
+      if (n < 1) return result;
+      while (n > 1) {
+        if (n & 1) result += temp;
+        n >>= 1;
+        temp += temp;
+      }
+      return result + temp;
+    };
+
     // bind changes
     Slim.bind(source, mountPoint, path, function () {
       // execute bindings here
       var dataSource = Slim.lookup(source, path) || [];
       // read the diff -> list of CHANGED indicies
-      var indicies = dataSource.reduce(function (diff, dataItem, index) {
-        if (oldDataSource[index] !== dataItem) diff.add(index);
-        return diff;
-      }, new Set());
+
+      var fragment = void 0;
 
       var tree = [];
 
       // when data source shrinks, dispose extra clones
       if (dataSource.length < clones.length) {
         var disposables = clones.slice(dataSource.length);
-        var _iteratorNormalCompletion8 = true;
-        var _didIteratorError8 = false;
-        var _iteratorError8 = undefined;
-
-        try {
-          for (var _iterator8 = disposables[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-            var disposable = _step8.value;
-
-            Slim.unbind(source, disposable);
-            disposable.remove();
+        disposables.forEach(function (node) {
+          Slim.unbind(source, node);
+          if (node[_$2].subTree) {
+            node[_$2].subTree.forEach(function (subNode) {
+              return Slim.unbind(source, subNode);
+            });
           }
-        } catch (err) {
-          _didIteratorError8 = true;
-          _iteratorError8 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion8 && _iterator8.return) {
-              _iterator8.return();
-            }
-          } finally {
-            if (_didIteratorError8) {
-              throw _iteratorError8;
-            }
-          }
-        }
-
+          node.remove();
+        });
         clones.length = dataSource.length;
       }
 
       // build new clones if needed
       if (dataSource.length > clones.length) {
-        var fragment = document.createDocumentFragment();
+        var offset = clones.length;
+        var diff = dataSource.length - clones.length;
+        var html = replicate(diff, clonesTemplate); //  Array(diff).fill(clonesTemplate.innerHTML).join('');
+        var range = document.createRange();
+        range.setStartBefore(mountPoint);
+        fragment = range.createContextualFragment(html);
         // build clone by index
-        for (var i = clones.length; i < dataSource.length; i++) {
-          var clone = clonesTemplate.content.cloneNode(true).firstChild;
-          Slim._$(clone).repeater[tProp] = dataSource[i];
-          clones.push(clone);
-          fragment.appendChild(clone);
-        }
-        tree = Slim.qSelectAll(fragment, '*');
-        source._bindChildren(tree);
-        mountPoint.parentElement.insertBefore(fragment, mountPoint);
-      }
 
-      // update only what was changed
-      var _iteratorNormalCompletion9 = true;
-      var _didIteratorError9 = false;
-      var _iteratorError9 = undefined;
-
-      try {
-        for (var _iterator9 = indicies[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-          var index = _step9.value;
-
-          Slim.commit(clones[index], tProp);
-        }
-      } catch (err) {
-        _didIteratorError9 = true;
-        _iteratorError9 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion9 && _iterator9.return) {
-            _iterator9.return();
-          }
-        } finally {
-          if (_didIteratorError9) {
-            throw _iteratorError9;
-          }
-        }
-      }
-
-      var _loop = function _loop(node) {
-        if (node.__isSlim) {
-          node.createdCallback();
-          Slim.asap(function () {
-            Slim.commit(node, tProp);
-            node[tProp] = node[_$2].repeater[tProp];
+        var _loop = function _loop(i) {
+          var dataIndex = i + offset;
+          var dataItem = dataSource[dataIndex];
+          var clone = fragment.children[i];
+          Slim._$(clone).repeater[tProp] = dataItem;
+          var subTree = Slim.qSelectAll(clone, '*');
+          subTree.forEach(function (node) {
+            Slim._$(node).repeater[tProp] = dataItem;
           });
+          clone[_$2].subTree = subTree;
+          clones.push(clone);
+        };
+
+        for (var i = 0; i < diff; i++) {
+          _loop(i);
         }
+        var fragmentTree = Slim.qSelectAll(fragment, '*');
+        source._bindChildren(fragmentTree);
+      }
+
+      var init = function init(target, value) {
+        target[tProp] = value;
+        Slim.commit(target, tProp);
       };
 
-      var _iteratorNormalCompletion10 = true;
-      var _didIteratorError10 = false;
-      var _iteratorError10 = undefined;
-
-      try {
-        for (var _iterator10 = tree[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-          var node = _step10.value;
-
-          _loop(node);
+      dataSource.forEach(function (dataItem, i) {
+        if (oldDataSource[i] !== dataItem) {
+          var rootNode = clones[i];[rootNode].concat(_toConsumableArray(rootNode[_$2].subTree || Slim.qSelectAll(rootNode, '*'))).forEach(function (node) {
+            node[_$2].repeater[tProp] = dataItem;
+            if (node.__isSlim) {
+              node.createdCallback();
+              Slim.asap(function () {
+                return init(node, dataItem);
+              });
+            } else {
+              init(node, dataItem);
+            }
+          });
         }
-      } catch (err) {
-        _didIteratorError10 = true;
-        _iteratorError10 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion10 && _iterator10.return) {
-            _iterator10.return();
-          }
-        } finally {
-          if (_didIteratorError10) {
-            throw _iteratorError10;
-          }
-        }
+      });
+      oldDataSource = dataSource.concat();
+      if (fragment) {
+        Slim.asap(function () {
+          parent.insertBefore(fragment, mountPoint);
+        });
       }
     });
   }, true);

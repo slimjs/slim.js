@@ -43,7 +43,6 @@
       this.boundParent = null
       this.repeater = {}
       this.bindings = {}
-      this.reversed = {}
       this.inbounds = {}
       this.eventHandlers = {}
       this.rootElement = null
@@ -259,7 +258,7 @@
       executor.source = source
       executor.target = target
       const pName = this.wrapGetterSetter(source, expression)
-      if (!source[_$].reversed[pName]) {
+      if (!target[_$].repeater[pName]) {
         source[_$].bindings[pName].chain.add(target)
       }
       target[_$].inbounds[pName] = target[_$].inbounds[pName] || new Set()
@@ -302,6 +301,7 @@
 
     constructor() {
       super()
+      Slim._$(this)
       this.__isSlim = true
       const init = () => {
         Slim.debug('ctor', this.localName)
@@ -349,7 +349,7 @@
 
     _executeBindings(prop) {
       Slim.debug('_executeBindings', this.localName, this)
-      this.commit(prop);
+      Slim.commit(this, prop)
     }
 
     _bindChildren(children) {
@@ -416,7 +416,7 @@
         this.onRender();
         Slim.executePlugins('afterRender', this)
       }
-      if (false && this.useShadow) {
+      if (this.useShadow) {
         doRender();
       } else {
         Slim.asap(doRender);
@@ -425,7 +425,6 @@
 
     _initialize() {
       Slim.debug('_initialize', this.localName)
-      Slim._$(this)
       if (this.useShadow) {
         if (typeof HTMLElement.prototype.attachShadow === 'undefined') {
           this[_$].rootElement = this.createShadowRoot()
@@ -722,28 +721,6 @@
     }
   )
 
-  const wrappedRepeaterExecution = (source, templateNode, attribute) => {
-    let path = attribute.nodeValue
-    let tProp = 'data'
-    if (path.indexOf(' as')) {
-      tProp = path.split(' as ')[1] || tProp
-      path = path.split(' as ')[0]
-    }
-
-    const repeater = document.createElement('slim-repeat')
-    repeater[_$].boundParent = source
-    repeater.dataProp = tProp
-    repeater.dataPath = attribute.nodeValue
-    repeater.templateNode.removeAttribute('s:repeat')
-    repeater.templateNode = templateNode.cloneNode(true)
-    templateNode.parentNode.insertBefore(repeater, templateNode)
-    Slim.removeChild(templateNode)
-    Slim.bind(source, repeater, path, () => {
-      const dataSource = Slim.lookup(source, path)
-      repeater.dataSource = dataSource || []
-    })
-  }
-
   // bind:property
   Slim.customDirective(
     attr => /^(bind):(\S+)/.exec(attr.nodeName),
@@ -797,66 +774,100 @@
 
       // create mount point and repeat template
       const mountPoint = document.createComment(`${repeaterNode.localName} s:repeat="${attribute.value}"`)
-      repeaterNode.parentElement.insertBefore(mountPoint, repeaterNode);
+      const parent = repeaterNode.parentElement || Slim.root(source)
+      parent.insertBefore(mountPoint, repeaterNode);
       repeaterNode.removeAttribute('s:repeat')
-      const clonesTemplate = document.createElement('template')
-      clonesTemplate.innerHTML = repeaterNode.outerHTML
+      const clonesTemplate = repeaterNode.outerHTML
       repeaterNode.remove()
 
       // prepare for bind
       let oldDataSource = []
+
+      const replicate = (n, text) => {
+        let temp = text
+        let result = ''
+        if (n < 1) return result;
+        while (n > 1) {
+          if (n & 1) result += temp;
+          n >>= 1;
+          temp += temp;
+        }
+        return result + temp;
+      };
+
       // bind changes
       Slim.bind(source, mountPoint, path, () => {
         // execute bindings here
         const dataSource = Slim.lookup(source, path) || [];
         // read the diff -> list of CHANGED indicies
-        const indicies = dataSource.reduce((diff, dataItem, index) => {
-          if (oldDataSource[index] !== dataItem) diff.add(index)
-          return diff
-        }, new Set())
+
+        let fragment
 
         let tree = []
 
         // when data source shrinks, dispose extra clones
         if (dataSource.length < clones.length) {
           const disposables = clones.slice(dataSource.length)
-          for (const disposable of disposables) {
-            Slim.unbind(source,  disposable)
-            disposable.remove()
-          }
+          disposables.forEach(node => {
+            Slim.unbind(source, node)
+            if (node[_$].subTree) {
+              node[_$].subTree.forEach(subNode => Slim.unbind(source, subNode))
+            }
+            node.remove()
+          })
           clones.length = dataSource.length
         }
 
         // build new clones if needed
         if (dataSource.length > clones.length) {
-          const fragment = document.createDocumentFragment();
+          const offset = clones.length;
+          const diff = dataSource.length - clones.length
+          const html = replicate(diff, clonesTemplate) //  Array(diff).fill(clonesTemplate.innerHTML).join('');
+          const range = document.createRange();
+          range.setStartBefore(mountPoint);
+          fragment = range.createContextualFragment(html)
           // build clone by index
-          for (let i = clones.length; i < dataSource.length; i++) {
-            const clone = clonesTemplate.content.cloneNode(true).firstChild
-            Slim._$(clone).repeater[tProp] = dataSource[i]
+          for (let i = 0; i < diff; i++) {
+            const dataIndex = i + offset;
+            const dataItem = dataSource[dataIndex];
+            const clone = fragment.children[i]
+            Slim._$(clone).repeater[tProp] = dataItem;
+            const subTree = Slim.qSelectAll(clone, '*')
+            subTree.forEach(function (node) {
+              Slim._$(node).repeater[tProp] = dataItem
+            })
+            clone[_$].subTree = subTree
             clones.push(clone)
-            fragment.appendChild(clone)
           }
-          tree = Slim.qSelectAll(fragment, '*');
-          source._bindChildren(tree);
-          mountPoint.parentElement.insertBefore(fragment, mountPoint)
+          const fragmentTree = Slim.qSelectAll(fragment, '*')
+          source._bindChildren(fragmentTree);
         }
 
-        // update only what was changed
-        for (const index of indicies) {
-          Slim.commit(clones[index], tProp)
+        const init = (target, value) => {
+          target[tProp] = value
+          Slim.commit(target, tProp)
         }
 
-        for (const node of tree) {
-          if (node.__isSlim) {
-            node.createdCallback();
-            Slim.asap(() => {
-              Slim.commit(node, tProp)
-              node[tProp] = node[_$].repeater[tProp]
+        dataSource.forEach(function(dataItem, i) {
+          if (oldDataSource[i] !== dataItem) {
+            const rootNode = clones[i]
+            ;[rootNode, ...(rootNode[_$].subTree || Slim.qSelectAll(rootNode, '*'))].forEach(node => {
+              node[_$].repeater[tProp] = dataItem
+              if (node.__isSlim) {
+                node.createdCallback()
+                Slim.asap(() => init(node, dataItem))
+              } else {
+                init(node, dataItem)
+              }
             })
           }
+        })
+        oldDataSource = dataSource.concat()
+        if (fragment) {
+          Slim.asap( () => {
+            parent.insertBefore(fragment, mountPoint)
+          })
         }
-
       })
     },
     true
