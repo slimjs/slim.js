@@ -1,12 +1,8 @@
 'use strict';
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -25,15 +21,13 @@ Object.setPrototypeOf(_CustomElement, HTMLElement);
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 ;(function (window, document, HTMLElement) {
-  var _$2 = '_slim_internals_'; // Symbol('Slim')
 
-  var __SLIM_ALREADY_DEFINED__ = false;
+  var _$2 = Symbol('@SlimInternals');
 
   try {
     var _Slim = window.Slim;
 
     if (!!_Slim && !!_Slim[_$2]) {
-      __SLIM_ALREADY_DEFINED__ = true;
       var warn = console.warn || console.log;
       return warn('Multiple instances of slim.js found! This may cause conflicts');
     }
@@ -65,14 +59,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
   var Internals = function Internals() {
     _classCallCheck(this, Internals);
 
-    this.hasCustomTemplate = undefined;
     this.boundParent = null;
     this.repeater = {};
     this.bindings = {};
-    this.reversed = {};
     this.inbounds = {};
     this.eventHandlers = {};
-    this.internetExploderClone = null;
     this.rootElement = null;
     this.createdCallbackInvoked = false;
     this.sourceText = null;
@@ -159,12 +150,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return this.tagToClassDict.get(tag);
       }
     }, {
-      key: 'createUniqueIndex',
-      value: function createUniqueIndex() {
-        this[_$2].uniqueCounter++;
-        return this[_$2].uniqueCounter.toString(16);
-      }
-    }, {
       key: 'plugin',
       value: function plugin(phase, _plugin) {
         if (!this.plugins[phase]) {
@@ -240,10 +225,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       value: function unbind(source, target) {
         var bindings = source[_$2].bindings;
         Object.keys(bindings).forEach(function (key) {
-          var chain = bindings[key].chain.filter(function (binding) {
-            return binding.target !== target;
-          });
-          bindings[key].chain = chain;
+          var chain = bindings[key].chain;
+          if (chain.has(target)) {
+            chain.delete(target);
+          }
         });
       }
     }, {
@@ -294,20 +279,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         var pName = expression.split('.')[0];
         var oSetter = element.__lookupSetter__(pName);
         if (oSetter && oSetter[_$2]) return pName;
-        if (typeof oSetter === 'undefined') {
-          oSetter = function oSetter() {};
-        }
-
         var srcValue = element[pName];
-        this._$(element).bindings[pName] = element[_$2].bindings[pName] || {
-          chain: [],
+
+        var _$3 = this._$(element),
+            bindings = _$3.bindings;
+
+        bindings[pName] = {
+          chain: new Set(),
           value: srcValue
         };
-        element[_$2].bindings[pName].value = srcValue;
+        bindings[pName].value = srcValue;
         var newSetter = function newSetter(v) {
-          oSetter.call(element, v);
-          this[_$2].bindings[pName].value = v;
-          this._executeBindings(pName);
+          oSetter && oSetter.call(element, v);
+          bindings[pName].value = v;
+          element._executeBindings(pName);
         };
         newSetter[_$2] = true;
         element.__defineGetter__(pName, function () {
@@ -330,70 +315,137 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         executor.source = source;
         executor.target = target;
         var pName = this.wrapGetterSetter(source, expression);
-        if (!source[_$2].reversed[pName]) {
-          source[_$2].bindings[pName].chain.push(executor);
+        if (!target[_$2].repeater[pName]) {
+          source[_$2].bindings[pName].chain.add(target);
         }
-        target[_$2].inbounds[pName] = target[_$2].inbounds[pName] || [];
-        target[_$2].inbounds[pName].push(executor);
+        target[_$2].inbounds[pName] = target[_$2].inbounds[pName] || new Set();
+        target[_$2].inbounds[pName].add(executor);
         return executor;
       }
     }, {
       key: 'update',
       value: function update(target) {
-        var children = Slim.selectRecursive(target);
-
         for (var _len = arguments.length, props = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
           props[_key - 1] = arguments[_key];
         }
 
         if (props.length === 0) {
-          return children.forEach(function (child) {
-            Slim.commit(child);
-          });
+          return Slim.commit(target);
         }
-        props.forEach(function (prop) {
-          children.forEach(function (child) {
-            Slim.commit(child, prop);
-          });
-        });
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = props[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var prop = _step2.value;
+
+            Slim.commit(target, prop);
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
       }
     }, {
       key: 'commit',
-      value: function commit(target, prop) {
-        var $ = target[_$2];
-        var chain = [];
-        if (prop) {
-          if ($.inbounds[prop]) {
-            chain = chain.concat($.inbounds[prop] || []);
-          }
-          if ($.bindings[prop]) {
-            chain = chain.concat($.bindings[prop].chain);
-          }
-        } else {
-          Object.keys(target[_$2].inbounds).forEach(function (prop) {
-            if ($.inbounds[prop]) {
-              chain = chain.concat($.inbounds[prop] || []);
+      value: function commit(target, propertyName) {
+        var $ = Slim._$(target);
+        var props = propertyName ? [propertyName] : Object.keys($.bindings);
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = props[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var prop = _step3.value;
+
+            var inbounds = $.inbounds[prop];
+            if (inbounds) {
+              var _iteratorNormalCompletion4 = true;
+              var _didIteratorError4 = false;
+              var _iteratorError4 = undefined;
+
+              try {
+                for (var _iterator4 = inbounds[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                  var fn = _step4.value;
+
+                  fn();
+                }
+              } catch (err) {
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                    _iterator4.return();
+                  }
+                } finally {
+                  if (_didIteratorError4) {
+                    throw _iteratorError4;
+                  }
+                }
+              }
             }
-            if ($.bindings[prop]) {
-              chain = chain.concat($.bindings[prop].chain);
+            var bindings = $.bindings[prop];
+            if (bindings) {
+              var nodes = bindings.chain;
+              var _iteratorNormalCompletion5 = true;
+              var _didIteratorError5 = false;
+              var _iteratorError5 = undefined;
+
+              try {
+                for (var _iterator5 = nodes[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                  var node = _step5.value;
+
+                  Slim.commit(node, prop);
+                }
+              } catch (err) {
+                _didIteratorError5 = true;
+                _iteratorError5 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                    _iterator5.return();
+                  }
+                } finally {
+                  if (_didIteratorError5) {
+                    throw _iteratorError5;
+                  }
+                }
+              }
             }
-          });
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+              _iterator3.return();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
         }
-        chain.forEach(function (x) {
-          return x();
-        });
       }
 
       /*
         Class instance
         */
 
-    }, {
-      key: 'rxInject',
-      get: function get() {
-        return (/\{(.+[^(\((.+)\))])\}/
-        ); // eslint-disable-line
-      }
     }, {
       key: 'rxProp',
       get: function get() {
@@ -413,8 +465,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
       var _this = _possibleConstructorReturn(this, (Slim.__proto__ || Object.getPrototypeOf(Slim)).call(this));
 
+      Slim._$(_this);
+      _this.__isSlim = true;
       var init = function init() {
-        _this.__isSlim = true;
         Slim.debug('ctor', _this.localName);
         if (Slim.checkCreationBlocking(_this)) {
           return;
@@ -468,19 +521,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: '_executeBindings',
       value: function _executeBindings(prop) {
-        var _this2 = this;
-
-        Slim.debug('_executeBindings', this.localName);
-        var all = this[_$2].bindings;
-        if (prop) {
-          all = _defineProperty({}, prop, true);
-        }
-        Object.keys(all).forEach(function (pName) {
-          var o = _this2[_$2].bindings[pName];
-          o && o.chain.forEach(function (binding) {
-            return binding();
-          });
-        });
+        Slim.debug('_executeBindings', this.localName, this);
+        Slim.commit(this, prop);
       }
     }, {
       key: '_bindChildren',
@@ -489,13 +531,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         if (!children) {
           children = Slim.qSelectAll(this, '*');
         }
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
+        var _iteratorNormalCompletion6 = true;
+        var _didIteratorError6 = false;
+        var _iteratorError6 = undefined;
 
         try {
-          for (var _iterator2 = children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var child = _step2.value;
+          for (var _iterator6 = children[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+            var child = _step6.value;
 
             Slim._$(child);
             if (child[_$2].boundParent === this) continue;
@@ -504,19 +546,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             // todo: child.localName === 'style' && this.useShadow -> processStyleNodeInShadowMode
 
             if (child.attributes.length) {
+              var attributes = Array.from(child.attributes);
               var i = 0;
               var n = child.attributes.length;
               while (i < n) {
                 var source = this;
-                var attribute = child.attributes.item(i);
+                var attribute = attributes[i];
                 if (!child[_$2].excluded) {
-                  var _iteratorNormalCompletion3 = true;
-                  var _didIteratorError3 = false;
-                  var _iteratorError3 = undefined;
+                  var _iteratorNormalCompletion7 = true;
+                  var _didIteratorError7 = false;
+                  var _iteratorError7 = undefined;
 
                   try {
-                    for (var _iterator3 = Slim[_$2].customDirectives[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                      var _ref3 = _step3.value;
+                    for (var _iterator7 = Slim[_$2].customDirectives[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                      var _ref3 = _step7.value;
 
                       var _ref4 = _slicedToArray(_ref3, 2);
 
@@ -529,16 +572,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                       }
                     }
                   } catch (err) {
-                    _didIteratorError3 = true;
-                    _iteratorError3 = err;
+                    _didIteratorError7 = true;
+                    _iteratorError7 = err;
                   } finally {
                     try {
-                      if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                        _iterator3.return();
+                      if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                        _iterator7.return();
                       }
                     } finally {
-                      if (_didIteratorError3) {
-                        throw _iteratorError3;
+                      if (_didIteratorError7) {
+                        throw _iteratorError7;
                       }
                     }
                   }
@@ -548,16 +591,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             }
           }
         } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
+          _didIteratorError6 = true;
+          _iteratorError6 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-              _iterator2.return();
+            if (!_iteratorNormalCompletion6 && _iterator6.return) {
+              _iterator6.return();
             }
           } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
+            if (_didIteratorError6) {
+              throw _iteratorError6;
             }
           }
         }
@@ -571,44 +614,45 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: '_render',
       value: function _render(customTemplate) {
-        var _this3 = this;
+        var _this2 = this;
 
         Slim.debug('_render', this.localName);
         Slim.executePlugins('beforeRender', this);
-        this[_$2].hasCustomTemplate = customTemplate;
-        this._resetBindings();
-        this[_$2].rootElement.innerHTML = '';[].concat(_toConsumableArray(this.childNodes)).forEach(function (childNode) {
+        this._resetBindings();[].concat(_toConsumableArray(this.children)).forEach(function (childNode) {
           if (childNode.localName === 'style') {
-            _this3[_$2].externalStyle = childNode;
-            childNode.remove();
+            _this2[_$2].externalStyle = document.importNode(childNode).cloneNode();
           }
         });
-        var template = this[_$2].hasCustomTemplate || this.template;
-        if (template && typeof template === 'string') {
-          var frag = document.createElement('slim-root-fragment');
-          frag.innerHTML = template || '';
-          var scopedChildren = Slim.qSelectAll(frag, '*');
-          if (this[_$2].externalStyle) {
-            this._bindChildren([this[_$2].externalStyle]);
-          }
-          this._bindChildren(scopedChildren);
-          Slim.asap(function () {
-            Slim.moveChildren(frag, _this3[_$2].rootElement || _this3);
-            _this3[_$2].externalStyle && _this3[_$2].rootElement.appendChild(_this3[_$2].externalStyle);
-            _this3._executeBindings();
-            _this3.onRender();
-            Slim.executePlugins('afterRender', _this3);
-          });
+        Slim.root(this).innerHTML = '';
+        var templateString = customTemplate || this.template;
+        var template = document.createElement('template');
+        template.innerHTML = templateString;
+        var frag = template.content.cloneNode(true);
+        var externalStyle = this[_$2].externalStyle;
+
+        if (externalStyle) {
+          frag.appendChild(this[_$2]);
+        }
+        var scopedChildren = Slim.qSelectAll(frag, '*');
+        var doRender = function doRender() {
+          (_this2[_$2].rootElement || _this2).appendChild(frag);
+          _this2._bindChildren(scopedChildren);
+          _this2._executeBindings();
+          _this2.onRender();
+          Slim.executePlugins('afterRender', _this2);
+        };
+        if (this.useShadow) {
+          doRender();
+        } else {
+          Slim.asap(doRender);
         }
       }
     }, {
       key: '_initialize',
       value: function _initialize() {
-        var _this4 = this;
+        var _this3 = this;
 
         Slim.debug('_initialize', this.localName);
-        Slim._$(this);
-        this[_$2].uniqueIndex = Slim.createUniqueIndex();
         if (this.useShadow) {
           if (typeof HTMLElement.prototype.attachShadow === 'undefined') {
             this[_$2].rootElement = this.createShadowRoot();
@@ -618,12 +662,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         } else {
           this[_$2].rootElement = this;
         }
-        // this.setAttribute('slim-uq', this[_$].uniqueIndex)
         var observedAttributes = this.constructor.observedAttributes;
         if (observedAttributes) {
           observedAttributes.forEach(function (attr) {
             var pName = Slim.dashToCamel(attr);
-            _this4[pName] = _this4.getAttribute(attr);
+            _this3[pName] = _this3.getAttribute(attr);
           });
         }
       }
@@ -706,7 +749,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     return Slim;
   }(_CustomElement);
 
-  Slim.uniqueIndex = 0;
   Slim.tagToClassDict = new Map();
   Slim.classToTagDict = new Map();
   Slim.tagToTemplateDict = new Map();
@@ -792,7 +834,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var delegate = attribute.value;
     Slim._$(target).eventHandlers = target[_$2].eventHandlers || {};
     var allHandlers = target[_$2].eventHandlers;
-    allHandlers[eventName] = allHandlers[eventName] || [];
+    allHandlers[eventName] = allHandlers[eventName] || new WeakSet();
     var handler = function handler(e) {
       try {
         source[delegate].call(source, e); // eslint-disable-line
@@ -801,7 +843,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         console.warn(err);
       }
     };
-    allHandlers[eventName].push(handler);
+    allHandlers[eventName].add(handler);
     target.addEventListener(eventName, handler);
     handler = null;
   });
@@ -817,7 +859,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       isNegative = true;
     }
     var oldValue = void 0;
-    var anchor = document.createComment('if:' + expression);
+    var anchor = document.createComment('{$target.localName} if:' + expression);
     target.parentNode.insertBefore(anchor, target);
     var fn = function fn() {
       var value = !!Slim.lookup(source, path, target);
@@ -901,28 +943,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     Slim._$(target).boundParent[attribute.value] = target;
   });
 
-  var wrappedRepeaterExecution = function wrappedRepeaterExecution(source, templateNode, attribute) {
-    var path = attribute.nodeValue;
-    var tProp = 'data';
-    if (path.indexOf(' as')) {
-      tProp = path.split(' as ')[1] || tProp;
-      path = path.split(' as ')[0];
-    }
-
-    var repeater = document.createElement('slim-repeat');
-    repeater[_$2].boundParent = source;
-    repeater.dataProp = tProp;
-    repeater.dataPath = attribute.nodeValue;
-    repeater.templateNode = templateNode.cloneNode(true);
-    repeater.templateNode.removeAttribute('s:repeat');
-    templateNode.parentNode.insertBefore(repeater, templateNode);
-    Slim.removeChild(templateNode);
-    Slim.bind(source, repeater, path, function () {
-      var dataSource = Slim.lookup(source, path);
-      repeater.dataSource = dataSource || [];
-    });
-  };
-
   // bind:property
   Slim.customDirective(function (attr) {
     return (/^(bind):(\S+)/.exec(attr.nodeName)
@@ -961,203 +981,129 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }
   });
 
-  if (__flags.isChrome || __flags.isSafari || __flags.isFirefox) {
-    Slim.customDirective(function (attr) {
-      return attr.nodeName === 's:repeat';
-    }, function (source, templateNode, attribute) {
-      if (__flags.isFirefox) {
-        if (['option', 'td', 'tr', 'th'].indexOf(templateNode.localName) < 0) {
-          return wrappedRepeaterExecution(source, templateNode, attribute);
-        }
+  Slim.customDirective(function (attr) {
+    return attr.nodeName === 's:repeat';
+  }, function (source, repeaterNode, attribute) {
+    var path = attribute.value;
+    var tProp = 'data'; // default
+    if (path.indexOf(' as ') > 0) {
+      var _path$split = path.split(' as ');
+
+      var _path$split2 = _slicedToArray(_path$split, 2);
+
+      path = _path$split2[0];
+      tProp = _path$split2[1];
+    }
+
+    // initialize clones list
+    var clones = [];
+
+    // create mount point and repeat template
+    var mountPoint = document.createComment(repeaterNode.localName + ' s:repeat="' + attribute.value + '"');
+    var parent = repeaterNode.parentElement || Slim.root(source);
+    parent.insertBefore(mountPoint, repeaterNode);
+    repeaterNode.removeAttribute('s:repeat');
+    var clonesTemplate = repeaterNode.outerHTML;
+    repeaterNode.remove();
+
+    // prepare for bind
+    var oldDataSource = [];
+
+    var replicate = function replicate(n, text) {
+      var temp = text;
+      var result = '';
+      if (n < 1) return result;
+      while (n > 1) {
+        if (n & 1) result += temp;
+        n >>= 1;
+        temp += temp;
       }
-      var path = attribute.value;
-      var tProp = 'data';
-      if (path.indexOf(' as')) {
-        tProp = path.split(' as ')[1] || tProp;
-        path = path.split(' as ')[0];
+      return result + temp;
+    };
+
+    // bind changes
+    Slim.bind(source, mountPoint, path, function () {
+      // execute bindings here
+      var dataSource = Slim.lookup(source, path) || [];
+      // read the diff -> list of CHANGED indicies
+
+      var fragment = void 0;
+
+      var tree = [];
+
+      // when data source shrinks, dispose extra clones
+      if (dataSource.length < clones.length) {
+        var disposables = clones.slice(dataSource.length);
+        disposables.forEach(function (node) {
+          Slim.unbind(source, node);
+          if (node[_$2].subTree) {
+            node[_$2].subTree.forEach(function (subNode) {
+              return Slim.unbind(source, subNode);
+            });
+          }
+          node.remove();
+        });
+        clones.length = dataSource.length;
       }
 
-      var clones = [];
-      var hook = document.createComment(templateNode.localName + ' s:repeat="' + attribute.value + '"');
-      var templateHTML = void 0;
-      Slim._$(hook);
-      Slim.selectRecursive(templateNode, true).forEach(function (e) {
-        return Slim._$(e).excluded = true;
-      });
-      templateNode.parentElement.insertBefore(hook, templateNode);
-      templateNode.remove();
-      Slim.unbind(source, templateNode);
-      Slim.asap(function () {
-        templateNode.setAttribute('s:iterate', '');
-        templateNode.removeAttribute('s:repeat');
-        templateHTML = templateNode.outerHTML;
-        templateNode.innerHTML = '';
-      });
-      var oldDataSource = [];
-      Slim.bind(source, hook, path, function () {
-        var dataSource = Slim.lookup(source, path) || [];
-        var offset = 0;
-        var restOfData = [];
-        // get the diff
-        var diff = Array(dataSource.length);
-        dataSource.forEach(function (d, i) {
-          if (oldDataSource[i] !== d) {
-            diff[i] = true;
-          }
-        });
-        oldDataSource = dataSource.concat();
-        var indices = Object.keys(diff);
-        if (dataSource.length < clones.length) {
-          var disposables = clones.slice(dataSource.length);
-          clones = clones.slice(0, dataSource.length);
-          disposables.forEach(function (clone) {
-            return clone.remove();
-          });
-          // unbind disposables?
-          indices.forEach(function (index) {
-            var clone = clones[index];[clone].concat(Slim.qSelectAll(clone, '*')).forEach(function (t) {
-              t[_$2].repeater[tProp] = dataSource[index];
-              Slim.commit(t, tProp);
-            });
-          });
-        } else {
-          // recycle
-          clones.length && indices.forEach(function (index) {
-            var clone = clones[index];
-            if (!clone) return;[clone].concat(Slim.qSelectAll(clone, '*')).forEach(function (t) {
-              t[_$2].repeater[tProp] = dataSource[index];
-              Slim.commit(t, tProp);
-            });
-          });
-          restOfData = dataSource.slice(clones.length);
-          offset = clones.length;
-        }
-        if (!restOfData.length) return;
-        // new clones
+      // build new clones if needed
+      if (dataSource.length > clones.length) {
+        var offset = clones.length;
+        var diff = dataSource.length - clones.length;
+        var html = replicate(diff, clonesTemplate); //  Array(diff).fill(clonesTemplate.innerHTML).join('');
         var range = document.createRange();
-        range.setStartBefore(hook);
-        var html = Array(restOfData.length).fill(templateHTML).join('');
-        var frag = range.createContextualFragment(html);
-        var all = [];
-        var i = 0;
-        while (i < frag.children.length) {
-          var e = frag.children.item(i);
-          clones.push(e);
-          all.push(e);
-          Slim._$(e).repeater[tProp] = dataSource[i + offset];
-          var subTree = Slim.qSelectAll(e, '*');
-          subTree.forEach(function (t) {
-            all.push(t);
-            Slim._$(t).repeater[tProp] = dataSource[i + offset];
-            Slim.commit(t, tProp);
+        range.setStartBefore(mountPoint);
+        fragment = range.createContextualFragment(html);
+        // build clone by index
+
+        var _loop = function _loop(i) {
+          var dataIndex = i + offset;
+          var dataItem = dataSource[dataIndex];
+          var clone = fragment.children[i];
+          Slim._$(clone).repeater[tProp] = dataItem;
+          var subTree = Slim.qSelectAll(clone, '*');
+          subTree.forEach(function (node) {
+            Slim._$(node).repeater[tProp] = dataItem;
           });
-          i++;
+          clone[_$2].subTree = subTree;
+          clones.push(clone);
+        };
+
+        for (var i = 0; i < diff; i++) {
+          _loop(i);
         }
-        source._bindChildren(all);
-        all.forEach(function (t) {
-          if (t.__isSlim) {
-            t.createdCallback();
-            Slim.asap(function () {
-              Slim.commit(t, tProp);
-              t[tProp] = t[_$2].repeater[tProp];
-            });
-          } else {
-            Slim.commit(t, tProp);
-            t[tProp] = t[_$2].repeater[tProp];
-          }
-        });
-        hook.parentElement.insertBefore(frag, hook);
-      });
-      source[_$2].reversed[tProp] = true;
-    }, true);
-  } else {
-    Slim.customDirective(function (attr) {
-      return (/^s:repeat$/.test(attr.nodeName)
-      );
-    }, function (source, templateNode, attribute) {
-      wrappedRepeaterExecution(source, templateNode, attribute);
-
-      // source._executeBindings()
-    }, true);
-  }
-
-  if (!__SLIM_ALREADY_DEFINED__) {
-    var SlimRepeater = function (_Slim2) {
-      _inherits(SlimRepeater, _Slim2);
-
-      function SlimRepeater() {
-        _classCallCheck(this, SlimRepeater);
-
-        return _possibleConstructorReturn(this, (SlimRepeater.__proto__ || Object.getPrototypeOf(SlimRepeater)).apply(this, arguments));
+        var fragmentTree = Slim.qSelectAll(fragment, '*');
+        source._bindChildren(fragmentTree);
       }
 
-      _createClass(SlimRepeater, [{
-        key: '_bindChildren',
-        value: function _bindChildren(tree) {
-          var _this6 = this;
+      var init = function init(target, value) {
+        target[tProp] = value;
+        Slim.commit(target, tProp);
+      };
 
-          tree = Array.prototype.slice.call(tree);
-          var directChildren = Array.prototype.filter.call(tree, function (child) {
-            return child.parentNode.localName === 'slim-root-fragment';
+      dataSource.forEach(function (dataItem, i) {
+        if (oldDataSource[i] !== dataItem) {
+          var rootNode = clones[i];[rootNode].concat(_toConsumableArray(rootNode[_$2].subTree || Slim.qSelectAll(rootNode, '*'))).forEach(function (node) {
+            node[_$2].repeater[tProp] = dataItem;
+            if (node.__isSlim) {
+              node.createdCallback();
+              Slim.asap(function () {
+                return init(node, dataItem);
+              });
+            } else {
+              init(node, dataItem);
+            }
           });
-          directChildren.forEach(function (child, index) {
-            child.setAttribute('s:iterate', _this6.dataPath + ' : ' + index);
-            Slim.selectRecursive(child).forEach(function (e) {
-              Slim._$(e).repeater[_this6.dataProp] = _this6.dataSource[index];
-              e[_this6.dataProp] = _this6.dataSource[index];
-              if (e instanceof Slim) {
-                e[_this6.dataProp] = _this6.dataSource[index];
-              }
-            });
-          });
         }
-      }, {
-        key: 'onRender',
-        value: function onRender() {
-          if (!this.boundParent) return;
-          var tree = Slim.selectRecursive(this);
-          this.boundParent && this.boundParent._bindChildren(tree);
-          this.boundParent._executeBindings();
-        }
-      }, {
-        key: 'render',
-        value: function render() {
-          var _this7 = this;
-
-          if (!this.boundParent) return;
-          Slim.qSelectAll(this, '*').forEach(function (e) {
-            Slim.unbind(_this7.boundParent, e);
-          });
-          if (!this.dataSource || !this.templateNode || !this.boundParent) {
-            return _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, '');
-          }
-          var newTemplate = Array(this.dataSource.length).fill(this.templateNode.outerHTML).join('');
-          this.innerHTML = '';
-          _get(SlimRepeater.prototype.__proto__ || Object.getPrototypeOf(SlimRepeater.prototype), 'render', this).call(this, newTemplate);
-        }
-      }, {
-        key: 'dataSource',
-        get: function get() {
-          return this._dataSource;
-        },
-        set: function set(v) {
-          if (this._dataSource !== v) {
-            this._dataSource = v;
-            this.render();
-          }
-        }
-      }, {
-        key: 'boundParent',
-        get: function get() {
-          return this[_$2].boundParent;
-        }
-      }]);
-
-      return SlimRepeater;
-    }(Slim);
-
-    Slim.tag('slim-repeat', SlimRepeater);
-  }
+      });
+      oldDataSource = dataSource.concat();
+      if (fragment) {
+        Slim.asap(function () {
+          parent.insertBefore(fragment, mountPoint);
+        });
+      }
+    });
+  }, true);
 
   if (window) {
     window['Slim'] = Slim;
