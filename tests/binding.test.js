@@ -29,7 +29,7 @@ module.exports = {
         browser.assert.containsText('#check-undefined-method', '{{undefinedMethod(prop)}}');
         browser.assert.attributeEquals('#check-method', 'multi', '*slim.js*hello*');
         browser.execute(`
-            document.querySelector('test-binding').myName = 'test';
+            window.unit.myName = 'test';
         `);
         browser.assert.containsText('h1', 'Hello, test');
         browser.assert.containsText('h2', 'tset');

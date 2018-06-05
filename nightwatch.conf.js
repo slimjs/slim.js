@@ -56,7 +56,7 @@ module.exports = {
         "desiredCapabilities": {
           "browserName": "chrome",
           "chromeOptions" : {
-              "args" : ["--start-maximized", "--headless"]
+              "args" : ["--start-maximized", "--headless" ]
           },
           "javascriptEnabled": true,
           "acceptSslCerts": true,
