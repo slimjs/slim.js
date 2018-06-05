@@ -1,5 +1,4 @@
-;(function() {
-
+;(function () {
   try {
     const {Slim} = window
     if (!!Slim && Symbol.slimjs && Slim.plugins && Slim.asap) {
@@ -21,7 +20,7 @@
     isChrome: undefined,
     isEdge: undefined,
     isSafari: undefined,
-    isFirefox: undefined,
+    isFirefox: undefined
   }
 
   try {
@@ -32,14 +31,14 @@
 
     if (__flags.isIE11 || __flags.isEdge) {
       __flags.isChrome = false
-      Object.defineProperty(Node.prototype, 'children', function() {
+      Object.defineProperty(Node.prototype, 'children', function () {
         return this.childNodes
       })
     }
   } catch (err) {}
 
   class Internals {
-    constructor() {
+    constructor () {
       this.boundParent = null
       this.repeater = {}
       this.bindings = {}
@@ -54,25 +53,25 @@
   }
 
   class Slim extends HTMLElement {
-    static dashToCamel(dash) {
+    static dashToCamel (dash) {
       return dash.indexOf('-') < 0
         ? dash
         : dash.replace(/-[a-z]/g, m => {
           return m[1].toUpperCase()
         })
     }
-    static camelToDash(camel) {
+    static camelToDash (camel) {
       return camel.replace(/([A-Z])/g, '-$1').toLowerCase()
     }
 
-    static get rxProp() {
+    static get rxProp () {
       return /(.+[^(\((.+)\))])/ // eslint-disable-line
     }
-    static get rxMethod() {
+    static get rxMethod () {
       return /(.+)(\((.+)\)){1}/ // eslint-disable-line
     }
 
-    static lookup(target, expression, maybeRepeated) {
+    static lookup (target, expression, maybeRepeated) {
       const chain = expression.split('.')
       let o
       if (maybeRepeated && maybeRepeated[_$].repeater[chain[0]]) {
@@ -88,11 +87,11 @@
     }
 
     // noinspection JSUnresolvedVariable
-    static _$(target) {
+    static _$ (target) {
       target[_$] = target[_$] || new Internals()
       return target[_$]
     }
-    static polyFill(url) {
+    static polyFill (url) {
       if (!__flags.isWCSupported) {
         const existingScript = document.querySelector(
           'script[data-is-slim-polyfill="true"]'
@@ -105,7 +104,7 @@
         }
       }
     }
-    static tag(tagName, tplOrClazz, clazz) {
+    static tag (tagName, tplOrClazz, clazz) {
       if (clazz === undefined) {
         clazz = tplOrClazz
       } else {
@@ -115,7 +114,7 @@
       customElements.define(tagName, clazz)
     }
 
-    static tagOf(clazz) {
+    static tagOf (clazz) {
       return this.classToTagDict.get(clazz)
     }
 
@@ -124,11 +123,11 @@
      * @param tag
      * @returns {Function} Class constructor
      */
-    static classOf(tag) {
+    static classOf (tag) {
       return customElements.get(tag)
     }
 
-    static plugin(phase, plugin) {
+    static plugin (phase, plugin) {
       if (!this.plugins[phase]) {
         throw new Error(
           `Cannot attach plugin: ${phase} is not a supported phase`
@@ -137,7 +136,7 @@
       this.plugins[phase].push(plugin)
     }
 
-    static checkCreationBlocking(element) {
+    static checkCreationBlocking (element) {
       if (element.attributes) {
         for (let i = 0, n = element.attributes.length; i < n; i++) {
           const attribute = element.attributes[i]
@@ -152,7 +151,7 @@
       return false
     }
 
-    static customDirective(testFn, fn, isBlocking) {
+    static customDirective (testFn, fn, isBlocking) {
       if (this[_$].customDirectives.has(testFn)) {
         throw new Error(
           `Cannot register custom directive: ${testFn} already registered`
@@ -162,35 +161,35 @@
       this[_$].customDirectives.set(testFn, fn)
     }
 
-    static executePlugins(phase, target) {
+    static executePlugins (phase, target) {
       this.plugins[phase].forEach(fn => {
         fn(target)
       })
     }
 
-    static qSelectAll(target, selector) {
+    static qSelectAll (target, selector) {
       return [...target.querySelectorAll(selector)]
     }
 
-    static unbind(source, target) {
+    static unbind (source, target) {
       const bindings = source[_$].bindings
       Object.keys(bindings).forEach(key => {
         const chain = bindings[key].chain
         if (chain.has(target)) {
-          chain.delete(target);
+          chain.delete(target)
         }
       })
     }
 
-    static root(target) {
+    static root (target) {
       return target.__isSlim && target.useShadow
         ? target[_$].rootElement || target
         : target
     }
 
-    static selectRecursive(target, force) {
+    static selectRecursive (target, force) {
       const collection = []
-      const search = function(node, force) {
+      const search = function (node, force) {
         collection.push(node)
         const allow =
           !node.__isSlim ||
@@ -208,7 +207,7 @@
       return collection
     }
 
-    static removeChild(target) {
+    static removeChild (target) {
       if (typeof target.remove === 'function') {
         target.remove()
       }
@@ -220,27 +219,27 @@
       }
     }
 
-    static moveChildren(source, target) {
+    static moveChildren (source, target) {
       while (source.firstChild) {
         target.appendChild(source.firstChild)
       }
     }
 
-    static wrapGetterSetter(element, expression) {
+    static wrapGetterSetter (element, expression) {
       const pName = expression.split('.')[0]
       let oSetter = element.__lookupSetter__(pName)
       if (oSetter && oSetter[_$]) return pName
       const srcValue = element[pName]
-      const { bindings } = this._$(element);
+      const { bindings } = this._$(element)
       bindings[pName] = {
         chain: new Set(),
-        value: srcValue,
+        value: srcValue
       }
       bindings[pName].value = srcValue
       const newSetter = v => {
         oSetter && oSetter.call(element, v)
         bindings[pName].value = v
-        element._executeBindings(pName);
+        element._executeBindings(pName)
       }
       newSetter[_$] = true
       element.__defineGetter__(pName, () => element[_$].bindings[pName].value)
@@ -248,11 +247,11 @@
       return pName
     }
 
-    static bindOwn(target, expression, executor) {
+    static bindOwn (target, expression, executor) {
       return Slim.bind(target, target, expression, executor)
     }
 
-    static bind(source, target, expression, executor) {
+    static bind (source, target, expression, executor) {
       Slim._$(source)
       Slim._$(target)
       if (target[_$].excluded) return
@@ -267,23 +266,23 @@
       return executor
     }
 
-    static update(target, ...props) {
+    static update (target, ...props) {
       if (props.length === 0) {
         return Slim.commit(target)
       }
       for (const prop of props) {
-        Slim.commit(target, prop);
+        Slim.commit(target, prop)
       }
     }
 
-    static commit(target, propertyName) {
+    static commit (target, propertyName) {
       let $ = Slim._$(target)
-      const props = propertyName ? [propertyName] : Object.keys($.bindings);
+      const props = propertyName ? [propertyName] : Object.keys($.bindings)
       for (const prop of props) {
         const inbounds = $.inbounds[prop]
         if (inbounds) {
           for (const fn of inbounds) {
-            fn();
+            fn()
           }
         }
         const bindings = $.bindings[prop]
@@ -300,7 +299,7 @@
       Class instance
       */
 
-    constructor() {
+    constructor () {
       super()
       Slim._$(this)
       this.__isSlim = true
@@ -318,7 +317,7 @@
 
     // Native DOM Api V1
 
-    createdCallback() {
+    createdCallback () {
       if (this[_$] && this[_$].createdCallbackInvoked) return
       this._initialize()
       this[_$].createdCallbackInvoked = true
@@ -330,17 +329,17 @@
 
     // Native DOM Api V2
 
-    connectedCallback() {
+    connectedCallback () {
       this.onAdded()
       Slim.executePlugins('added', this)
     }
 
-    disconnectedCallback() {
+    disconnectedCallback () {
       this.onRemoved()
       Slim.executePlugins('removed', this)
     }
 
-    attributeChangedCallback(attr, oldValue, newValue) {
+    attributeChangedCallback (attr, oldValue, newValue) {
       if (newValue !== oldValue && this.autoBoundAttributes.includes[attr]) {
         const prop = Slim.dashToCamel(attr)
         this[prop] = newValue
@@ -348,12 +347,12 @@
     }
     // Slim internal API
 
-    _executeBindings(prop) {
+    _executeBindings (prop) {
       Slim.debug('_executeBindings', this.localName, this)
       Slim.commit(this, prop)
     }
 
-    _bindChildren(children) {
+    _bindChildren (children) {
       Slim.debug('_bindChildren', this.localName)
       if (!children) {
         children = Slim.qSelectAll(this, '*')
@@ -386,26 +385,26 @@
       }
     }
 
-    _resetBindings() {
+    _resetBindings () {
       Slim.debug('_resetBindings', this.localName)
       this[_$].bindings = {}
     }
 
-    _render(customTemplate) {
+    _render (customTemplate) {
       Slim.debug('_render', this.localName)
       Slim.executePlugins('beforeRender', this)
       this._resetBindings()
       ;[...this.children].forEach(childNode => {
         if (childNode.localName === 'style') {
-          this[_$].externalStyle = document.importNode(childNode).cloneNode();
+          this[_$].externalStyle = document.importNode(childNode).cloneNode()
         }
       })
-      Slim.root(this).innerHTML = '';
+      Slim.root(this).innerHTML = ''
       const templateString = customTemplate || this.template
-      const template = document.createElement('template');
-      template.innerHTML = templateString;
-      const frag = template.content.cloneNode(true);
-      const { externalStyle }  = this[_$];
+      const template = document.createElement('template')
+      template.innerHTML = templateString
+      const frag = template.content.cloneNode(true)
+      const { externalStyle } = this[_$]
       if (externalStyle) {
         frag.appendChild(this[_$])
       }
@@ -414,17 +413,17 @@
         (this[_$].rootElement || this).appendChild(frag)
         this._bindChildren(scopedChildren)
         this._executeBindings()
-        this.onRender();
+        this.onRender()
         Slim.executePlugins('afterRender', this)
       }
       if (this.useShadow) {
-        doRender();
+        doRender()
       } else {
-        Slim.asap(doRender);
+        Slim.asap(doRender)
       }
     }
 
-    _initialize() {
+    _initialize () {
       Slim.debug('_initialize', this.localName)
       if (this.useShadow) {
         if (typeof HTMLElement.prototype.attachShadow === 'undefined') {
@@ -446,48 +445,48 @@
 
     // Slim public / protected API
 
-    get autoBoundAttributes() {
+    get autoBoundAttributes () {
       return []
     }
 
-    commit(...args) {
+    commit (...args) {
       Slim.commit(this, ...args)
     }
 
-    update(...args) {
+    update (...args) {
       Slim.update(this, ...args)
     }
 
-    render(tpl) {
+    render (tpl) {
       this._render(tpl)
     }
 
-    onRender() {}
-    onBeforeCreated() {}
-    onCreated() {}
-    onAdded() {}
-    onRemoved() {}
+    onRender () {}
+    onBeforeCreated () {}
+    onCreated () {}
+    onAdded () {}
+    onRemoved () {}
 
-    find(selector) {
+    find (selector) {
       return this[_$].rootElement.querySelector(selector)
     }
 
-    findAll(selector) {
+    findAll (selector) {
       return Slim.qSelectAll(this[_$].rootElement, selector)
     }
 
-    callAttribute(attr, data) {
+    callAttribute (attr, data) {
       const fnName = this.getAttribute(attr)
       if (fnName) {
         return this[_$].boundParent[fnName](data)
       }
     }
 
-    get useShadow() {
+    get useShadow () {
       return false
     }
 
-    get template() {
+    get template () {
       return Slim.tagToTemplateDict.get(Slim.tagOf(this.constructor))
     }
   }
@@ -500,7 +499,7 @@
     added: [],
     beforeRender: [],
     afterRender: [],
-    removed: [],
+    removed: []
   }
 
   Slim.debug = () => {}
@@ -508,8 +507,8 @@
     window && window.requestAnimationFrame
       ? cb => window.requestAnimationFrame(cb)
       : typeof setImmediate !== 'undefined'
-      ? setImmediate
-      : cb => setTimeout(cb, 0)
+        ? setImmediate
+        : cb => setTimeout(cb, 0)
 
   Slim[_$] = {
     customDirectives: new Map(),
@@ -544,8 +543,8 @@
       'keydown',
       'keypress',
       'keyup',
-      'change',
-    ],
+      'change'
+    ]
   }
 
   Slim.customDirective(
@@ -607,14 +606,14 @@
       const delegate = attribute.value
       Slim._$(target).eventHandlers = target[_$].eventHandlers || {}
       const allHandlers = target[_$].eventHandlers
-      allHandlers[eventName] = allHandlers[eventName] || new WeakSet();
+      allHandlers[eventName] = allHandlers[eventName] || new WeakSet()
       let handler = e => {
         try {
           source[delegate].call(source, e) // eslint-disable-line
         } catch (err) {
           err.message = `Could not respond to event "${eventName}" on ${
             target.localName
-            } -> "${delegate}" on ${source.localName} ... ${err.message}`
+          } -> "${delegate}" on ${source.localName} ... ${err.message}`
           console.warn(err)
         }
       }
@@ -771,12 +770,12 @@
       }
 
       // initialize clones list
-      let clones = [];
+      let clones = []
 
       // create mount point and repeat template
       const mountPoint = document.createComment(`${repeaterNode.localName} s:repeat="${attribute.value}"`)
       const parent = repeaterNode.parentElement || Slim.root(source)
-      parent.insertBefore(mountPoint, repeaterNode);
+      parent.insertBefore(mountPoint, repeaterNode)
       repeaterNode.removeAttribute('s:repeat')
       const clonesTemplate = repeaterNode.outerHTML
       repeaterNode.remove()
@@ -787,24 +786,22 @@
       const replicate = (n, text) => {
         let temp = text
         let result = ''
-        if (n < 1) return result;
+        if (n < 1) return result
         while (n > 1) {
-          if (n & 1) result += temp;
-          n >>= 1;
-          temp += temp;
+          if (n & 1) result += temp
+          n >>= 1
+          temp += temp
         }
-        return result + temp;
-      };
+        return result + temp
+      }
 
       // bind changes
       Slim.bind(source, mountPoint, path, () => {
         // execute bindings here
-        const dataSource = Slim.lookup(source, path) || [];
+        const dataSource = Slim.lookup(source, path) || []
         // read the diff -> list of CHANGED indicies
 
         let fragment
-
-        let tree = []
 
         // when data source shrinks, dispose extra clones
         if (dataSource.length < clones.length) {
@@ -821,18 +818,18 @@
 
         // build new clones if needed
         if (dataSource.length > clones.length) {
-          const offset = clones.length;
+          const offset = clones.length
           const diff = dataSource.length - clones.length
           const html = replicate(diff, clonesTemplate) //  Array(diff).fill(clonesTemplate.innerHTML).join('');
-          const range = document.createRange();
-          range.setStartBefore(mountPoint);
+          const range = document.createRange()
+          range.setStartBefore(mountPoint)
           fragment = range.createContextualFragment(html)
           // build clone by index
           for (let i = 0; i < diff; i++) {
-            const dataIndex = i + offset;
-            const dataItem = dataSource[dataIndex];
+            const dataIndex = i + offset
+            const dataItem = dataSource[dataIndex]
             const clone = fragment.children[i]
-            Slim._$(clone).repeater[tProp] = dataItem;
+            Slim._$(clone).repeater[tProp] = dataItem
             const subTree = Slim.qSelectAll(clone, '*')
             subTree.forEach(function (node) {
               Slim._$(node).repeater[tProp] = dataItem
@@ -841,7 +838,7 @@
             clones.push(clone)
           }
           const fragmentTree = Slim.qSelectAll(fragment, '*')
-          source._bindChildren(fragmentTree);
+          source._bindChildren(fragmentTree)
         }
 
         const init = (target, value) => {
@@ -849,7 +846,7 @@
           Slim.commit(target, tProp)
         }
 
-        dataSource.forEach(function(dataItem, i) {
+        dataSource.forEach(function (dataItem, i) {
           if (oldDataSource[i] !== dataItem) {
             const rootNode = clones[i]
             ;[rootNode, ...(rootNode[_$].subTree || Slim.qSelectAll(rootNode, '*'))].forEach(node => {
@@ -865,7 +862,7 @@
         })
         oldDataSource = dataSource.concat()
         if (fragment) {
-          Slim.asap( () => {
+          Slim.asap(() => {
             parent.insertBefore(fragment, mountPoint)
           })
         }

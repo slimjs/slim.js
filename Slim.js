@@ -21,7 +21,6 @@ Object.setPrototypeOf(_CustomElement, HTMLElement);
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 ;(function () {
-
   try {
     var _window = window,
         _Slim = _window.Slim;
@@ -1032,8 +1031,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       // read the diff -> list of CHANGED indicies
 
       var fragment = void 0;
-
-      var tree = [];
 
       // when data source shrinks, dispose extra clones
       if (dataSource.length < clones.length) {
