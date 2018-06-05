@@ -19,7 +19,7 @@ But... wait! there's more:
 - It has data binding
 - It can be extended
 - It feels like a framework (but in a good way)
-- It's 5475 Bytes! (gzipped) Yep!
+- It's as small as 5302 GzBytes!
 - Single file, good to go.
 - No tools required, everything is based on native browser API. Choose your own tools.
 
