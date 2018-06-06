@@ -16,15 +16,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eavichay/slim.js.git"
+    "url": "git+https://github.com/slimjs/slim.js.git"
   },
   "typings": "Slim.d.ts",
   "author": "Avichay Eyal <eavichay@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/eavichay/slim-web-components/issues"
+    "url": "https://github.com/slimjs/slim.js/issues"
   },
-  "homepage": "https://github.com/eavichay/slim-web-components#readme",
+  "homepage": "http://slimjs.com",
   "keywords": [
     "web",
     "components",
