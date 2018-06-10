@@ -6,10 +6,10 @@
 
 # Hello, slim.js
 
-## Version 3 is out
-Read the documentation [here](http://slimjs.com)
+Official website [here](http://slimjs.com)
+Documentation [here](https://github.com/slimjs/slim.js/wiki)
 
-## Slim is a fast, native and elegant library for web components
+## Slim is ultra fast, native and elegant library for web components development
 Slim.js is a lightning fast library for development of native web-components and custom-elements based modern applications. No black magic involved.
 It uses es6+DOM native API and boosts up HTML elements with superpowers. 
 
