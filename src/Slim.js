@@ -364,6 +364,8 @@
 
         // todo: child.localName === 'style' && this.useShadow -> processStyleNodeInShadowMode
 
+        scanNode(this, child)
+
         if (child.attributes.length) {
           const attributes = Array.from(child.attributes)
           let i = 0
@@ -507,8 +509,8 @@
     window && window.requestAnimationFrame
       ? cb => window.requestAnimationFrame(cb)
       : typeof setImmediate !== 'undefined'
-        ? setImmediate
-        : cb => setTimeout(cb, 0)
+      ? setImmediate
+      : cb => setTimeout(cb, 0)
 
   Slim[_$] = {
     customDirectives: new Map(),
@@ -613,7 +615,7 @@
         } catch (err) {
           err.message = `Could not respond to event "${eventName}" on ${
             target.localName
-          } -> "${delegate}" on ${source.localName} ... ${err.message}`
+            } -> "${delegate}" on ${source.localName} ... ${err.message}`
           console.warn(err)
         }
       }
@@ -657,17 +659,16 @@
     true
   )
 
-  // bind (text nodes)
-  Slim.customDirective(
-    attr => attr.nodeName === 'bind',
-    (source, target) => {
-      Slim._$(target)
-      target[_$].sourceText = target.innerText.split('\n').join(' ')
+  const scanNode = (source, target) => {
+    const textNodes = Array.from(target.childNodes).filter(n => n.nodeType === Node.TEXT_NODE)
+    const masterNode = target
+    textNodes.forEach(target => {
       let updatedText = ''
-      const matches = target.innerText.match(/\{\{([^\}\}]+)+\}\}/g) // eslint-disable-line
+      const matches = target.nodeValue.match(/\{\{([^\}\}]+)+\}\}/g) // eslint-disable-line
       const aggProps = {}
       const textBinds = {}
       if (matches) {
+        Slim._$(target).sourceText = target.nodeValue
         matches.forEach(expression => {
           let oldValue
           const rxM = /\{\{(.+)(\((.+)\)){1}\}\}/.exec(expression)
@@ -694,7 +695,7 @@
             const path = rxP[1]
             aggProps[path] = true
             textBinds[expression] = target => {
-              const value = Slim.lookup(source, path, target)
+              const value = Slim.lookup(source, path, masterNode)
               if (oldValue === value) return
               updatedText = updatedText.split(expression).join(value || '')
             }
@@ -705,14 +706,14 @@
           Object.keys(textBinds).forEach(expression => {
             textBinds[expression](target)
           })
-          target.innerText = updatedText
+          target.nodeValue = updatedText
         }
         Object.keys(aggProps).forEach(prop => {
-          Slim.bind(source, target, prop, chainExecutor)
+          Slim.bind(source, masterNode, prop, chainExecutor)
         })
       }
-    }
-  )
+    })
+  }
 
   Slim.customDirective(
     attr => attr.nodeName === 's:id',
@@ -851,6 +852,7 @@
             const rootNode = clones[i]
             ;[rootNode, ...(rootNode[_$].subTree || Slim.qSelectAll(rootNode, '*'))].forEach(node => {
               node[_$].repeater[tProp] = dataItem
+              node[_$].repeater.__node = rootNode;
               if (node.__isSlim) {
                 node.createdCallback()
                 Slim.asap(() => init(node, dataItem))

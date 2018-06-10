@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <script src="../Slim.min.js"></script>
+    <script src="../src/Slim.js"></script>
     <title></title>
 </head>
 <body>
@@ -11,11 +11,11 @@
 
         Slim.tag('test-binding',
         `
-        <h1 click="changeName" bind>Hello, {{myName}}</h1>
-        <h2 bind>{{rev(myName)}}</h2>
+        <h1 click="changeName">Hello, {{myName}}</h1>
+        <h2>{{rev(myName)}}</h2>
         <div id="check-prop" bind:attr="myName" bind:nested-value="nested.value1">Test Div</div>
         <div id="check-method" bind:multi="multi(myName, nested.text)" bind:attr="rev(myName)" bind:nested-value="rev(nested.text)">Test Div</div>
-        <div id="check-undefined-method" bind>{{undefinedMethod(prop)}}</div>
+        <div id="check-undefined-method">{{undefinedMethod(prop)}}</div>
         `,
         class extends Slim {
 

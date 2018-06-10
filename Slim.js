@@ -548,6 +548,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             // todo: child.localName === 'style' && this.useShadow -> processStyleNodeInShadowMode
 
+            scanNode(this, child);
+
             if (child.attributes.length) {
               var attributes = Array.from(child.attributes);
               var i = 0;
@@ -883,62 +885,64 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     Slim.bind(source, target, path, fn);
   }, true);
 
-  // bind (text nodes)
-  Slim.customDirective(function (attr) {
-    return attr.nodeName === 'bind';
-  }, function (source, target) {
-    Slim._$(target);
-    target[_$2].sourceText = target.innerText.split('\n').join(' ');
-    var updatedText = '';
-    var matches = target.innerText.match(/\{\{([^\}\}]+)+\}\}/g); // eslint-disable-line
-    var aggProps = {};
-    var textBinds = {};
-    if (matches) {
-      matches.forEach(function (expression) {
-        var oldValue = void 0;
-        var rxM = /\{\{(.+)(\((.+)\)){1}\}\}/.exec(expression);
-        if (rxM) {
-          var fnName = rxM[1];
-          var pNames = rxM[3].split(' ').join('').split(',');
-          pNames.map(function (path) {
-            return path.split('.')[0];
-          }).forEach(function (p) {
-            return aggProps[p] = true;
-          });
-          textBinds[expression] = function (target) {
-            var args = pNames.map(function (path) {
-              return Slim.lookup(source, path, target);
+  var scanNode = function scanNode(source, target) {
+    var textNodes = Array.from(target.childNodes).filter(function (n) {
+      return n.nodeType === Node.TEXT_NODE;
+    });
+    var masterNode = target;
+    textNodes.forEach(function (target) {
+      var updatedText = '';
+      var matches = target.nodeValue.match(/\{\{([^\}\}]+)+\}\}/g); // eslint-disable-line
+      var aggProps = {};
+      var textBinds = {};
+      if (matches) {
+        Slim._$(target).sourceText = target.nodeValue;
+        matches.forEach(function (expression) {
+          var oldValue = void 0;
+          var rxM = /\{\{(.+)(\((.+)\)){1}\}\}/.exec(expression);
+          if (rxM) {
+            var fnName = rxM[1];
+            var pNames = rxM[3].split(' ').join('').split(',');
+            pNames.map(function (path) {
+              return path.split('.')[0];
+            }).forEach(function (p) {
+              return aggProps[p] = true;
             });
-            var fn = source[fnName];
-            var value = fn ? fn.apply(source, args) : undefined;
-            if (oldValue === value) return;
-            updatedText = updatedText.split(expression).join(value || '');
-          };
-          return;
-        }
-        var rxP = /\{\{(.+[^(\((.+)\))])\}\}/.exec(expression); // eslint-disable-line
-        if (rxP) {
-          var path = rxP[1];
-          aggProps[path] = true;
-          textBinds[expression] = function (target) {
-            var value = Slim.lookup(source, path, target);
-            if (oldValue === value) return;
-            updatedText = updatedText.split(expression).join(value || '');
-          };
-        }
-      });
-      var chainExecutor = function chainExecutor() {
-        updatedText = target[_$2].sourceText;
-        Object.keys(textBinds).forEach(function (expression) {
-          textBinds[expression](target);
+            textBinds[expression] = function (target) {
+              var args = pNames.map(function (path) {
+                return Slim.lookup(source, path, target);
+              });
+              var fn = source[fnName];
+              var value = fn ? fn.apply(source, args) : undefined;
+              if (oldValue === value) return;
+              updatedText = updatedText.split(expression).join(value || '');
+            };
+            return;
+          }
+          var rxP = /\{\{(.+[^(\((.+)\))])\}\}/.exec(expression); // eslint-disable-line
+          if (rxP) {
+            var path = rxP[1];
+            aggProps[path] = true;
+            textBinds[expression] = function (target) {
+              var value = Slim.lookup(source, path, masterNode);
+              if (oldValue === value) return;
+              updatedText = updatedText.split(expression).join(value || '');
+            };
+          }
         });
-        target.innerText = updatedText;
-      };
-      Object.keys(aggProps).forEach(function (prop) {
-        Slim.bind(source, target, prop, chainExecutor);
-      });
-    }
-  });
+        var chainExecutor = function chainExecutor() {
+          updatedText = target[_$2].sourceText;
+          Object.keys(textBinds).forEach(function (expression) {
+            textBinds[expression](target);
+          });
+          target.nodeValue = updatedText;
+        };
+        Object.keys(aggProps).forEach(function (prop) {
+          Slim.bind(source, masterNode, prop, chainExecutor);
+        });
+      }
+    });
+  };
 
   Slim.customDirective(function (attr) {
     return attr.nodeName === 's:id';
@@ -1086,6 +1090,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         if (oldDataSource[i] !== dataItem) {
           var rootNode = clones[i];[rootNode].concat(_toConsumableArray(rootNode[_$2].subTree || Slim.qSelectAll(rootNode, '*'))).forEach(function (node) {
             node[_$2].repeater[tProp] = dataItem;
+            node[_$2].repeater.__node = rootNode;
             if (node.__isSlim) {
               node.createdCallback();
               Slim.asap(function () {
