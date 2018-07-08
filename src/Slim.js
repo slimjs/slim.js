@@ -364,8 +364,6 @@
 
         // todo: child.localName === 'style' && this.useShadow -> processStyleNodeInShadowMode
 
-        scanNode(this, child)
-
         if (child.attributes.length) {
           const attributes = Array.from(child.attributes)
           let i = 0
@@ -383,6 +381,10 @@
             }
             i++
           }
+        }
+
+        if (!child[_$].excluded) {
+          scanNode(this, child)
         }
       }
     }
@@ -662,6 +664,7 @@
   const scanNode = (source, target) => {
     const textNodes = Array.from(target.childNodes).filter(n => n.nodeType === Node.TEXT_NODE)
     const masterNode = target
+    const repeater = Slim._$(target).repeater
     textNodes.forEach(target => {
       let updatedText = ''
       const matches = target.nodeValue.match(/\{\{([^\}\}]+)+\}\}/g) // eslint-disable-line
@@ -669,6 +672,7 @@
       const textBinds = {}
       if (matches) {
         Slim._$(target).sourceText = target.nodeValue
+        target[_$].repeater = repeater
         matches.forEach(expression => {
           let oldValue
           const rxM = /\{\{(.+)(\((.+)\)){1}\}\}/.exec(expression)
@@ -778,6 +782,8 @@
       const parent = repeaterNode.parentElement || Slim.root(source)
       parent.insertBefore(mountPoint, repeaterNode)
       repeaterNode.removeAttribute('s:repeat')
+      Slim.qSelectAll(repeaterNode, '*').forEach(node => Slim._$(node).excluded = true)
+      Slim._$(repeaterNode).excluded = true
       const clonesTemplate = repeaterNode.outerHTML
       repeaterNode.remove()
 

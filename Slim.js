@@ -514,7 +514,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'attributeChangedCallback',
       value: function attributeChangedCallback(attr, oldValue, newValue) {
-        if (newValue !== oldValue && this.autoBoundAttributes.includes(attr)) {
+        if (newValue !== oldValue && this.autoBoundAttributes.includes[attr]) {
           var prop = Slim.dashToCamel(attr);
           this[prop] = newValue;
         }
@@ -547,8 +547,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             child[_$2].boundParent = child[_$2].boundParent || this;
 
             // todo: child.localName === 'style' && this.useShadow -> processStyleNodeInShadowMode
-
-            scanNode(this, child);
 
             if (child.attributes.length) {
               var attributes = Array.from(child.attributes);
@@ -593,6 +591,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 }
                 i++;
               }
+            }
+
+            if (!child[_$2].excluded) {
+              scanNode(this, child);
             }
           }
         } catch (err) {
@@ -890,6 +892,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       return n.nodeType === Node.TEXT_NODE;
     });
     var masterNode = target;
+    var repeater = Slim._$(target).repeater;
     textNodes.forEach(function (target) {
       var updatedText = '';
       var matches = target.nodeValue.match(/\{\{([^\}\}]+)+\}\}/g); // eslint-disable-line
@@ -897,6 +900,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       var textBinds = {};
       if (matches) {
         Slim._$(target).sourceText = target.nodeValue;
+        target[_$2].repeater = repeater;
         matches.forEach(function (expression) {
           var oldValue = void 0;
           var rxM = /\{\{(.+)(\((.+)\)){1}\}\}/.exec(expression);
@@ -1010,6 +1014,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     var parent = repeaterNode.parentElement || Slim.root(source);
     parent.insertBefore(mountPoint, repeaterNode);
     repeaterNode.removeAttribute('s:repeat');
+    Slim.qSelectAll(repeaterNode, '*').forEach(function (node) {
+      return Slim._$(node).excluded = true;
+    });
+    Slim._$(repeaterNode).excluded = true;
     var clonesTemplate = repeaterNode.outerHTML;
     repeaterNode.remove();
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.1.0/webcomponents-lite.js"></script> -->
-    <script src="../Slim.min.js"></script>
+    <script src="../src/Slim.js"></script>
 </head>
 <body>
 <repeater-test>
@@ -78,7 +78,9 @@
       }
 
       reverse(value) {
-        return value ? value.split('').reverse().join('') : '';
+        const result = value ? value.split('').reverse().join('') : '';
+        console.log(result);
+        return result
       }
 
       addOne() {
