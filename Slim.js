@@ -514,7 +514,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
     }, {
       key: 'attributeChangedCallback',
       value: function attributeChangedCallback(attr, oldValue, newValue) {
-        if (newValue !== oldValue && this.autoBoundAttributes.includes[attr]) {
+        if (newValue !== oldValue && this.autoBoundAttributes.includes(attr)) {
           var prop = Slim.dashToCamel(attr);
           this[prop] = newValue;
         }
