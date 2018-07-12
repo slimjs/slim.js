@@ -956,7 +956,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   // bind:property
   Slim.customDirective(function (attr) {
-    return (/^(bind):(\S+)/.exec(attr.nodeName)
+    return (/^(bind):(\S*)/.exec(attr.nodeName)
     );
   }, function (source, target, attribute, match) {
     var tAttr = match[2];
