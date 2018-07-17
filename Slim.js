@@ -956,8 +956,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   // bind:property
   Slim.customDirective(function (attr) {
-    return (/^(bind):(\S+)/.exec(attr.nodeName)
-    );
+    if(attr.nodeName.indexOf("bind:") == 0){
+      return [ attr.nodeName.substring(0, attr.nodeName.indexOf(' ')), attr.nodeName.substring(0, attr.nodeName.indexOf(':')), attr.nodeName.substring(attr.nodeName.indexOf(':') + 1, attr.nodeName.indexOf(' '))];
+    }
+    else {
+      return null;
+    }
   }, function (source, target, attribute, match) {
     var tAttr = match[2];
     var tProp = Slim.dashToCamel(tAttr);
