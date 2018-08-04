@@ -956,10 +956,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   // bind:property
   Slim.customDirective(function (attr) {
-    return (/^(bind):(\S+)/.exec(attr.nodeName)
-    );
+    if ((attr) => attr.nodeName.indexOf('bind:') === 0) {
+      return attr;
+    }
+    else {
+      return null;
+    }
   }, function (source, target, attribute, match) {
-    var tAttr = match[2];
+    const tAttr = attribute.nodeName.substring(5);
     var tProp = Slim.dashToCamel(tAttr);
     var expression = attribute.value;
     var oldValue = void 0;
