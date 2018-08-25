@@ -11,6 +11,11 @@
 
   const _$ = Symbol.slimjs = Symbol('@SlimInternals')
 
+  const isReadyOnly = (target, prop) => {
+    const descriptor = Object.getOwnPropertyDescriptor(target, prop)
+    return !descriptor || descriptor.writable
+  }
+
   const __flags = {
     isWCSupported:
     'customElements' in window &&
@@ -746,7 +751,9 @@
             const args = pNames.map(prop => Slim.lookup(source, prop, target))
             const value = fn.apply(source, args)
             if (oldValue === value) return
-            target[tProp] = value
+            if (!isReadyOnly(target, tProp)) {
+              target[tProp] = value
+            }
             target.setAttribute(tAttr, value)
           })
         })

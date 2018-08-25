@@ -33,6 +33,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   var _$2 = Symbol.slimjs = Symbol('@SlimInternals');
 
+  var isReadyOnly = function isReadyOnly(target, prop) {
+    var descriptor = Object.getOwnPropertyDescriptor(target, prop);
+    return !descriptor || descriptor.writable;
+  };
+
   var __flags = {
     isWCSupported: 'customElements' in window && 'import' in document.createElement('link') && 'content' in document.createElement('template'),
     isIE11: !!window['MSInputMethodContext'] && !!document['documentMode'],
@@ -956,14 +961,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   // bind:property
   Slim.customDirective(function (attr) {
-    if ((attr) => attr.nodeName.indexOf('bind:') === 0) {
-      return attr;
-    }
-    else {
-      return null;
-    }
+    return (/^(bind):(\S+)/.exec(attr.nodeName)
+    );
   }, function (source, target, attribute, match) {
-    const tAttr = attribute.nodeName.substring(5);
+    var tAttr = match[2];
     var tProp = Slim.dashToCamel(tAttr);
     var expression = attribute.value;
     var oldValue = void 0;
@@ -978,7 +979,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           });
           var value = fn.apply(source, args);
           if (oldValue === value) return;
-          target[tProp] = value;
+          if (!isReadyOnly(target, tProp)) {
+            target[tProp] = value;
+          }
           target.setAttribute(tAttr, value);
         });
       });
