@@ -994,7 +994,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         var value = Slim.lookup(source, expression, target);
         if (oldValue === value) return;
         target.setAttribute(tAttr, value);
-        target[tProp] = value;
+        if (!isReadyOnly(target, tProp)) {
+          target[tProp] = value;
+        }
       });
     }
   });
@@ -1097,7 +1099,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
       }
 
       var init = function init(target, value) {
-        target[tProp] = value;
+        if (!isReadyOnly(target, tProp)) {
+          target[tProp] = value;
+        }
         Slim.commit(target, tProp);
       };
 
