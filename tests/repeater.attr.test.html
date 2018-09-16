@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="../Slim.min.js"></script>
+    <script type="module" src="../Slim.js"></script>
+    <script type="module" src="../directives/repeat.js"></script>
 </head>
 <body>
     <slim-test></slim-test>
 
-    <script>
+    <script type="module">
         Slim.tag('slim-test',
-        `<child-tag slim-repeat="items"></child-tag>`,
+        `<child-tag s:repeat="items"></child-tag>`,
         class extends Slim {
             onBeforeCreated() {
                 this.items = [
@@ -21,7 +22,7 @@
         });
 
         Slim.tag('child-tag',
-        `<span prop="[[data.value]]">*SPAN</span>`,
+        `<span bind:prop="data.value">*SPAN {{data.text}}</span>`,
         class extends Slim {
             dataChanged(value) {
                 console.log(value);

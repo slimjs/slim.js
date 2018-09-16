@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="../Slim.min.js"></script>
+    <script type="module" src="../Slim.js"></script>
 </head>
 <body>
     <test-app>
         <span>Slotted DIV</span>
     </test-app>
 
-<script>
+<script type="module">
     Slim.tag('test-app', `
     <h1>Hello</h1>
     <slot></slot>

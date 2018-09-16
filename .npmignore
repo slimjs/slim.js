@@ -1,9 +1,21 @@
+*.log
 bin
 docs
-example
 src/playground
-website
+tests
+README.md
+prepare-test.js
+build.js
+nightwatch.conf.js
 reports
+.babelrc
+.eslintrc.json
+.travis.yml
+_config.yml
+appveyor.yml
+CNAME
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
 .idea
 .vscode
 

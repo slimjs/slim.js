@@ -9,7 +9,7 @@ module.exports = {
         global.staticServer.stop();
     },
 
-    binding: function(browser) {
+    bind: function(browser) {
         browser.waitForElementPresent('body');
         browser.waitForElementPresent('test-binding');
         browser.waitForElementPresent('h1');

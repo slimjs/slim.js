@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="../Slim.min.js"></script>
+    <script type="module" src="../Slim.js"></script>
+    <script type="module" src="../directives/if.js"></script>
 </head>
 <body>
     <slim-test></slim-test>
     <div id="monitor">Not created</div>
-    <script>
+    <script type="module">
         Slim.tag('slim-test',
         `
             <div id="slimIfTest" s:if="toggle">Now you see me</div>

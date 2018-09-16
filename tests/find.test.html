@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <script src="../Slim.min.js"></script>
+    <script type="module" src="../Slim.js"></script>
     <title></title>
 </head>
 <body>
     <test-find></test-find>
-    <script>
+    <script type="module">
         HTMLElement.prototype.attachShadow = undefined;
         Slim.tag('test-find',
         `

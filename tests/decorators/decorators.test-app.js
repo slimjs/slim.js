@@ -3,7 +3,7 @@
 
 @tag('test-app')
 @template(`
-<h1 bind>{{myProp}}</h1>
+<h1>{{myProp}}</h1>
 `)
 class TestApp extends Slim {
 
