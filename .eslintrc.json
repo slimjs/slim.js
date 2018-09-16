@@ -1,0 +1,13 @@
+{
+    "extends": "standard",
+    "parserOptions": {
+        "ecmaVersion":2017
+    },
+    "rules": {
+        "no-multiple-empty-lines": "off",
+        "padded-blocks": "off"
+    },
+    "env": {
+        "browser": true
+    }
+}
