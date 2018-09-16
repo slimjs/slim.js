@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.1.0/webcomponents-lite.js"></script> -->
-    <script src="../src/Slim.js"></script>
+    <script type="module" src="../Slim.js"></script>
+    <script type="module" src="../directives/repeat.js"></script>
 </head>
 <body>
 <repeater-test>
 </repeater-test>
 
-<script>
+<script type="module">
   Slim.debug = console.log;
   Slim.tag('repeater-child', '<span bind:prop="item.label" bind>{{item.text}}</span>', Slim);
   Slim.tag('n-r', `

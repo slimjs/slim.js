@@ -51,7 +51,7 @@ function _initializerWarningHelper(descriptor, context) {
     throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
 }
 
-var TestApp = (_dec = tag('test-app'), _dec2 = template('\n<h1 bind>{{myProp}}</h1>\n'), _dec3 = attribute(), _dec(_class = _dec2(_class = (_class2 = function (_Slim) {
+var TestApp = (_dec = tag('test-app'), _dec2 = template('\n<h1>{{myProp}}</h1>\n'), _dec3 = attribute(), _dec(_class = _dec2(_class = (_class2 = function (_Slim) {
     _inherits(TestApp, _Slim);
 
     function TestApp() {

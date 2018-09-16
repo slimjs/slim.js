@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="../Slim.min.js"></script>
+    <script type="module" src="../Slim.js"></script>
+    <script type="module" src="../directives/switch-case.js"></script>
+    <script type="module" src="../directives/repeat.js"></script>
 </head>
 <body>
     <slim-test></slim-test>
     <hr />
     <div id="monitor">Not created</div>
     <div id="monitor2">Not Created</div>
-    <script>
+    <script type="module">
         Slim.tag('slim-test',
         `
         <div id="main" s:switch="switchValue">

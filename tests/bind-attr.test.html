@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="module" src="../Slim.js"></script>
+    <script type="module" src="../directives/bind-attr.js"></script>
+</head>
+<body>
+    <test-tag></test-tag>
+
+    <script type="module">
+        Slim.tag('test-tag', class extends Slim {
+
+          get template () {
+            return `
+    <span bind-attr:hello="isHello" bind-attr:good-bye="isGoodbye">I am just a span</span>
+    <button id="goodbye" click="tGoodbye">Toggle goodbye</button>
+    <button id="hello" click="tHello">Toggle hello</button>`}
+
+          onBeforeCreated () {
+            this.isGoodbye = false;
+            this.isHello = false;
+          }
+
+          tGoodbye () {
+            this.isGoodbye = !this.isGoodbye;
+          }
+
+          tHello () {
+            if (!this.isHello) {
+              this.isHello = 'I have a value now';
+            } else {
+              this.isHello = null;
+            }
+          }
+
+        })
+    </script>
+</body>
+</html>

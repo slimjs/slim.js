@@ -20,7 +20,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-import { Slim, _$, isReadyOnly } from '../Slim'
+import { Slim, _$, isReadyOnly } from '../Slim.js'
 
 Slim.customDirective(
   attr => attr.nodeName === 's:repeat',

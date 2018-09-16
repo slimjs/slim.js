@@ -5,7 +5,8 @@
     },
     "rules": {
         "no-multiple-empty-lines": "off",
-        "padded-blocks": "off"
+        "padded-blocks": "off",
+        "no-debugger": "off"
     },
     "env": {
         "browser": true

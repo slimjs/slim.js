@@ -20,15 +20,20 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-import { Slim } from '../Slim'
+import { Slim } from '../Slim.js'
 
 const test = attr => /^(bind.attr):(\S+)/.exec(attr.nodeName)
 const execute = (source, target, attribute, match) => {
   const tAttr = match[2]
   const path = attribute.value
   Slim.bind(source, target, path, () => {
-    if (Slim.lookup(source, path)) {
-      target.setAttribute(tAttr, '')
+    let value = Slim.lookup(source, path)
+    if (value) {
+      if (value === true) {
+        target.setAttribute(tAttr, '')
+      } else {
+        target.setAttribute(tAttr, value)
+      }
     } else {
       target.removeAttribute(tAttr)
     }

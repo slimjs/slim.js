@@ -22,7 +22,6 @@
  */
 
 
-
 let alreadyExists = false
 
 try {
@@ -164,6 +163,10 @@ export class Slim extends HTMLElement {
   static tag (tagName, tplOrClazz, clazz) {
     if (clazz === undefined) {
       clazz = tplOrClazz
+    } else {
+      Object.defineProperty(clazz.prototype, 'template', {
+        value: tplOrClazz
+      })
     }
     this.classToTagDict.set(clazz, tagName)
     customElements.define(tagName, clazz)
@@ -186,7 +189,7 @@ export class Slim extends HTMLElement {
    */
   static plugin (phase, plugin) {
     /* @type Set */
-    const set = this[_$].plugins[phase]
+    const set = this.plugins[phase]
     if (set) {
       set.add(plugin)
     } else {
@@ -437,6 +440,8 @@ export class Slim extends HTMLElement {
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements}
    */
   connectedCallback () {
+    super.connectedCallback && super.connectedCallback()
+    if (!Slim.checkCreationBlocking(this)) this.createdCallback()
     this.onAdded()
     Slim.executePlugins('added', this)
   }
