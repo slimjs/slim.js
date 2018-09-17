@@ -13,15 +13,18 @@ Documentation [here](https://github.com/slimjs/slim.js/wiki)
 Slim.js is a lightning fast library for development of native web-components and custom-elements based modern applications. No black magic involved.
 It uses es6+DOM native API and boosts up HTML elements with superpowers. 
 
-### Is this another framework
-No! It's a slim code layer that adds superpowers to HTML elements, using the browser native capabilities.
-But... wait! there's more:
-- It has data binding
-- It can be extended
-- It feels like a framework (but in a good way)
-- It's as small as 5302 GzBytes!
-- Single file, good to go.
+### Is this another framework?
+Nope. It's a slim code layer that adds framework-like power to your custom elements, using only the browser's native capabilities.
+Here's what you get:
+- Automatic rendering using templates
+- One-way data binding, derived from templates
+- It can be extended: Anyone can add custom plugins or directives
+- It feels like a framework (in a good way), but it's not limiting you to work with any.
+- It's as small as 3.4 KBytes (gzipped)!
+- Single file for core functionality, and your'e good to go.
 - No tools required, everything is based on native browser API. Choose your own tools.
+- (Optional) Decorators for es-next syntax, via babel
+- Works with mixins from other libraries, such as Polymer
 
 ## Standards compilant
 - es6
@@ -34,10 +37,13 @@ But... wait! there's more:
 # Documentation
 - [Developer's Guide](http://slimjs.com)
 
-The documentation site is built with Slim.js. Check out the source code, it's easy.
+The official website is built with Slim.js (with source maps). Check out the source code, see it for yourself.
 
 ### Contibutors are welcome.
 
 *USE THE PLATFORM*
 
+## Wan't to sponsor the project? contact eavichay@gmail.com
+
 [![Support slim.js](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/eavichay/donate)
+
