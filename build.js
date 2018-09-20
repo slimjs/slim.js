@@ -2,7 +2,6 @@ const fs = require('fs')
 const path = require('path')
 const UglifyJS = require('uglify-es')
 const readline = require('readline')
-const Stream = require('stream')
 
 const ROOT = process.cwd()
 
@@ -45,6 +44,17 @@ function stripImportExport (path) {
   })
 }
 
+async function combineDirectivesNoModule () {
+  const directives = findAllJavascriptFiles(PATH.DIRECTIVES)
+  const result = directives.map(async filename => {
+    return await uglifyFile(path.resolve(PATH.DIRECTIVES, filename), true)
+  })
+  const [...combined] = await Promise.all(result)
+  const targetFile = path.resolve(PATH.DIRECTIVES_DIST, 'all.nomodule.js')
+  const output = combined.filter(x => !!x).join('')
+  await fs.writeFileSync(targetFile, output)
+}
+
 async function uglifyFile (path, removeExportStatements = false) {
   let content = fs.readFileSync(path, 'utf8').toString()
   if (removeExportStatements) {
@@ -60,6 +70,7 @@ function copyFile (path, target) {
 }
 
 async function build () {
+
   // minify core
   fs.writeFileSync(
     path.resolve(PATH.ROOT, 'Slim.js'),
@@ -80,7 +91,6 @@ async function build () {
   copyFile(PATH.DEF, PATH.DEF_DIST)
   copyFile(PATH.DECORATORS_DEF, PATH.DECORATORS_DEF_DIST)
 
-
   // minify directives
   const directives = findAllJavascriptFiles(PATH.DIRECTIVES)
   const promises = directives.map(async filename => {
@@ -91,6 +101,9 @@ async function build () {
     fs.writeFileSync(path.resolve(PATH.DIRECTIVES_DIST, filename.split('.js').join('.nomodule.js')), resultNoModule)
   })
   await Promise.all(promises)
+
+  // combine directives-nomodule
+  await combineDirectivesNoModule()
 }
 
 
