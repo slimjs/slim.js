@@ -32,10 +32,11 @@ try {
     alreadyExists = true
   }
 } catch (err) {}
+Symbol.Slim = Symbol('@SlimInternals')
 
-export const _$ = Symbol('@SlimInternals')
+export const _$ = Symbol.Slim
 
-export const isReadyOnly = (target, prop) => {
+export const isReadOnly = (target, prop) => {
   const descriptor = Object.getOwnPropertyDescriptor(target, prop)
   return !descriptor || descriptor.writable
 }
@@ -762,6 +763,7 @@ Slim[_$] = {
     'change'
   ]
 }
+Slim.isReadOnly = isReadOnly
 
 // supported events (i.e. click, mouseover, change...)
 Slim.customDirective(
@@ -871,7 +873,7 @@ Slim.customDirective(
           const args = pNames.map(prop => Slim.lookup(source, prop, target))
           const value = fn.apply(source, args)
           if (oldValue === value) return
-          if (!isReadyOnly(target, tProp)) {
+          if (!isReadOnly(target, tProp)) {
             target[tProp] = value
           }
           target.setAttribute(tAttr, value)
@@ -886,7 +888,7 @@ Slim.customDirective(
         const value = Slim.lookup(source, expression, target)
         if (oldValue === value) return
         target.setAttribute(tAttr, value)
-        if (!isReadyOnly(target, tProp)) {
+        if (!isReadOnly(target, tProp)) {
           target[tProp] = value
         }
       })
@@ -896,9 +898,5 @@ Slim.customDirective(
 
 if (!alreadyExists && window) {
   window['Slim'] = Slim
-}
-
-if (typeof module !== 'undefined') {
-  module.exports.Slim = Slim
 }
 

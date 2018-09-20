@@ -17,6 +17,7 @@ Decorators.d.ts
 Decorators.js
 Slim.js
 Slim.d.ts
+Slim.nomodule.js
 
 .idea
 .vscode

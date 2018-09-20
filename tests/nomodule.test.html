@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../Slim.nomodule.js"></script>
+    <script src="../directives/if.nomodule.js"></script>
+    <script src="../directives/repeat.nomodule.js"></script>
+    <script src="../directives/bind-attr.nomodule.js"></script>
+    <script src="../directives/switch-case.nomodule.js"></script>
+</head>
+<body>
+    <script>
+        Slim.tag('test-nomodule', `
+    <style>
+        span[colored] {
+            color: green;
+        }
+    </style>
+    <h1 s:if="show">Nomodule works</h1>
+    <span bind.attr:colored="show" s:repeat="data">{{data}}</span>
+    <div s:switch="letter" id="switch">
+        <span s:case="a">A</span>
+        <span s:case="b">B</span>
+        <span s:default>DEFAULT</span>
+    </div>
+    <button id="toggle" click="toggle">TOGGLE</button>
+`,
+          class extends Slim {
+            constructor () {
+              super()
+              this.data = [1,2,3,4,5]
+            }
+
+            toggle () {
+              this.show = !this.show
+              if (this.letter === 'a') {
+                this.letter = 'b'
+              } else if (this.letter === 'b') {
+                this.letter = 'c'
+              } else {
+                this.letter = 'a'
+              }
+            }
+          }
+        )
+
+        const clazz = customElements.get('test-nomodule')
+        document.body.appendChild(new clazz())
+    </script>
+</body>
+</html>
