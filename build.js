@@ -44,15 +44,14 @@ function stripImportExport (path) {
   })
 }
 
-async function combineDirectivesNoModule () {
-  const directives = findAllJavascriptFiles(PATH.DIRECTIVES)
+async function combineDirectivesNoModule (directives) {
   const result = directives.map(async filename => {
     return await uglifyFile(path.resolve(PATH.DIRECTIVES, filename), true)
   })
   const [...combined] = await Promise.all(result)
   const targetFile = path.resolve(PATH.DIRECTIVES_DIST, 'all.nomodule.js')
-  const output = combined.filter(x => !!x).join('')
-  await fs.writeFileSync(targetFile, output)
+  const output = combined.join('\n')
+  fs.writeFileSync(targetFile, output)
 }
 
 async function uglifyFile (path, removeExportStatements = false) {
@@ -103,9 +102,9 @@ async function build () {
   await Promise.all(promises)
 
   // combine directives-nomodule
-  await combineDirectivesNoModule()
+  await combineDirectivesNoModule(directives)
 }
 
 
 
-return build()
+build()
