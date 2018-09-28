@@ -4,15 +4,14 @@ agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu1804
-
 blocks:
-  - name: "Build and Test"
+  - name: Build and Test
     task:
       jobs:
-      - name: "Install"
+      - name: Install
         commands:
           - checkout
           - npm install
-      - name: "Test"
+      - name: Test
         commands:
           - npm run test
