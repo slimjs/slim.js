@@ -1,0 +1,18 @@
+version: v4.0.1
+name: Slim.js
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+blocks:
+  - name: "Build and Test"
+    task:
+      jobs:
+      - name: "Install"
+        commands:
+          - checkout
+          - npm install
+      - name: "Test"
+        commands:
+          - npm run test
