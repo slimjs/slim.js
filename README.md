@@ -6,6 +6,8 @@
 
 # Hello, slim.js
 
+## Migration to version 4 instructions [here](#version-4-changes-and-migration)
+
 Official website [here](http://slimjs.com)
 Documentation [here](https://github.com/slimjs/slim.js/wiki)
 
@@ -25,6 +27,28 @@ Here's what you get:
 - No tools required, everything is based on native browser API. Choose your own tools.
 - (Optional) Decorators for es-next syntax, via babel
 - Works with mixins from other libraries, such as Polymer
+
+# Version 4+ Changes and Migration
+- Package files supports es6 native modules - i.e. import/exports.
+- For no-modules approach, every file has a _filename_.nomodule.js
+- Directives are in separate files, to reduce core package size. For using directives:
+```js
+import 'slim-js/directives/repeat.js'
+import 'slim-js/directives/if.js'
+import 'slim-js/directives/switch-case.js'
+// Or if you need them all
+import 'slim-js/directives/all.js'
+```
+- For the no-module approach place in your html the following
+```html
+<script src="slim-js/Slim.nomodule.js"></script>
+<script src="slim-js/directives/all.nomodule.js"></script>
+
+or alternatively use the es6 native modules in your browser
+
+<script type="module" src="slim-js/Slim.js">
+<script type="module" src="slim-js/directives/...">
+```
 
 ## Standards compilant
 - es6
