@@ -1,5 +1,5 @@
-version: v4.0.1
-name: Slim.js
+version: v1.0
+name: slim.js
 agent:
   machine:
     type: e1-standard-2
