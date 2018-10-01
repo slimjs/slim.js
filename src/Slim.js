@@ -788,60 +788,45 @@ Slim.customDirective(
   }
 )
 
-const scanNode = (source, target) => {
-  const textNodes = Array.from(target.childNodes).filter(n => n.nodeType === Node.TEXT_NODE)
-  const masterNode = target
-  const repeater = Slim._$(target).repeater
+const scanNode = (source, element) => {
+  const textNodes = Array.from(element.childNodes).filter(n => n.nodeType === Node.TEXT_NODE)
   textNodes.forEach(target => {
-    let updatedText = ''
-    const matches = target.nodeValue.match(/\{\{([^\}\}]+)+\}\}/g) // eslint-disable-line
-    const aggProps = {}
-    const textBinds = {}
-    if (matches) {
-      Slim._$(target).sourceText = target.nodeValue
-      target[_$].repeater = repeater
-      matches.forEach(expression => {
-        let oldValue
-        const rxM = /\{\{(.+)(\((.+)\)){1}\}\}/.exec(expression)
-        if (rxM) {
-          const fnName = rxM[1]
-          const pNames = rxM[3]
-            .split(' ')
-            .join('')
-            .split(',')
-          pNames
-            .map(path => path.split('.')[0])
-            .forEach(p => (aggProps[p] = true))
-          textBinds[expression] = target => {
-            const args = pNames.map(path => Slim.lookup(source, path, target))
-            const fn = source[fnName]
-            const value = fn ? fn.apply(source, args) : undefined
-            if (oldValue === value) return
-            updatedText = updatedText.split(expression).join(value || '')
+    // split text nodes
+    let match
+    let tempNode = target
+    // eslint-disable-next-line
+    while (match = /\{{2}([^\}]+)\}{2}/gm.exec(tempNode.nodeValue)) {
+      const boundNode = tempNode.splitText(match.index)
+      tempNode = boundNode.splitText(match[0].length)
+      // test for computed value: i.e. someMethod(someProp, otherProp);
+      const rxMmatches = boundNode.nodeValue.match(/\{\{(.+)[(]{1}(.+)[)]{1}\}\}/)
+      if (rxMmatches) {
+        const methodName = rxMmatches[1].trim()
+        const paths = rxMmatches[2].split(',').map(x => x.trim())
+        paths.forEach(path => {
+          const executor = () => {
+            const args = paths.map(expression => Slim.lookup(source, expression, element))
+            try {
+              boundNode.nodeValue = source[methodName].apply(source, args)
+            } catch (err) {
+              if (!source[methodName]) {
+                console.warn(`function ${methodName} does not exist on bound parent <${source.localName}>`)
+              }
+              console.warn('Could not execute binding: ', err.message)
+            }
           }
-          return
-        }
-        const rxP = /\{\{(.+[^(\((.+)\))])\}\}/.exec(expression) // eslint-disable-line
-        if (rxP) {
-          const path = rxP[1]
-          aggProps[path] = true
-          textBinds[expression] = target => {
-            const value = Slim.lookup(source, path, masterNode)
-            if (oldValue === value) return
-            updatedText = updatedText.split(expression).join(value || '')
-          }
-        }
-      })
-      const chainExecutor = () => {
-        updatedText = target[_$].sourceText
-        Object.keys(textBinds).forEach(expression => {
-          textBinds[expression](target)
+          Slim.bind(source, element, path, executor)
+          executor()
         })
-        target.nodeValue = updatedText
+      } else {
+        // property only
+        const path = boundNode.nodeValue.slice(2, boundNode.nodeValue.length - 2)
+        const executor = () => {
+          boundNode.nodeValue = Slim.lookup(source, path, element)
+        }
+        Slim.bind(source, element, path, executor)
+        executor()
       }
-      Object.keys(aggProps).forEach(prop => {
-        Slim.bind(source, masterNode, prop, chainExecutor)
-      })
     }
   })
 }
