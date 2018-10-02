@@ -12,6 +12,4 @@ blocks:
         commands:
           - checkout
           - npm install
-      - name: Test
-        commands:
-          - npm run test
+          - npm test
