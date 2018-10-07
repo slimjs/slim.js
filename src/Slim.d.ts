@@ -18,8 +18,8 @@ export declare class Slim extends HTMLElement {
 
   public static dashToCamel (dash: string):string;
   public static camelToDash (camel: string):string;
-  public readonly static rxProp: RegExp;
-  public readonly static rxMethod: RegExp;
+  public static readonly rxProp: RegExp;
+  public static readonly rxMethod: RegExp;
   public static lookup (target:Object|Element, expression: string, maybeRepeater:Element|Object):any;
   public static _$ (target: Element): SlimInternals;
   public static qSelectAll(target: Element, selector: string):Array<Element>;
