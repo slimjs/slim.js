@@ -1,4 +1,4 @@
-declare interface SlimInternals {
+declare type SlimInternals = {
   hasCustomTemplate: string | undefined;
   boundParent: Element;
   repeater: object;
@@ -18,15 +18,15 @@ export declare class Slim extends HTMLElement {
 
   public static dashToCamel (dash: string):string;
   public static camelToDash (camel: string):string;
-  public static get rxProp (): RegExp;
-  public static get rxMethod (): RegExp;
+  public readonly static rxProp: RegExp;
+  public readonly static rxMethod: RegExp;
   public static lookup (target:Object|Element, expression: string, maybeRepeater:Element|Object):any;
   public static _$ (target: Element): SlimInternals;
   public static qSelectAll(target: Element, selector: string):Array<Element>;
   public static tag (
     tagName: string,
     tplOrClass: string | Slim,
-    clazz?: Slim);
+    clazz?: Slim): void;
   static tagOf(clazz:HTMLElement | Slim): string;
   public static plugin (phase: string, plugin: (target: Slim) => void): void;
   public static customDirective(
@@ -39,7 +39,7 @@ export declare class Slim extends HTMLElement {
   public static bindOwn (source:Element|Object, expression: string, executor: Function): Function;
   public static bind (source:Element|Object, target: Element|Object, expression: string, executor: Function): Function;
   public static update (target: Element|Object, ...props: string[]): void;
-  public static commit (target: Element|Object, prop: string);
+  public static commit (target: Element|Object, prop: string): void;
   public static debug: Function;
 
   private static checkCreationBlocking(element:HTMLElement):boolean;
