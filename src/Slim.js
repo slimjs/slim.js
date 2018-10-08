@@ -38,7 +38,7 @@ export const _$ = Symbol.Slim
 
 export const isReadOnly = (target, prop) => {
   const descriptor = Object.getOwnPropertyDescriptor(target, prop)
-  return !descriptor || descriptor.writable
+  return descriptor && descriptor.writable === false
 }
 
 const __flags = {

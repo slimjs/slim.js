@@ -18,8 +18,8 @@ export declare class Slim extends HTMLElement {
 
   public static dashToCamel (dash: string):string;
   public static camelToDash (camel: string):string;
-  public static readonly rxProp: RegExp;
-  public static readonly rxMethod: RegExp;
+  public static rxProp: RegExp;
+  public static rxMethod: RegExp;
   public static lookup (target:Object|Element, expression: string, maybeRepeater:Element|Object):any;
   public static _$ (target: Element): SlimInternals;
   public static qSelectAll(target: Element, selector: string):Array<Element>;
@@ -45,7 +45,7 @@ export declare class Slim extends HTMLElement {
   private static checkCreationBlocking(element:HTMLElement):boolean;
   private static executePlugins (phase: string, target: Slim):void;
   private static wrapGetterSetter (element: Element, expression: string): string;
-  private static readonly plugins: {
+  private static plugins: {
     create: Array<(target: Slim) => void>,
     added: Array<(target: Slim) => void>,
     beforeRender: Array<(target: Slim) => void>,
