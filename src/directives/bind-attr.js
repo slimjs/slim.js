@@ -27,7 +27,7 @@ const execute = (source, target, attribute, match) => {
   const tAttr = match[2]
   const path = attribute.value
   Slim.bind(source, target, path, () => {
-    let value = Slim.lookup(source, path)
+    let value = Slim.lookup(source, path, target)
     if (value) {
       if (value === true) {
         target.setAttribute(tAttr, '')
