@@ -730,7 +730,7 @@ Slim.asap =
 Slim[_$] = {
   customDirectives: new Map(),
   uniqueCounter: 0,
-  supportedNativeEvents: Object.keys(HTMLElement.prototype).filter(key => key.startsWith('on'));
+  supportedNativeEvents: Object.keys(HTMLElement.prototype).filter(key => key.startsWith('on'))
 }
 Slim.isReadOnly = isReadOnly
 
