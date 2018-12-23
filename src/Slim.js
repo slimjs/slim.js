@@ -22,17 +22,9 @@
  */
 
 
-let alreadyExists = false
+let alreadyExists = window.Slim && window.Slim.plugins && window.Slim.asap
 
-try {
-  const { Slim } = window
-  if (!!Slim && Slim.plugins && Slim.asap) {
-    const warn = console.error || console.warn || console.log
-    warn('Warning: slim.js already initialized on window')
-    alreadyExists = true
-  }
-} catch (err) {}
-Symbol.Slim = Symbol('@SlimInternals')
+Symbol.Slim = Symbol.Slim || Symbol('@SlimInternals')
 
 export const _$ = Symbol.Slim
 
@@ -40,28 +32,6 @@ export const isReadOnly = (target, prop) => {
   const descriptor = Object.getOwnPropertyDescriptor(target, prop)
   return descriptor && descriptor.writable === false
 }
-
-const __flags = {
-  isIE11: !!window['MSInputMethodContext'] && !!document['documentMode'],
-  isChrome: undefined,
-  isEdge: undefined,
-  isSafari: undefined,
-  isFirefox: undefined
-}
-
-try {
-  __flags.isChrome = /Chrome/.test(navigator.userAgent)
-  __flags.isEdge = /Edge/.test(navigator.userAgent)
-  __flags.isSafari = /Safari/.test(navigator.userAgent)
-  __flags.isFirefox = /Firefox/.test(navigator.userAgent)
-
-  if (__flags.isIE11 || __flags.isEdge) {
-    __flags.isChrome = false
-    Object.defineProperty(Node.prototype, 'children', function () {
-      return this.childNodes
-    })
-  }
-} catch (err) {}
 
 class Internals {
   constructor () {
@@ -161,16 +131,15 @@ export class Slim extends HTMLElement {
    * @param {string|function} tplOrClazz
    * @param {function} clazz?
    */
-  static tag (tagName, tplOrClazz, clazz) {
-    if (clazz === undefined) {
-      clazz = tplOrClazz
+  static tag (tagName, tplOrClazz, clazz = Slim) {
+    if (typeof tplOrClazz === 'function') {
+      customElements.define(tagName, tplOrClazz)
+      this.classToTagDict.set(tplOrClazz, tagName)
     } else {
-      Object.defineProperty(clazz.prototype, 'template', {
-        value: tplOrClazz
-      })
+      Object.defineProperty(clazz.prototype, 'template', { value: tplOrClazz })
+      this.classToTagDict.set(clazz, tagName)
+      customElements.define(tagName, clazz)
     }
-    this.classToTagDict.set(clazz, tagName)
-    customElements.define(tagName, clazz)
   }
 
   /**
@@ -200,6 +169,11 @@ export class Slim extends HTMLElement {
     return () => set.delete(plugin)
   }
 
+  /**
+   * @private
+   * @param element
+   * @returns {boolean}
+   */
   static checkCreationBlocking (element) {
     if (element.attributes) {
       for (let i = 0, n = element.attributes.length; i < n; i++) {
@@ -216,9 +190,9 @@ export class Slim extends HTMLElement {
   }
 
   /**
-   * Adds a new directive to be executed on components creation.
+   * Adds a new template directive that is executed on components creation phase.
    * @see {@link https://github.com/slimjs/slim.js/wiki/Extending-slim-with-custom-directives}
-   * @param { function(attribute: Node): * }  testFn Function that checks
+   * @param { function(attribute: Node): * } testFn Function that checks
    * @param { function(source: HTMLElement, target: HTMLElement, attribute: Node, match: *) } fn The executed function that is invoked when an attribute is found
    * @param { boolean? } isBlocking If set to true, conditional rendering will stop the creation phase of the specific target element
    */
@@ -228,8 +202,18 @@ export class Slim extends HTMLElement {
         `Cannot register custom directive: ${testFn} already registered`
       )
     }
-    fn.isBlocking = isBlocking
     this[_$].customDirectives.set(testFn, fn)
+    const options = {
+      prevent: () => {
+        fn.isBlocking = true
+        return options
+      },
+      hide: () => {
+        fn.shouldHide = true
+        return options
+      }
+    }
+    return options
   }
 
   /**
@@ -248,7 +232,7 @@ export class Slim extends HTMLElement {
    * Returns target::querySelectAll as Array
    * @param {HTMLElement} target
    * @param {string} selector
-   * @returns {HTMLElement[]}
+   * @returns {...NodeListOf<HTMLElementTagNameMap[[string]]> | NodeListOf<Element> | NodeListOf<SVGElementTagNameMap[[string]]>[]}
    */
   static qSelectAll (target, selector) {
     return [...target.querySelectorAll(selector)]
@@ -291,9 +275,6 @@ export class Slim extends HTMLElement {
     }
     if (target.parentNode) {
       target.parentNode.removeChild(target)
-    }
-    if (this._$(target).internetExploderClone) {
-      this.removeChild(this._$(target).internetExploderClone)
     }
   }
 
@@ -368,7 +349,7 @@ export class Slim extends HTMLElement {
    * Forces updates of all bindings on the DOM tree
    * @param target
    * @param props
-   * @returns {*}
+   * @returns void
    */
   static update (target, ...props) {
     if (props.length === 0) {
@@ -412,15 +393,9 @@ export class Slim extends HTMLElement {
     super()
     Slim._$(this)
     this.__isSlim = true
-    const init = () => {
-      if (!Slim.checkCreationBlocking(this)) {
-        this.createdCallback()
-      }
-
+    if (!Slim.checkCreationBlocking(this)) {
+      this.createdCallback()
     }
-    if (__flags.isSafari) {
-      Slim.asap(init)
-    } else init()
   }
 
   /**
@@ -467,6 +442,9 @@ export class Slim extends HTMLElement {
     if (newValue !== oldValue && this.autoBoundAttributes.includes[attr]) {
       const prop = Slim.dashToCamel(attr)
       this[prop] = newValue
+      if (typeof this[prop + 'Changed'] === 'function') {
+        this[prop + 'Changed'](newValue)
+      }
     }
   }
 
@@ -510,6 +488,9 @@ export class Slim extends HTMLElement {
               const match = check(attribute)
               if (match) {
                 directive(source, child, attribute, match)
+                if (directive.shouldHide) {
+                  child.removeAttribute(attribute.nodeName)
+                }
               }
             }
           }
@@ -688,7 +669,7 @@ export class Slim extends HTMLElement {
   }
 
   /**
-   * Whether the component uses shadow DOM. Defaults to false
+   * Whether the component uses shadow DOM. Defaults to true
    * @returns {boolean}
    * @protected
    */
@@ -721,11 +702,7 @@ Slim.plugins = {
 
 Slim.debug = () => {}
 Slim.asap =
-  window && window.requestAnimationFrame
-    ? cb => window.requestAnimationFrame(cb)
-    : typeof setImmediate !== 'undefined'
-      ? setImmediate
-      : cb => setTimeout(cb, 0)
+  window && window.requestAnimationFrame ? cb => window.requestAnimationFrame(cb) : typeof setImmediate !== 'undefined' ? setImmediate : cb => setTimeout(cb, 0)
 
 Slim[_$] = {
   customDirectives: new Map(),
@@ -757,6 +734,26 @@ Slim.customDirective(
   }
 )
 
+const parseExpression = expression => {
+  const rxM = /\{\{(.+)(\((.+)\)){1}\}\}/.exec(expression)
+  if (rxM) {
+    const fnName = rxM[1]
+    const pNames = rxM[3]
+      .split(',')
+      .map(x => x.trim())
+    return {
+      method: fnName,
+      props: pNames
+    }
+  }
+  const rxP = /\{\{(.+[^(\((.+)\))])\}\}/.exec(expression) // eslint-disable-line
+  if (rxP) {
+    return {
+      property: rxP[1]
+    }
+  }
+}
+
 const scanNode = (source, target) => {
   const textNodes = Array.from(target.childNodes).filter(n => n.nodeType === Node.TEXT_NODE)
   const masterNode = target
@@ -764,40 +761,33 @@ const scanNode = (source, target) => {
   textNodes.forEach(target => {
     let updatedText = ''
     const matches = target.nodeValue.match(/\{\{([^\}\}]+)+\}\}/g) // eslint-disable-line
-    const aggProps = {}
+    const aggProps = new Set()
     const textBinds = {}
     if (matches) {
       Slim._$(target).sourceText = target.nodeValue
       target[_$].repeater = repeater
       matches.forEach(expression => {
         let oldValue
-        const rxM = /\{\{(.+)(\((.+)\)){1}\}\}/.exec(expression)
-        if (rxM) {
-          const fnName = rxM[1]
-          const pNames = rxM[3]
-            .split(' ')
-            .join('')
-            .split(',')
-          pNames
+        const parsed = parseExpression(expression)
+        const { property, props, method } = parsed
+        if (method) {
+          const fn = source[method]
+          props
             .map(path => path.split('.')[0])
-            .forEach(p => (aggProps[p] = true))
+            .forEach(prop => aggProps.add(prop))
           textBinds[expression] = target => {
-            const args = pNames.map(path => Slim.lookup(source, path, target))
-            const fn = source[fnName]
+            const args = props.map(path => Slim.lookup(source, path, target))
             const value = fn ? fn.apply(source, args) : undefined
             if (oldValue === value) return
             updatedText = updatedText.split(expression).join(value || '')
           }
-          return
-        }
-        const rxP = /\{\{(.+[^(\((.+)\))])\}\}/.exec(expression) // eslint-disable-line
-        if (rxP) {
-          const path = rxP[1]
-          aggProps[path] = true
-          textBinds[expression] = target => {
-            const value = Slim.lookup(source, path, masterNode)
-            if (oldValue === value) return
-            updatedText = updatedText.split(expression).join(value || '')
+        } else if (property) {
+          aggProps.add(property)
+          textBinds[expression] = () => {
+            const value = Slim.lookup(source, property, masterNode)
+            if (oldValue !== value) {
+              updatedText = updatedText.split(expression).join(value || '')
+            }
           }
         }
       })
@@ -808,17 +798,42 @@ const scanNode = (source, target) => {
         })
         target.nodeValue = updatedText
       }
-      Object.keys(aggProps).forEach(prop => {
-        Slim.bind(source, masterNode, prop, chainExecutor)
-      })
+      aggProps.forEach(prop => Slim.bind(source, masterNode, prop, chainExecutor))
     }
   })
 }
 
+// property bind       <child ::property="expression" />
+Slim.customDirective(
+  attr => attr.nodeName.startsWith('::'),
+  (source, target, attr) => {
+    const targetPropertyName = Slim.dashToCamel(attr.nodeName.slice(2))
+    const parsedExpression = parseExpression('{{' + attr.nodeValue + '}}')
+    const { property, props, method } = parsedExpression
+    if (method) {
+      const fn = Slim.lookup(source, method)
+      props.forEach(prop => Slim.bind(source, target, prop,
+        () => {
+          const args = props.map(prop => Slim.lookup(source, prop, target))
+          const value = fn.apply(source, args)
+          try {
+            target[targetPropertyName] = value
+          } catch (err) {
+            console.error(err)
+          }
+        }))
+    } else if (property) {
+      Slim.bind(source, target, property, () => {
+        target[targetPropertyName] = Slim.lookup(source, attr.nodeValue, target)
+      })
+    }
+  }
+).hide()
+
 Slim.customDirective(
   attr => attr.nodeName === 's:id',
-  (source, target, attribute) => {
-    Slim._$(target).boundParent[attribute.value] = target
+  (source, target, /** @type Node */ attribute) => {
+    Slim._$(target).boundParent[attribute.nodeValue] = target
   }
 )
 
@@ -845,7 +860,11 @@ Slim.customDirective(
           if (!isReadOnly(target, tProp)) {
             target[tProp] = value
           }
-          target.setAttribute(tAttr, value)
+          if (typeof value === 'string' || typeof value === 'number') {
+            target.setAttribute(tAttr, value)
+          } else {
+            target.removeAttribute(tAttr)
+          }
         })
       })
       return
@@ -856,7 +875,11 @@ Slim.customDirective(
       Slim.bind(source, target, prop, () => {
         const value = Slim.lookup(source, expression, target)
         if (oldValue === value) return
-        target.setAttribute(tAttr, value)
+        if (typeof value === 'string' || typeof value === 'number') {
+          target.setAttribute(tAttr, value)
+        } else {
+          target.removeAttribute(tAttr)
+        }
         if (!isReadOnly(target, tProp)) {
           target[tProp] = value
         }

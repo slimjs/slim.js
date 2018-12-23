@@ -58,6 +58,5 @@ Slim.customDirective(
       oldValue = value
     }
     Slim.bind(source, target, path, fn)
-  },
-  true
-)
+  }
+).prevent()

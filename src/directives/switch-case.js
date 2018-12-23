@@ -73,9 +73,8 @@ Slim.customDirective(
   }
 )
 
-Slim.customDirective(attr => /^s:case$/.exec(attr.nodeName), () => {}, true)
+Slim.customDirective(attr => /^s:case$/.exec(attr.nodeName), () => {}).prevent()
 Slim.customDirective(
   attr => /^s:default$/.exec(attr.nodeName),
-  () => {},
-  true
-)
+  () => {}
+).prevent()

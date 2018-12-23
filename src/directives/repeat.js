@@ -140,7 +140,6 @@ import { Slim } from '../Slim.js'
           })
         }
       })
-    },
-    true
-  )
+    }
+  ).prevent()
 })()
