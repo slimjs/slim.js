@@ -730,38 +730,7 @@ Slim.asap =
 Slim[_$] = {
   customDirectives: new Map(),
   uniqueCounter: 0,
-  supportedNativeEvents: [
-    'click',
-    'mouseover',
-    'mouseout',
-    'mousemove',
-    'mouseenter',
-    'mousedown',
-    'mouseup',
-    'dblclick',
-    'contextmenu',
-    'wheel',
-    'mouseleave',
-    'select',
-    'pointerlockchange',
-    'pointerlockerror',
-    'focus',
-    'blur',
-    'input',
-    'error',
-    'invalid',
-    'animationstart',
-    'animationend',
-    'animationiteration',
-    'reset',
-    'submit',
-    'resize',
-    'scroll',
-    'keydown',
-    'keypress',
-    'keyup',
-    'change'
-  ]
+  supportedNativeEvents: Object.keys(HTMLElement.prototype).filter(key => key.startsWith('on'))
 }
 Slim.isReadOnly = isReadOnly
 
