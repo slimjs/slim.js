@@ -44,7 +44,6 @@ class Internals {
     this.createdCallbackInvoked = false
     this.sourceText = null
     this.excluded = false
-    this.autoBoundAttributes = []
   }
 }
 
@@ -674,7 +673,7 @@ export class Slim extends HTMLElement {
    * @protected
    */
   get useShadow () {
-    return false
+    return true
   }
 
   /**
@@ -707,15 +706,15 @@ Slim.asap =
 Slim[_$] = {
   customDirectives: new Map(),
   uniqueCounter: 0,
-  supportedNativeEvents: Object.keys(HTMLElement.prototype).filter(key => key.startsWith('on'))
+  supportedNativeEvents: Object.keys(HTMLElement.prototype).filter(key => key.startsWith('on')).map(key => ':' + key.slice(2))
 }
 Slim.isReadOnly = isReadOnly
 
 // supported events (i.e. click, mouseover, change...)
 Slim.customDirective(
-  attr => Slim[_$].supportedNativeEvents.indexOf(attr.nodeName) >= 0,
+  attr => Slim[_$].supportedNativeEvents.includes(attr.nodeName),
   (source, target, attribute) => {
-    const eventName = attribute.nodeName
+    const eventName = attribute.nodeName.slice(1)
     const delegate = attribute.value
     Slim._$(target).eventHandlers = target[_$].eventHandlers || {}
     const allHandlers = target[_$].eventHandlers

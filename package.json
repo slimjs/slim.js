@@ -9,8 +9,8 @@
     "lint": "npm run lint:core && npm run lint:directives",
     "build": "npm run lint && node build.js",
     "build:tests": "babel ./tests/decorators/decorators.test-app.js --plugins transform-decorators-legacy,transform-class-properties > ./tests/decorators/decorators.test-app.compiled.js",
-    "pretest": "npm run build && npm run build:tests && node prepare-test.js",
-    "test": "nightwatch -- tests/*.test.js",
+    "xpretest": "npm run build && npm run build:tests && node prepare-test.js",
+    "test": "mocha ./tests/setup.js ./tests --recursive --timeout 30000",
     "server": "python -m SimpleHTTPServer 8000"
   },
   "repository": {
@@ -62,9 +62,8 @@
     "eslint-plugin-node": "7.0.1",
     "eslint-plugin-promise": "4.0.1",
     "eslint-plugin-standard": "4.0.0",
-    "nightwatch": "^1.0.11",
-    "selenium-download": "2.0.13",
-    "selenium-server-standalone-jar": "3.6.0",
+    "mocha": "^5.2.0",
+    "puppeteer": "^1.11.0",
     "static-server": "2.0.6",
     "uglify-es": "3.1.5"
   },

@@ -39,7 +39,7 @@ Slim.customDirective(
       isNegative = true
     }
     let oldValue
-    const anchor = document.createComment(`{$target.localName} if:${expression}`)
+    const anchor = document.createComment(`${target.localName} if:${expression}`)
     target.parentNode.insertBefore(anchor, target)
     const fn = () => {
       let value = !!Slim.lookup(source, path, target)

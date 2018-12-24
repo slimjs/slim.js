@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <script type="module">
+        import { Slim } from '../../src/Slim.js';
+        import '../../src/directives/if.js';
+
+        Slim.tag('test-if',
+        `
+            <div s:if="show1" show_1>show 1 is true</div>
+            <div s:if="!show1" show_1_negative>show 1 is false</div>
+            <div s:if="show2" show_2>show 2 is true</div>
+            <div s:if="!show2" show_2_negative>show 2 is false</div>
+            <button :click="toggle1" id="toggle1">TOGGLE SHOW 1</button>
+            <button :click="toggle2" id="toggle2">TOGGLE SHOW 2</button>
+        `,
+        class extends Slim {
+          constructor () {
+            super()
+            this.show1 = true;
+            this.show2 = true;
+          }
+
+          // get useShadow() { return false }
+
+          toggle1 () {
+            this.show1 = !this.show1;
+          }
+
+          toggle2 () {
+            this.show2 = !this.show2;
+          }
+        })
+    </script>
+
+    <test-if></test-if>
+</body>
+</html>
