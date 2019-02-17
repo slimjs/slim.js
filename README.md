@@ -54,8 +54,8 @@ import 'slim-js/directives/all.js'
 or alternatively use the ES6 native modules in your browser:
 
 ```html
-<script type="module" src="slim-js/Slim.js">
-<script type="module" src="slim-js/directives/...">
+<script type="module" src="slim-js/Slim.js"></script>
+<script type="module" src="slim-js/directives/..."></script>
 ```
 
 ## Standards-compliant
