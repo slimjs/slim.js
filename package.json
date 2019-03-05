@@ -3,6 +3,7 @@
   "version": "4.0.4",
   "description": "Superpower Web Components",
   "main": "Slim.js",
+  "module": "dist/my-package.esm.js",
   "scripts": {
     "lint:core": "eslint src/Slim.js",
     "lint:directives": "eslint src/directives",
