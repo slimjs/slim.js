@@ -53,10 +53,15 @@ module.exports = {
           "abortOnAssertionFailure": true,
           "waitForConditionTimeout": 25000,
         },
+        "capabilities": {
+          "browsers": [
+            "chrome", "firefox"
+          ]
+        },
         "desiredCapabilities": {
           "browserName": "chrome",
           "chromeOptions" : {
-              "args" : ["--start-maximized", "--headless" ]
+              "args" : ["--start-maximized", "--headless", "--no-sandbox" ]
           },
           "javascriptEnabled": true,
           "acceptSslCerts": true,
