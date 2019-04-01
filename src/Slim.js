@@ -736,7 +736,7 @@ Slim.isReadOnly = isReadOnly
 
 // supported events (i.e. click, mouseover, change...)
 Slim.customDirective(
-  attr => Slim[_$].supportedNativeEvents.indexOf(attr.nodeName) >= 0,
+  attr => Slim[_$].supportedNativeEvents.indexOf(attr.nodeName.slice(2)),
   (source, target, attribute) => {
     const eventName = attribute.nodeName
     const delegate = attribute.value

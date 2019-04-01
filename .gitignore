@@ -13,6 +13,7 @@ pids
 bin
 reports
 directives
+dist
 Decorators.d.ts
 Decorators.js
 Slim.js
