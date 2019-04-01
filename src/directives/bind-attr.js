@@ -20,7 +20,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-import { Slim } from '../Slim.js'
+const { Slim } = window;
 
 const test = attr => /^(bind.attr):(\S+)/.exec(attr.nodeName)
 const execute = (source, target, attribute, match) => {

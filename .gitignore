@@ -18,6 +18,8 @@ Decorators.js
 Slim.js
 Slim.d.ts
 Slim.nomodule.js
+dist
+playground
 
 .idea
 .vscode

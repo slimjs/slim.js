@@ -21,6 +21,9 @@
  SOFTWARE.
  */
 
+import { scan } from './utils/scan'
+import { parse } from './utils/expression'
+import { watch } from 'oculusx'
 
 let alreadyExists = false
 
@@ -80,6 +83,14 @@ class Internals {
 
 export class Slim extends HTMLElement {
 
+  static get watch () {
+    return watch
+  }
+
+  static get parse () {
+    return parse
+  }
+
   /**
    * Replaces dashed-expression (i.e. some-value) to a camel-cased expression (i.e. someValue)
    * @returns {function(string): string}
@@ -87,6 +98,10 @@ export class Slim extends HTMLElement {
   static get dashToCamel () {
     return dash => dash.indexOf('-') < 0 ? dash : dash.replace(/-[a-z]/g,
       m => m[1].toUpperCase())
+  }
+
+  static get isSlimElement () {
+    return true
   }
 
   /**
@@ -509,7 +524,9 @@ export class Slim extends HTMLElement {
             for (let [check, directive] of Slim[_$].customDirectives) {
               const match = check(attribute)
               if (match) {
-                directive(source, child, attribute, match)
+                requestAnimationFrame(() => {
+                  directive(source, child, attribute, match)
+                })
               }
             }
           }
@@ -518,7 +535,7 @@ export class Slim extends HTMLElement {
       }
 
       if (!child[_$].excluded) {
-        scanNode(this, child)
+        scan(this, child)
       }
     }
   }
@@ -724,8 +741,8 @@ Slim.asap =
   window && window.requestAnimationFrame
     ? cb => window.requestAnimationFrame(cb)
     : typeof setImmediate !== 'undefined'
-      ? setImmediate
-      : cb => setTimeout(cb, 0)
+    ? setImmediate
+    : cb => setTimeout(cb, 0)
 
 Slim[_$] = {
   customDirectives: new Map(),
@@ -757,64 +774,6 @@ Slim.customDirective(
   }
 )
 
-const scanNode = (source, target) => {
-  const textNodes = Array.from(target.childNodes).filter(n => n.nodeType === Node.TEXT_NODE)
-  const masterNode = target
-  const repeater = Slim._$(target).repeater
-  textNodes.forEach(target => {
-    let updatedText = ''
-    const matches = target.nodeValue.match(/\{\{([^\}\}]+)+\}\}/g) // eslint-disable-line
-    const aggProps = {}
-    const textBinds = {}
-    if (matches) {
-      Slim._$(target).sourceText = target.nodeValue
-      target[_$].repeater = repeater
-      matches.forEach(expression => {
-        let oldValue
-        const rxM = /\{\{(.+)(\((.+)\)){1}\}\}/.exec(expression)
-        if (rxM) {
-          const fnName = rxM[1]
-          const pNames = rxM[3]
-            .split(' ')
-            .join('')
-            .split(',')
-          pNames
-            .map(path => path.split('.')[0])
-            .forEach(p => (aggProps[p] = true))
-          textBinds[expression] = target => {
-            const args = pNames.map(path => Slim.lookup(source, path, target))
-            const fn = source[fnName]
-            const value = fn ? fn.apply(source, args) : undefined
-            if (oldValue === value) return
-            updatedText = updatedText.split(expression).join(value || '')
-          }
-          return
-        }
-        const rxP = /\{\{(.+[^(\((.+)\))])\}\}/.exec(expression) // eslint-disable-line
-        if (rxP) {
-          const path = rxP[1]
-          aggProps[path] = true
-          textBinds[expression] = target => {
-            const value = Slim.lookup(source, path, masterNode)
-            if (oldValue === value) return
-            updatedText = updatedText.split(expression).join(value || '')
-          }
-        }
-      })
-      const chainExecutor = () => {
-        updatedText = target[_$].sourceText
-        Object.keys(textBinds).forEach(expression => {
-          textBinds[expression](target)
-        })
-        target.nodeValue = updatedText
-      }
-      Object.keys(aggProps).forEach(prop => {
-        Slim.bind(source, masterNode, prop, chainExecutor)
-      })
-    }
-  })
-}
-
 Slim.customDirective(
   attr => attr.nodeName === 's:id',
   (source, target, attribute) => {
@@ -824,43 +783,22 @@ Slim.customDirective(
 
 // bind:property
 Slim.customDirective(
-  attr => /^(bind):(\S+)/.exec(attr.nodeName),
+  attr => attr.nodeName.startsWith(':') ? attr.nodeName.slice(1) : null,
   (source, target, attribute, match) => {
-    const tAttr = match[2]
-    const tProp = Slim.dashToCamel(tAttr)
-    const expression = attribute.value
-    let oldValue
-    const rxM = Slim.rxMethod.exec(expression)
-    if (rxM) {
-      const pNames = rxM[3]
-        .split(' ')
-        .join('')
-        .split(',')
-      pNames.forEach(pName => {
-        Slim.bind(source, target, pName, () => {
-          const fn = Slim.lookup(source, rxM[1], target)
-          const args = pNames.map(prop => Slim.lookup(source, prop, target))
-          const value = fn.apply(source, args)
-          if (oldValue === value) return
-          if (!isReadOnly(target, tProp)) {
-            target[tProp] = value
-          }
-          target.setAttribute(tAttr, value)
-        })
+    const tProp = Slim.dashToCamel(match)
+    const expression = attribute.nodeValue
+    const [paths, execution] = parse(expression)
+    if (execution) {
+      paths.forEach(path => {
+        watch(source, path, () => {
+          target[tProp] = execution.call(source)
+        }, true)
       })
-      return
-    }
-    const rxP = Slim.rxProp.exec(expression)
-    if (rxP) {
-      const prop = rxP[1]
-      Slim.bind(source, target, prop, () => {
-        const value = Slim.lookup(source, expression, target)
-        if (oldValue === value) return
-        target.setAttribute(tAttr, value)
-        if (!isReadOnly(target, tProp)) {
-          target[tProp] = value
-        }
-      })
+    } else {
+      const path = paths[0]
+      watch(source, path, (value) => {
+        target[tProp] = value
+      }, true)
     }
   }
 )

@@ -20,7 +20,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-import { Slim } from '../Slim.js'
+const { Slim } = window;
 
 Slim.customDirective(
   attr => attr.nodeName === 's:switch',

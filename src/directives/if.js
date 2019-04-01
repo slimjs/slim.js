@@ -20,7 +20,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-import { Slim } from '../Slim.js'
+const { Slim } = window;
 
 Slim.customDirective(
   attr => attr.nodeName === 's:if',
@@ -39,16 +39,17 @@ Slim.customDirective(
       isNegative = true
     }
     let oldValue
-    const anchor = document.createComment(`{$target.localName} if:${expression}`)
+    const anchor = document.createComment(`${target.localName} if:${expression}`)
     target.parentNode.insertBefore(anchor, target)
-    const fn = () => {
-      let value = !!Slim.lookup(source, path, target)
+    const fn = (value) => {
       if (isNegative) {
         value = !value
+      } else {
+        value = !!value
       }
       if (value === oldValue) return
       if (value) {
-        if (target.__isSlim) {
+        if (target.constructor.isSlimElement) {
           target.createdCallback()
         }
         anchor.parentNode.insertBefore(target, anchor.nextSibling)
@@ -57,7 +58,7 @@ Slim.customDirective(
       }
       oldValue = value
     }
-    Slim.bind(source, target, path, fn)
+    Slim.watch(source, path, fn, true)
   },
   true
 )
