@@ -1,4 +1,4 @@
-![hello, slim.js](./docs/slim2.png)
+![hello, slim.js](./slim2.png)
 
 [![Build Status](https://semaphoreci.com/api/v1/eavichay/slim-js/branches/master/badge.svg)](https://semaphoreci.com/eavichay/slim-js)
 
