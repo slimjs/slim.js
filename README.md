@@ -82,7 +82,6 @@ or alternatively use the ES6 native modules in your browser:
 
 *USE THE PLATFORM*
 
-## Want to sponsor the project? Contact **eavichay@gmail.com**.
+## Do you want to be a supported? Contact **eavichay@gmail.com**.
 
-[![Support slim.js](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/eavichay/donate)
 
