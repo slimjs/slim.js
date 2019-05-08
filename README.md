@@ -82,6 +82,6 @@ or alternatively use the ES6 native modules in your browser:
 
 *USE THE PLATFORM*
 
-## Do you want to be a supported? Contact **eavichay@gmail.com**.
+## Do you want to be a supporter? Contact **eavichay@gmail.com**.
 
 
