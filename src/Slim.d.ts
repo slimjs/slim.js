@@ -63,7 +63,7 @@ export declare class Slim extends HTMLElement {
   protected createdCallback (): void
   protected connectedCallback(): void
   protected disconnectedCallback(): void
-  protected attributeChangedCallback(): void
+  protected attributeChangedCallback(attr: string, oldValue: string, newValue: string): void
   protected _executeBindings(prop?: string): void;
   protected _bindChildren(children: Array<Element>| NodeListOf<Element>): void;
   protected _resetBindings(): void;
