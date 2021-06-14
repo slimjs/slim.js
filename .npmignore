@@ -2,6 +2,7 @@
 bin
 docs
 src/playground
+old-src
 tests
 README.md
 prepare-test.js

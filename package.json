@@ -5,14 +5,14 @@
   "main": "Slim.js",
   "module": "dist/my-package.esm.js",
   "scripts": {
-    "lint:core": "eslint src/Slim.js",
-    "lint:directives": "eslint src/directives",
-    "lint": "npm run lint:core && npm run lint:directives",
-    "build": "npm run lint && node build.js",
+    "build:module": "esbuild src/index.js --bundle --outfile=dist/index.js --format=esm  --minify --sourcemap --source-root=slim-js/",
+    "build:nomodule": "esbuild src/index.js --bundle --outfile=dist/index.legacy.js --format=iife --global-name=Slim",
+    "build:decorators": "esbuild src/decorators.js --bundle --outfile=dist/decorators.js --format=esm --minify --sourcemap",
+    "build": "npm run build:module && npm run build:nomodule && npm run build:decorators",
     "build:tests": "babel ./tests/decorators/decorators.test-app.js --plugins transform-decorators-legacy,transform-class-properties > ./tests/decorators/decorators.test-app.compiled.js",
-    "pretest": "npm run build && npm run build:tests && node prepare-test.js",
-    "test": "nightwatch -- tests/*.test.js",
-    "server": "python -m SimpleHTTPServer 8000"
+    "xpretest": "npm run build && npm run build:tests && node prepare-test.js",
+    "test": "jest --config ./jest.config.js",
+    "unittest": "mocha -r esm -r jsdom-global/register ./src/**/*.spec.js --recursive"
   },
   "repository": {
     "type": "git",
@@ -32,11 +32,23 @@
   ],
   "babel": {
     "presets": [
-      "env"
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "esmodules": true
+          }
+        }
+      ]
     ],
     "plugins": [
-      "transform-decorators",
-      "transform-class-properties"
+      [
+        "@babel/plugin-proposal-decorators",
+        {
+          "legacy": true
+        }
+      ],
+      "@babel/plugin-proposal-class-properties"
     ]
   },
   "standard": {
@@ -50,11 +62,9 @@
       "Node"
     ]
   },
-  "devDependencies": {
+  "xdeps": {
     "babel-cli": "6.26.0",
-    "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-custom-element-classes": "0.1.0",
-    "babel-plugin-transform-decorators-legacy": "1.3.4",
     "babel-plugin-transform-es2015-classes": "6.24.1",
     "babel-preset-env": "1.7.0",
     "eslint": "5.5.0",
@@ -67,7 +77,22 @@
     "selenium-download": "2.0.15",
     "selenium-server-standalone-jar": "3.6.0",
     "static-server": "2.0.6",
+    "@types/mocha": "8.2.2",
     "uglify-es": "3.1.5"
+  },
+  "devDependencies": {
+    "@babel/core": "7.14.5",
+    "@babel/plugin-proposal-class-properties": "7.14.5",
+    "@babel/plugin-proposal-decorators": "7.14.5",
+    "@babel/preset-env": "7.14.5",
+    "@types/jest": "^26.0.23",
+    "@types/node": "15.12.2",
+    "esm": "3.2.25",
+    "jest": "27.0.4",
+    "jsdom-global": "3.0.2",
+    "mocha": "9.0.0",
+    "mocha-jsdom": "2.0.0",
+    "puppeteer": "^10.0.0"
   },
   "dependencies": {}
 }

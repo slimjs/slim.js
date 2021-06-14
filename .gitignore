@@ -11,6 +11,7 @@ pids
 # Binary
 .bin
 bin
+old-src
 reports
 directives
 dist
