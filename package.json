@@ -1,16 +1,25 @@
 {
   "name": "slim-js",
-  "version": "4.0.7",
+  "version": "5.0.0-beta",
   "description": "Superpower Web Components",
-  "main": "Slim.js",
-  "module": "dist/my-package.esm.js",
+  "type": "module",
+  "files": ["./dist/*.js"],
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "require": "./dist/index.legacy.js",
+      "default": "./dist/index.js"
+    },
+    "./decorators": {
+      "default": "./dist/decorators.js"
+    }
+  },
   "scripts": {
-    "build:module": "esbuild src/index.js --bundle --outfile=dist/index.js --format=esm  --minify --sourcemap --source-root=slim-js/",
-    "build:nomodule": "esbuild src/index.js --bundle --outfile=dist/index.legacy.js --format=iife --global-name=Slim",
-    "build:decorators": "esbuild src/decorators.js --bundle --outfile=dist/decorators.js --format=esm --minify --sourcemap",
+    "build:module": "esbuild src/index.js --bundle --outfile=dist/index.js --format=esm --minify --sourcemap",
+    "build:nomodule": "esbuild src/index.js --bundle --outfile=dist/index.legacy.js --format=iife --minify --global-name=Slim --sourcemap",
+    "build:decorators": "esbuild src/decorators.js --bundle --outfile=dist/decorators.js --format=esm --minify",
+    "build:types": "tsc",
     "build": "npm run build:module && npm run build:nomodule && npm run build:decorators",
-    "build:tests": "babel ./tests/decorators/decorators.test-app.js --plugins transform-decorators-legacy,transform-class-properties > ./tests/decorators/decorators.test-app.compiled.js",
-    "xpretest": "npm run build && npm run build:tests && node prepare-test.js",
     "test": "jest --config ./jest.config.js",
     "unittest": "mocha -r esm -r jsdom-global/register ./src/**/*.spec.js --recursive"
   },
@@ -18,7 +27,6 @@
     "type": "git",
     "url": "git+https://github.com/slimjs/slim.js.git"
   },
-  "typings": "Slim.d.ts",
   "author": "Avichay Eyal <eavichay@gmail.com>",
   "license": "MIT",
   "bugs": {
@@ -73,9 +81,8 @@
     "eslint-plugin-node": "7.0.1",
     "eslint-plugin-promise": "4.0.1",
     "eslint-plugin-standard": "4.0.0",
-    "nightwatch": "^1.0.11",
-    "selenium-download": "2.0.15",
-    "selenium-server-standalone-jar": "3.6.0",
+    "mocha": "^5.2.0",
+    "puppeteer": "^1.11.0",
     "static-server": "2.0.6",
     "@types/mocha": "8.2.2",
     "uglify-es": "3.1.5"

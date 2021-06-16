@@ -1,26 +1,25 @@
 import { Registry } from './directive.js';
 import { bind, processDOM } from './template.js';
+import {
+  creationBlock,
+  internals,
+  repeatContext,
+  requestIdleCallback,
+} from './internals.js';
+import { lazyQueue } from './utils.js';
 
-const repeatContext = Symbol('repeat-ctx');
-const internals = Symbol('internals');
+/*
+  requestIdleCallback allows to slowly release chunks of large binds without blocking the ui
+*/
+const timeoutOpts = { timeout: 20 };
 
-function lazyClear(/** @type {any[]} */ queue = []) {
-  const iterator = queue[Symbol.iterator]();
-  function clearOne(deadline) {
-    let next;
-    while (deadline.timeRemaining() && (next = iterator.next())) {
-      if (!next.done) {
-        next.value[internals].backup = next.value[internals].updates;
-        next.value[internals].unbind();
-      }
-    }
-    if (queue.length) {
-      // @ts-ignore
-      requestIdleCallback(clearOne, { timeout: 20 });
-    }
-  }
-  // @ts-ignore
-  requestIdleCallback(clearOne, { timeout: 20 });
+function lazyClear(queue = []) {
+  lazyQueue(
+    queue.map((item) => () => {
+      item[internals].backup = item[internals].updates;
+      item[internals].unbind();
+    })
+  );
 }
 
 /**
@@ -30,6 +29,13 @@ function lazyClear(/** @type {any[]} */ queue = []) {
  * @returns
  */
 const replicate = (n, text) => {
+  /*
+  This is probably the best high-numbers cloning of strings.
+  The idea is to replicate an HTML tag (i.e. <div class="something">{{item}}</div>)
+  by creating a big string containing all replicas, then using DOMParser to convert into real elements.
+  DOMParser that parses large chunks of HTML string is faster then cloning nodes in a loop, or even
+  creating an HTMLTemplateElement that contains the same inner HTML, then cloning (twice as fast).
+  */
   let temp = text;
   let result = '';
   if (n < 1) return result;
@@ -62,15 +68,9 @@ const nodePool = (template) => ({
       }
       const range = new Range();
       range.selectNodeContents(content);
-      this.pool = this.pool.concat(Array.from(range.extractContents().children));
-
-
-
-      // const markup = replicate(diff, template);
-      // const tpl = document.createElement('template');
-      // tpl.innerHTML = markup;
-      // // @ts-expect-error
-      // this.pool = this.pool.concat(...tpl.content.cloneNode(true).children);
+      this.pool = this.pool.concat(
+        Array.from(range.extractContents().children)
+      );
     }
   },
   /**
@@ -104,33 +104,39 @@ const nodePool = (template) => ({
  * @property {any} data
  */
 
+const REPEAT = '*repeat';
+const REPEAT_CLEANUP = '*repeat-cleanup';
+
 /**
  * @type {import('./directive.js').Directive}
  */
 const repeatDirective = {
-  attribute: (attr) => attr.nodeName === ':repeat',
+  attribute: (attr) => attr.nodeName === REPEAT,
   process: ({ targetNode, scopeNode, expression, bindings, props }) => {
     const proxy = {};
     Object.setPrototypeOf(proxy, scopeNode);
-    let repeatCleanup = parseInt(targetNode.getAttribute(':repeat-cleanup') || '5000');
+    let repeatCleanup = parseInt(
+      targetNode.getAttribute(REPEAT_CLEANUP) || '5000'
+    );
     if (isNaN(repeatCleanup)) {
       repeatCleanup = 5000;
     }
-    targetNode.removeAttribute(':repeat');
-    targetNode.removeAttribute(':repeat-cleanup');
+    targetNode[creationBlock] = 'abort';
+    targetNode.removeAttribute(REPEAT);
+    targetNode.removeAttribute(REPEAT_CLEANUP);
     const template = /** @type {HTMLElement} */ (targetNode).outerHTML;
     const pool = nodePool(template);
-    const hook = document.createComment(`--- :repeat ${expression}`);
+    const hook = document.createComment(`--- *repeat ${expression}`);
     const parent =
-      targetNode.parentElement || scopeNode.shadowRoot || scopeNode;
+      targetNode.parentElement ||
+      targetNode.parentNode ||
+      scopeNode.shadowRoot ||
+      scopeNode;
     const isTablePart =
       ['', 'tr', 'td', 'thead', 'tbody'].indexOf(targetNode.localName) > 0;
     parent.insertBefore(hook, targetNode);
     requestAnimationFrame(() => targetNode.remove());
     let cleanupInterval;
-
-    /** @type {DocumentFragment|undefined} */
-    let fragment;
 
     /** @type {(HTMLElement & {[internals]: RepeatMeta})[]} */
     let clones = [];
@@ -140,7 +146,10 @@ const repeatDirective = {
 
     let toRecycle = [];
 
-    function doUpdate(/** @type {any[]} */ dataSource = []) {
+    function update(
+      /** @type {any[]} */ dataSource = [],
+      /** @type {boolean} */ forceUpdate = false
+    ) {
       if (!clearAll) {
         clearAll = props.map((prop) =>
           bind(scopeNode, bindings, prop, () => (proxy[prop] = scopeNode[prop]))
@@ -162,7 +171,7 @@ const repeatDirective = {
       for (let i = 0; i < clones.length; i++) {
         const node = clones[i];
         const item = dataSource[i];
-        if (node[repeatContext] !== item) {
+        if (forceUpdate || node[repeatContext] !== item) {
           node[repeatContext] = item;
           node[internals].data = item;
           node[internals].key = i;
@@ -172,7 +181,10 @@ const repeatDirective = {
 
       if (dataSource.length > clones.length) {
         const frag = document.createDocumentFragment();
-        const newNodes = pool.getNodes(dataSource.length - clones.length, isTablePart);
+        const newNodes = pool.getNodes(
+          dataSource.length - clones.length,
+          isTablePart
+        );
         frag.append(...newNodes);
         hook.parentNode?.insertBefore(frag, hook);
         const iterator = newNodes[Symbol.iterator]();
@@ -186,12 +198,7 @@ const repeatDirective = {
               node[internals].updates = node[internals].backup;
             node[internals].updates.forEach((f) => f(item));
           } else {
-            const { bounds, clear } = processDOM(
-              proxy,
-              node,
-              () => node[repeatContext],
-              bindings
-            );
+            const { bounds, clear } = processDOM(proxy, node, bindings);
             node[internals] = {
               updates: bounds,
               unbind: clear,
@@ -210,122 +217,12 @@ const repeatDirective = {
       }
       cleanupInterval = setTimeout(() => {
         lazyClear(pool.pool.slice(pool.pointer));
+        pool.pool = pool.pool.slice(0, pool.pointer);
       }, repeatCleanup);
-
-      return;
-
-      for (let i = clones.length; i < dataSource.length; i++) {}
-
-      if (dataSource.length < clones.length) {
-        const disposables = clones.slice(dataSource.length);
-        const range = new Range();
-        range.setStartBefore(disposables[0]);
-        range.setEndAfter(disposables[disposables.length - 1]);
-        range.deleteContents();
-        lazyClear(disposables.concat());
-        clones.length = dataSource.length;
-        if (dataSource.length === 0) {
-          clearAll.forEach((fn) => fn());
-          clearAll = undefined;
-          return;
-        }
-      }
-
-      if (dataSource.length > clones.length) {
-        const offset = clones.length;
-        const diff = dataSource.length - clones.length;
-        const html = isTablePart
-          ? `<table><tbody>${replicate(diff, template)}</tbody></table>`
-          : replicate(diff, template);
-        /** @type {Element|undefined} */
-        let content = new DOMParser().parseFromString(html, 'text/html').body;
-        if (isTablePart) {
-          content = content.children[0].children[0];
-        }
-        const range = new Range();
-        range.selectNodeContents(content);
-        fragment = range.extractContents();
-        const walker = fragment.ownerDocument.createTreeWalker(
-          fragment,
-          NodeFilter.SHOW_ELEMENT
-        );
-        walker.nextNode();
-        content = undefined;
-        range.detach();
-
-        clones.length = dataSource.length;
-        for (let i = 0; i < diff; i++) {
-          const idx = i + offset;
-          const item = dataSource[idx];
-          /** @type {HTMLElement} */
-          const clone = /** @type {HTMLElement} */ (walker.currentNode);
-          walker.nextSibling();
-          Object.defineProperty(clone, repeatContext, {
-            value: item,
-            configurable: true,
-          });
-          const { bounds, clear } = processDOM(
-            proxy,
-            clone,
-            () => clone[repeatContext],
-            bindings
-          );
-          Object.defineProperty(clone, internals, {
-            value: {
-              key: idx,
-              unbind: clear,
-              updates: bounds,
-              data: item,
-            },
-            configurable: true,
-          });
-          bounds.forEach((fn) => fn(item));
-          // @ts-ignore
-          clones[idx] = clone;
-        }
-      }
-
-      /** @type {Function[]} */
-      let noUpdates = [];
-
-      /** @type {Function[]|Function[][]} */
-      const updates = dataSource.map((item, i) => {
-        const node = clones[i];
-        const info = node[internals];
-        if (info.data !== item || info.key !== i) {
-          Object.defineProperty(node, repeatContext, {
-            value: item,
-            configurable: true,
-          });
-          info.data = item;
-          info.key = i;
-          return info.updates;
-        }
-        return noUpdates;
-      });
-
-      updates.flat().forEach((update) => update());
-
-      requestAnimationFrame(() => {
-        if (fragment) {
-          parent.insertBefore(fragment, hook);
-        }
-      });
     }
 
-    return {
-      update: (data) => {
-        // @ts-ignore
-        console.log(performance.memory);
-        doUpdate(data);
-        requestAnimationFrame(() => {
-          // @ts-ignore
-          console.log(performance.memory);
-        });
-      },
-    };
+    return { update };
   },
-  // noExecution: true
 };
 
 Registry.register(repeatDirective);

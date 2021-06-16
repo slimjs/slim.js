@@ -1,3 +1,5 @@
+import { requestIdleCallback } from "./internals.js";
+
 /**
  * Replaces dashed-expression (i.e. some-value) to a camel-cased expression (i.e. someValue)
  * @returns {function(string): string}
@@ -19,4 +21,24 @@ export function camelToDash() {
 
 export function syntaxMethod() {
   return /(.+)(\((.*)\)){1}/;
+}
+
+/**
+ * @param {Function[]} queue 
+ * @param {number} [time]
+ */
+export function lazyQueue(queue, time = 20) {
+  const opts = { timeout: time }
+  const iterator = queue[Symbol.iterator]();
+  let task = iterator.next();
+  function executeOne(deadline) {
+    while (deadline?.timeRemaining?.() && !task.done) {
+      task.value();
+      task = iterator.next();
+    }
+    if (!task.done) {
+      requestIdleCallback(executeOne, opts);
+    }
+  }
+  requestIdleCallback(executeOne, opts);
 }

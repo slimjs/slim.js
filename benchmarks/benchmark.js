@@ -1,3 +1,5 @@
+import * as Slim from '../src/index.js';
+
 function _random(max) {
   return Math.round(Math.random()*1000)%max;
 }
@@ -144,7 +146,6 @@ class MainApp extends Slim.Component {
   deleteOne(item) {
     console.time('delete1');
     store.delete(item.id);
-    console.log(item.id);
     this.items = store.data;
     console.timeEnd('delete1');
   }
@@ -238,7 +239,7 @@ Slim.element(
     </div>
     <table class="table table-hover table-striped test-data">
         <tbody id="tbody">
-            <tr :repeat="{{this.items}}" :repeat-cleanup="15000" class="{{item === this.selected ? 'danger' : ''}}">
+            <tr *repeat="{{this.items}}" *repeat-cleanup="3000" [class]="{{item === this.selected ? 'danger' : ''}}">
                 <td class="col-md-1">{{item.id}}</td>
                 <td class="col-md-4">
                     <a role="select" @click="{{this.selectOne(item)}}">{{item.label}}</a>

@@ -1,11 +1,13 @@
+import { REMOVED, CREATE, ADDED, RENDER } from './internals.js';
+
 /**
  * @enum {Symbol}
  */
 export const Phase = {
-  CREATE: Symbol(),
-  RENDER: Symbol(),
-  ADDED: Symbol(),
-  REMOVED: Symbol(),
+  CREATE,
+  RENDER,
+  ADDED,
+  REMOVED,
 };
 
 /**

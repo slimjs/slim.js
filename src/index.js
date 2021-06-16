@@ -1,10 +1,14 @@
 import { Slim } from './component.js';
 export { Registry } from './directive.js';
+export { forceUpdate } from './component.js';
 import { camelToDash, dashToCamel, syntaxMethod } from './utils.js';
+import { debug } from './internals.js';
 import './event-directive.js';
 import './if-directive.js';
 import './property-directive.js';
 import './repeat-directive.js';
+import './ref-directive.js';
+import './attribute-directive.js';
 
 /**
  *
@@ -23,6 +27,7 @@ const Utils = {
   camelToDash,
   dashToCamel,
   syntaxMethod,
+  debug: () => Slim[debug] = true,
 };
 
 const Component = Slim;

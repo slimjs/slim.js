@@ -1,22 +1,21 @@
 import { parse } from './expression.js';
 import { Registry } from './directive.js';
+import { isForcedUpdate, Slim } from './component.js';
+import {
+  debug,
+  repeatContext,
+  creationBlock,
+  requestIdleCallback,
+} from './internals.js';
+import { lazyQueue } from './utils.js';
+
+const NOOP = () => void 0;
 
 /**
  * @typedef FlushOptions
  * @property {string[]} [skip]
  * @property {string[]} [keys]
  */
-
-/**
- *
- * @param {any} any
- */
-function extractContext(any) {
-  if (typeof any === 'function') {
-    return any();
-  }
-  return any;
-}
 
 /**
  *
@@ -52,33 +51,30 @@ export function bind(target, bindings, property, execution) {
  * @param {Function|Function[]} execution
  */
 function unbind(bindings, property, execution) {
-  if (bindings[property]) {
+  const opts = { timeout: 20 };
+  const b = bindings[property];
+  if (b) {
     const idx = bindings[property].findIndex((fn) => fn === execution);
     if (idx >= 0) {
-      Promise.resolve().then(
+      b[idx] = NOOP;
+      requestIdleCallback(
         () =>
           (bindings[property] = bindings[property].filter(
             (fn) => fn !== execution
-          ))
+          )),
+        opts
       );
     }
   }
 }
-
 /**
  *
  * @param {any} scope
  * @param {Node} dom
- * @param {(target: Node) => any} [context]
  * @param {Record<string, Function[]>} [customBindings]
  *
  */
-export function processDOM(
-  scope,
-  dom,
-  context = undefined,
-  customBindings = {}
-) {
+export function processDOM(scope, dom, customBindings = {}) {
   const walker = document.createTreeWalker(
     dom,
     NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
@@ -93,11 +89,22 @@ export function processDOM(
   let currentNode = walker.currentNode || walker.nextNode();
   /** @type {Set<Attr>} */
   const pendingRemoval = new Set();
-  /** @type {WeakSet<Attr>} */
-  const noExecution = new WeakSet();
   const directives = Registry.getDirectives();
   for (; currentNode; currentNode = walker.nextNode()) {
     if (currentNode.nodeType === Node.ELEMENT_NODE) {
+      const context = (currentNode[repeatContext] =
+        currentNode[repeatContext] ||
+        currentNode.parentElement?.[repeatContext] ||
+        {});
+      if (
+        currentNode.nodeName.includes('-') &&
+        typeof currentNode[creationBlock] === 'undefined'
+      ) {
+        currentNode[creationBlock] = true;
+      }
+      if (currentNode[creationBlock] === 'abort') {
+        continue;
+      }
       const attributes = Array.from(
         /** @type {HTMLElement} */ (currentNode).attributes
       );
@@ -107,7 +114,9 @@ export function processDOM(
           expression.startsWith('{{') && expression.endsWith('}}')
             ? expression.slice(2, -2)
             : expression;
-        const { paths } = parse(userCode);
+        const { paths } = expression.includes('{{')
+          ? parse(userCode)
+          : { paths: [] };
         directives.forEach((directive) => {
           if (directive.attribute(attr)) {
             pendingRemoval.add(attr);
@@ -124,43 +133,27 @@ export function processDOM(
             if (invocation) {
               const fn = directive.noExecution
                 ? () => {}
-                : new Function(`return ${userCode}`);
-              const update = (altContext = localContext) => {
-                const value = fn.call(scope, extractContext(altContext));
-                invocation(value);
+                : new Function('item', `return ${userCode}`);
+              const update = (altContext = context) => {
+                try {
+                  const value = fn.call(scope, altContext);
+                  invocation(value, isForcedUpdate(scope));
+                } catch (err) {
+                  console.warn(err);
+                }
               };
               bounds.push(update);
               paths.forEach((path) =>
                 unbinds.push(bind(scope, bindings, path, update))
               );
-              if (directive.noExecution) {
-                noExecution.add(attr);
-              }
             }
           }
         });
-        if (
-          !expression.startsWith('{{') ||
-          !expression.endsWith('}}') ||
-          noExecution.has(attr)
-        ) {
-          return;
-        }
-        if (expression) {
-          const fn = new Function('item', `return ${userCode}`);
-          const update = (altContext = context) => {
-            attr.nodeValue = altContext
-              ? String(fn.call(scope, extractContext(altContext)))
-              : String(fn.call(scope));
-          };
-          bounds.push(update);
-          paths.forEach((path) =>
-            unbinds.push(bind(scope, bindings, path, update))
-          );
-          attr.nodeValue = '';
-        }
       });
     } else if (currentNode.nodeType === Node.TEXT_NODE) {
+      const context = /** @type {Text} */ (currentNode).parentElement?.[
+        repeatContext
+      ];
       const expression = currentNode.nodeValue || '';
       if (!expression.includes('{{')) continue;
       const { paths, expressions } = parse(expression);
@@ -174,19 +167,21 @@ export function processDOM(
       );
       const targetNode = /** @type {Text} */ (currentNode);
       const update = (altContext = context) => {
-        const text = Object.keys(map).reduce((text, current) => {
-          try {
-            const joinValue = altContext
-              ? map[current].call(scope, extractContext(altContext))
-              : map[current].call(scope);
-            let resolvedValue =
-              typeof joinValue === 'undefined' ? '' : joinValue;
-            return text.split(current).join(resolvedValue);
-          } catch (err) {
-            return text.split(current).join('');
-          }
-        }, oText);
-        targetNode.nodeValue = text;
+        try {
+          const text = Object.keys(map).reduce((text, current) => {
+            try {
+              const joinValue = map[current].call(scope, altContext);
+              let resolvedValue =
+                typeof joinValue === 'undefined' ? '' : joinValue;
+              return text.split(current).join(resolvedValue);
+            } catch (err) {
+              return text.split(current).join('');
+            }
+          }, oText);
+          targetNode.nodeValue = text;
+        } catch (err) {
+          console.warn(err);
+        }
       };
       bounds.push(update);
       paths.forEach((path) =>
@@ -194,7 +189,7 @@ export function processDOM(
       );
     }
   }
-  Promise.resolve().then(() => {
+  if (!Slim[debug]) {
     Array.from(pendingRemoval).forEach(
       (attr) =>
         attr.ownerElement &&
@@ -202,32 +197,22 @@ export function processDOM(
           attr.nodeName
         )
     );
-  });
+  }
   return {
     /**
      *
      * @param {FlushOptions} [options]
      */
-    flush: function (options = {}) {
-      if (options.skip) {
-        Object.keys(bindings)
-          .filter((key) => !(options.skip || []).includes(key))
-          .forEach((key) => {
-            bindings[key].forEach((fn) => fn());
-          });
-      } else if (options.keys) {
-        options.keys.forEach((key) =>
-          (bindings[key] || []).forEach((fn) => fn())
-        );
+    flush: function (...props) {
+      if (arguments.length) {
+        props.forEach((key) => (bindings[key] || []).forEach((fn) => fn()));
+        // props.forEach(key => lazyQueue((bindings[key] || []), 50));
       } else {
         Object.values(bindings).forEach((chain) => chain.forEach((fn) => fn()));
+        // Object.values(bindings).forEach(chain => lazyQueue(chain, 1));
       }
     },
-    clear: function () {
-      // @ts-ignore
-      unbinds.forEach((fn) => requestIdleCallback(fn, { timeout: 20 }));
-    },
-
+    clear: () => lazyQueue(unbinds),
     bounds,
   };
 }

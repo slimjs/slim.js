@@ -26,8 +26,9 @@ const eventDirective = {
         );
       }
     };
+    targetNode.addEventListener(eventName, eventHandler)
     return {
-      update: () => targetNode.addEventListener(eventName, eventHandler),
+      update: () => { }
     };
   },
   noExecution: true,
