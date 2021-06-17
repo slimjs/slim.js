@@ -1,23 +1,26 @@
 /**
  * @typedef ProcessInfo
- * @property {HTMLElement } targetNode
  * @property {HTMLElement } scopeNode
+ * @property {HTMLElement } targetNode
  * @property {Attr} attribute
+ * @property {string} attributeName
+ * @property {string|null} attributeValue
  * @property {string} expression
  * @property {string[]} props
  * @property {any} context
- * @property {Record<string, Function[]>} bindings
  */
 
 /**
  * @typedef ProcessResult
  * @property {(value: any, forceUpdate?: boolean) => any} update
  * @property {any} [context]
+ * @property {boolean} [removeAttribute]
+ * @property {boolean} [removeNode]
  */
 
 /**
  * @typedef Directive
- * @property {((attr: Attr) => any)} attribute
+ * @property {((attr: Attr, nodeName: string, nodeValue: string|null) => any)} attribute
  * @property {(info: ProcessInfo) => ProcessResult} process
  * @property {boolean} [noExecution]
  */

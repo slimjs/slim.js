@@ -1,4 +1,4 @@
-import { requestIdleCallback } from "./internals.js";
+import { requestIdleCallback } from './internals.js';
 
 /**
  * Replaces dashed-expression (i.e. some-value) to a camel-cased expression (i.e. someValue)
@@ -24,11 +24,11 @@ export function syntaxMethod() {
 }
 
 /**
- * @param {Function[]} queue 
+ * @param {Function[]} queue
  * @param {number} [time]
  */
 export function lazyQueue(queue, time = 20) {
-  const opts = { timeout: time }
+  const opts = { timeout: time };
   const iterator = queue[Symbol.iterator]();
   let task = iterator.next();
   function executeOne(deadline) {
@@ -41,4 +41,23 @@ export function lazyQueue(queue, time = 20) {
     }
   }
   requestIdleCallback(executeOne, opts);
+}
+
+/**
+ * @param {string} html HTML as string
+ */
+export function normalizeHTML(html) {
+  return html
+    .replace(/\n/g, '')
+    .replace(/[\t ]+\</g, '<')
+    .replace(/\>[\t ]+\</g, '><')
+    .replace(/\>[\t ]+$/g, '>');
+}
+
+/**
+ * @param {Function} fn 
+ */
+export function memoize(fn) {
+  const cache = {};
+  return str => cache[str] || (cache[str] = fn(str));
 }

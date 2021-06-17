@@ -41,18 +41,21 @@ export function tag(selector) {
  * @type {(name: string) => any}
  */
 export function attribute(attributeName = '') {
-  return function (target, key) {
+  return function (target, key, descriptor) {
+    console.log(target, key);
     const clazz = target.constructor;
     const dash = attributeName || camelToDash()(String(key));
     const { observedAttributes = [] } = clazz;
     Object.defineProperty(clazz, 'observedAttributes', {
       value: [...observedAttributes, dash],
       configurable: true,
+      writable: true
     });
     // @ts-ignore
-    const { oAttrCb } = target;
+    const { attributeChangedCallback : oAttrCb } = target;
     function nAttrCb(name, oldVal, newVal) {
       oAttrCb ? oAttrCb(name, oldVal, newVal) : void 0;
+      // @ts-expect-error
       if (newVal === null && !this.hasAttribute(dash)) {
         return;
       }
@@ -68,21 +71,35 @@ export function attribute(attributeName = '') {
     });
     let value;
     const nDescriptor = {
-      get: function () {
-        return value;
-      },
-      set: function (v) {
-        value = v;
-        if (typeof v === 'boolean') {
-          if (v) {
-            this.setAttribute(dash, '');
-          } else this.removeAttribute(dash);
-        } else {
-          this.setAttribute(dash, String(v));
-        }
-      },
+      configurable: true,
+      writable: true,
+      initializer: function () {
+        const oSet = (Object.getOwnPropertyDescriptor(this, key) || Object.getOwnPropertyDescriptor(target, key)|| {}).set;
+        Object.defineProperty(this, key, {
+          get: function () {
+            return value;
+          },
+          configurable: true,
+          set: function (v) {
+            value = v;
+            if (oSet) {
+              oSet(v);
+            }
+            if (typeof v === 'boolean') {
+              if (v) {
+                this.setAttribute(dash, '');
+              } else this.removeAttribute(dash);
+            } else {
+              this.setAttribute(dash, String(v));
+            }
+          }
+        });
+        this[key] = this[key];
+      }
     };
     Object.defineProperty(target, key, nDescriptor);
+    descriptor.configurable = true;
+    descriptor.writable = true;
     return nDescriptor;
   };
 }

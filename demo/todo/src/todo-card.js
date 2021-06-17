@@ -14,7 +14,8 @@ import { ViewModelMixin } from './viewmodel-mixin';
     }
   </style>
   <div>
-    <h2 id="title">{{this.taskTitle}}</h2>
+    <h2 id="title">{{this.taskId}} {{this.taskTitle}}</h2>
+    <h3>{{this.task.title}}</h3>
   </div>
 `)
 export class TodoCard extends ViewModelMixin(Slim) {
@@ -22,10 +23,10 @@ export class TodoCard extends ViewModelMixin(Slim) {
   todos = createTaskList();
   newTodoMode = false;
 
-  @attribute()
+  // @attribute()
   taskTitle = '';
 
-  @attribute()
+  // @attribute()
   taskId = 0;
 
 

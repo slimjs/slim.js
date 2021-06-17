@@ -1,17 +1,7 @@
 import { Registry } from './directive.js';
-import { bind, processDOM } from './template.js';
-import {
-  creationBlock,
-  internals,
-  repeatContext,
-  requestIdleCallback,
-} from './internals.js';
+import { createBind, processDOM, removeBindings } from './template.js';
+import { creationBlock, internals, repeatContext } from './internals.js';
 import { lazyQueue } from './utils.js';
-
-/*
-  requestIdleCallback allows to slowly release chunks of large binds without blocking the ui
-*/
-const timeoutOpts = { timeout: 20 };
 
 function lazyClear(queue = []) {
   lazyQueue(
@@ -66,10 +56,8 @@ const nodePool = (template) => ({
       if (isTablePart) {
         content = content.children[0].children[0];
       }
-      const range = new Range();
-      range.selectNodeContents(content);
       this.pool = this.pool.concat(
-        Array.from(range.extractContents().children)
+        Array.from(content.children)
       );
     }
   },
@@ -112,9 +100,7 @@ const REPEAT_CLEANUP = '*repeat-cleanup';
  */
 const repeatDirective = {
   attribute: (attr) => attr.nodeName === REPEAT,
-  process: ({ targetNode, scopeNode, expression, bindings, props }) => {
-    const proxy = {};
-    Object.setPrototypeOf(proxy, scopeNode);
+  process: ({ targetNode, scopeNode, expression, props }) => {
     let repeatCleanup = parseInt(
       targetNode.getAttribute(REPEAT_CLEANUP) || '5000'
     );
@@ -141,21 +127,12 @@ const repeatDirective = {
     /** @type {(HTMLElement & {[internals]: RepeatMeta})[]} */
     let clones = [];
 
-    /** @type {Function[] | undefined } */
-    let clearAll;
-
     let toRecycle = [];
 
     function update(
       /** @type {any[]} */ dataSource = [],
       /** @type {boolean} */ forceUpdate = false
     ) {
-      if (!clearAll) {
-        clearAll = props.map((prop) =>
-          bind(scopeNode, bindings, prop, () => (proxy[prop] = scopeNode[prop]))
-        );
-      }
-
       pool.allocate(dataSource.length, isTablePart);
 
       if (dataSource.length < clones.length) {
@@ -186,7 +163,6 @@ const repeatDirective = {
           isTablePart
         );
         frag.append(...newNodes);
-        hook.parentNode?.insertBefore(frag, hook);
         const iterator = newNodes[Symbol.iterator]();
 
         for (let i = clones.length; i < dataSource.length; i++) {
@@ -198,18 +174,19 @@ const repeatDirective = {
               node[internals].updates = node[internals].backup;
             node[internals].updates.forEach((f) => f(item));
           } else {
-            const { bounds, clear } = processDOM(proxy, node, bindings);
-            node[internals] = {
+            const { bounds, clear } = processDOM(scopeNode, node);
+            Object.assign(node[internals], {
               updates: bounds,
               unbind: clear,
               key: i,
               data: item,
-            };
-            bounds.flat().forEach((f) => f());
+            });
+            bounds.forEach((f) => f());
           }
         }
         // @ts-expect-error
         clones = clones.concat(newNodes);
+        hook.parentNode?.insertBefore(frag, hook);
       }
 
       if (cleanupInterval) {
@@ -221,7 +198,7 @@ const repeatDirective = {
       }, repeatCleanup);
     }
 
-    return { update };
+    return { update, context: (node) => node[repeatContext] };
   },
 };
 

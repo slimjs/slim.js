@@ -1,15 +1,14 @@
 import { parse } from './expression.js';
 import { Registry } from './directive.js';
 import { isForcedUpdate, Slim } from './component.js';
-import {
-  debug,
-  repeatContext,
-  creationBlock,
-  requestIdleCallback,
-} from './internals.js';
+import { debug, repeatContext, creationBlock, internals } from './internals.js';
 import { lazyQueue } from './utils.js';
 
 const NOOP = () => void 0;
+
+/**
+ * @typedef {{[internals]: Record<string, Set<Function>>}} WithInternals
+ */
 
 /**
  * @typedef FlushOptions
@@ -18,63 +17,85 @@ const NOOP = () => void 0;
  */
 
 /**
- *
- * @param {any} target
- * @param {Record<string, Array<Function|Function[]>>} bindings
- * @param {string} property
- * @param {Function|Function[]} execution
+ * @type {WeakMap<WithInternals, Record<string, Set<WithInternals>>>}
  */
-export function bind(target, bindings, property, execution) {
-  let value = target[property];
-  if (!bindings[property]) {
-    // first time
-    bindings[property] = [execution];
-    Object.defineProperty(target, property, {
+const bindMap = new WeakMap();
+
+window.bindMap = bindMap;
+
+/**
+ *
+ * @param {WithInternals} source
+ * @param {WithInternals} target
+ * @param {string} property
+ * @param {Function} execution
+ * @returns {Function} remove bind function
+ */
+export function createBind(source, target, property, execution) {
+  let propToTarget = /** @type Record<String, Set<WithInternals>> */ (
+    bindMap.get(source) || bindMap.set(source, {}).get(source)
+  );
+  if (!propToTarget[property]) {
+    const oSet = (Object.getOwnPropertyDescriptor(source, property) || {}).set;
+    let value = source[property];
+    Object.defineProperty(source, property, {
       get: () => value,
       set: (v) => {
         if (v !== value) {
           value = v;
-          bindings[property].flat().forEach((fn) => fn());
+          if (oSet) {
+            oSet(v);
+          }
+          runBinding(source, property, value);
         }
       },
     });
-  } else {
-    bindings[property].push(execution);
   }
-  return () => unbind(bindings, property, execution);
+  (propToTarget[property] = propToTarget[property] || new Set()).add(target);
+  let meta = (target[internals] = target[internals] || {});
+  (meta[property] = meta[property] || new Set()).add(execution);
+  return () => meta[property].delete(execution);
 }
 
 /**
  *
- * @param {Record<string, Array<Function|Function[]>>} bindings
+ * @param {WithInternals} source
  * @param {string} property
- * @param {Function|Function[]} execution
+ * @param {any} [value]
  */
-function unbind(bindings, property, execution) {
-  const opts = { timeout: 20 };
-  const b = bindings[property];
-  if (b) {
-    const idx = bindings[property].findIndex((fn) => fn === execution);
-    if (idx >= 0) {
-      b[idx] = NOOP;
-      requestIdleCallback(
-        () =>
-          (bindings[property] = bindings[property].filter(
-            (fn) => fn !== execution
-          )),
-        opts
-      );
-    }
+function runBinding(source, property, value = source[property]) {
+  function runOneBind(meta, property, resolvedValue = value) {
+    (meta[property] || []).forEach((target) => {
+      target[internals][property].forEach((fn) => fn(value));
+    });
+  }
+  let propToTarget = /** @type Record<String, Set<WithInternals>> */ (
+    bindMap.get(source) || bindMap.set(source, {}).get(source)
+  );
+  if (property !== '*') {
+    runOneBind(propToTarget, property);
+  } else {
+    Object.keys(propToTarget).forEach((key) => runOneBind(propToTarget, key, source[key]));
   }
 }
+
+export function removeBindings(source, target, property) {
+  let propToTarget = /** @type Record<String, Set<WithInternals>> */ (
+    bindMap.get(source)
+  );
+  let meta = propToTarget[property];
+  if (meta) {
+    meta.delete(target);
+  }
+}
+
 /**
  *
  * @param {any} scope
  * @param {Node} dom
- * @param {Record<string, Function[]>} [customBindings]
  *
  */
-export function processDOM(scope, dom, customBindings = {}) {
+export function processDOM(scope, dom) {
   const walker = document.createTreeWalker(
     dom,
     NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
@@ -83,14 +104,17 @@ export function processDOM(scope, dom, customBindings = {}) {
   const unbinds = [];
   /** @type {Function[]} */
   const bounds = [];
-  /** @type {Record<string, Function[]>} */
-  const bindings = customBindings;
-  /** @type {Node|null} */
-  let currentNode = walker.currentNode || walker.nextNode();
+  let currentNode = /** @type {Node&WithInternals} */ (
+    walker.currentNode || walker.nextNode()
+  );
   /** @type {Set<Attr>} */
   const pendingRemoval = new Set();
   const directives = Registry.getDirectives();
-  for (; currentNode; currentNode = walker.nextNode()) {
+  for (
+    ;
+    currentNode;
+    currentNode = /** @type {Node&WithInternals} */ (walker.nextNode())
+  ) {
     if (currentNode.nodeType === Node.ELEMENT_NODE) {
       const context = (currentNode[repeatContext] =
         currentNode[repeatContext] ||
@@ -106,9 +130,17 @@ export function processDOM(scope, dom, customBindings = {}) {
         continue;
       }
       const attributes = Array.from(
-        /** @type {HTMLElement} */ (currentNode).attributes
+        /** @type {HTMLElement&WithInternals} */ (currentNode).attributes
       );
-      attributes.forEach((attr) => {
+      let i = 0,
+        l = attributes.length;
+      attributes_loop: for (i; i < l; i++) {
+        const attr = attributes[i];
+        const attrName = attr.nodeName;
+        const attrValue = attr.nodeValue;
+        if (currentNode[creationBlock] === 'abort') {
+          break attributes_loop;
+        }
         const expression = (attr.nodeValue || '').trim();
         const userCode =
           expression.startsWith('{{') && expression.endsWith('}}')
@@ -117,19 +149,26 @@ export function processDOM(scope, dom, customBindings = {}) {
         const { paths } = expression.includes('{{')
           ? parse(userCode)
           : { paths: [] };
-        directives.forEach((directive) => {
-          if (directive.attribute(attr)) {
-            pendingRemoval.add(attr);
-            const { update: invocation, context: localContext } =
-              directive.process({
-                attribute: attr,
-                bindings,
-                context,
-                expression: userCode,
-                props: paths,
-                scopeNode: scope,
-                targetNode: /** @type {HTMLElement} */ (currentNode),
-              });
+        directives_loop: for (const directive of directives) {
+          if (currentNode[creationBlock] === 'abort') {
+            break directives_loop;
+          }
+          if (directive.attribute(attr, attrName, attrValue)) {
+            const { update: invocation, removeAttribute } = directive.process({
+              attribute: attr,
+              attributeName: attrName,
+              attributeValue: attrValue,
+              context,
+              expression: userCode,
+              props: paths,
+              scopeNode: scope,
+              targetNode: /** @type {HTMLElement&WithInternals} */ (
+                currentNode
+              ),
+            });
+            if (removeAttribute) {
+              pendingRemoval.add(attr);
+            }
             if (invocation) {
               const fn = directive.noExecution
                 ? () => {}
@@ -143,19 +182,28 @@ export function processDOM(scope, dom, customBindings = {}) {
                 }
               };
               bounds.push(update);
-              paths.forEach((path) =>
-                unbinds.push(bind(scope, bindings, path, update))
-              );
+              [...paths].forEach((path) => {
+                unbinds.push(createBind(scope, currentNode, path, update));
+              });
             }
           }
-        });
-      });
+        }
+      }
     } else if (currentNode.nodeType === Node.TEXT_NODE) {
-      const context = /** @type {Text} */ (currentNode).parentElement?.[
-        repeatContext
-      ];
+      const context = /** @type {Text} */ (/** @type {unknown} */ (currentNode))
+        .parentElement?.[repeatContext];
       const expression = currentNode.nodeValue || '';
       if (!expression.includes('{{')) continue;
+      // @ts-expect-error
+      let breakNode = /** @type {Text|undefined} */ (currentNode);
+      while (breakNode) {
+        let index = ('' + breakNode.nodeValue).indexOf('}}');
+        if (index >= 0) {
+          breakNode = breakNode.splitText(index + 2);
+        } else {
+          breakNode = undefined;
+        }
+      }
       const { paths, expressions } = parse(expression);
       const oText = expression;
       const map = [...expressions, '{{item}}'].reduce(
@@ -165,7 +213,9 @@ export function processDOM(scope, dom, customBindings = {}) {
         },
         {}
       );
-      const targetNode = /** @type {Text} */ (currentNode);
+      const targetNode = /** @type {Text} */ (
+        /** @type {unknown} */ (currentNode)
+      );
       const update = (altContext = context) => {
         try {
           const text = Object.keys(map).reduce((text, current) => {
@@ -185,7 +235,7 @@ export function processDOM(scope, dom, customBindings = {}) {
       };
       bounds.push(update);
       paths.forEach((path) =>
-        unbinds.push(bind(scope, bindings, path, update))
+        unbinds.push(createBind(scope, currentNode, path, update))
       );
     }
   }
@@ -205,11 +255,9 @@ export function processDOM(scope, dom, customBindings = {}) {
      */
     flush: function (...props) {
       if (arguments.length) {
-        props.forEach((key) => (bindings[key] || []).forEach((fn) => fn()));
-        // props.forEach(key => lazyQueue((bindings[key] || []), 50));
+        props.forEach((key) => runBinding(scope, key));
       } else {
-        Object.values(bindings).forEach((chain) => chain.forEach((fn) => fn()));
-        // Object.values(bindings).forEach(chain => lazyQueue(chain, 1));
+        runBinding(scope, '*');
       }
     },
     clear: () => lazyQueue(unbinds),

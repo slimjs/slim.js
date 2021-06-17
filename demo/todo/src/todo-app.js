@@ -3,9 +3,7 @@ import { tag, template, useShadow } from 'slim-js/decorators';
 import { createTaskList } from './task';
 import { ViewModelMixin } from './viewmodel-mixin';
 
-@tag('todo-app')
-@useShadow(true)
-@template(/*html*/ `
+/*
   <style>
     .done {
       text-decoration: line-through;
@@ -19,7 +17,17 @@ import { ViewModelMixin } from './viewmodel-mixin';
       <input #ref="newTaskInput" @keypress="{{this.checkEnterPress(event)}}">
     </form>
   </div>
-  <todo-card *repeat="{{this.viewModel.todos}}" [task-title]="{{item.title}}" [task-id]="{{item.id}}" .task="{{item}}" [class]="{{item?.done ? 'done' : ''}}">
+*/
+
+@tag('todo-app')
+@useShadow(true)
+  @template(/*html*/ `
+  <todo-card
+    *repeat="{{this.viewModel.todos}}"
+    task-title="{{item.title}}"
+    task-id="{{item.id}}"
+    class="{{item?.done ? 'done' : 'in-progress'}}"
+    .on-delete="{{this.onDelete}}">
   </todo-card>
 `)
 export class App extends ViewModelMixin(Slim) {
@@ -30,10 +38,10 @@ export class App extends ViewModelMixin(Slim) {
   /** @type {HTMLFormElement} */ newTaskForm;
 
   /**
-   * 
-   * @private @param {HTMLInputElement} newTaskInput 
-   * @private @param {HTMLFormElement} newTaskForm 
-   * @private @param {Record<string, any>} viewModel 
+   *
+   * @private @param {HTMLInputElement} newTaskInput
+   * @private @param {HTMLFormElement} newTaskForm
+   * @private @param {Record<string, any>} viewModel
    */
   constructor(newTaskInput, newTaskForm, viewModel) {
     super();
@@ -43,9 +51,13 @@ export class App extends ViewModelMixin(Slim) {
     this.todos.onChange = (info) => {
       console.log(info);
       this.viewModel.todos = [...this.todos.getTasks()];
-    }
+    };
   }
-  
+
+  onDelete() {
+    console.log('delete');
+  }
+
   onCreated() {
     this.todos.add('Task 1');
     this.todos.add('Task 2');
@@ -70,11 +82,15 @@ export class App extends ViewModelMixin(Slim) {
   }
 }
 
-customElements.define('app-root', class extends HTMLBodyElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' }).innerHTML = '<todo-app></todo-app>';
+customElements.define(
+  'app-root',
+  class extends HTMLBodyElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' }).innerHTML = '<todo-app></todo-app>';
+    }
+  },
+  {
+    extends: 'body',
   }
-}, {
-  extends: 'body'
-});
+);

@@ -1,15 +1,17 @@
 import { Registry } from './directive.js';
-import { dashToCamel, syntaxMethod } from './utils.js';
+import { dashToCamel as d2c, syntaxMethod, memoize } from './utils.js';
+
+const dashToCamel = memoize(d2c)();
 
 /**
  * @type {import('./directive.js').Directive}
  */
 const eventDirective = {
   attribute: (attr) => attr.nodeName.startsWith('@'),
-  process: ({ attribute, targetNode, scopeNode, expression, context }) => {
-    const eventName = dashToCamel()(attribute.nodeName.slice(1));
+  process: ({ attributeName, targetNode, scopeNode, expression, context }) => {
+    const eventName = dashToCamel(attributeName.slice(1));
     const isMethodExecute = syntaxMethod().exec(expression || '');
-    const eventHandler = (/** @type {Event} */ event) => {
+    const eventHandler = function (/** @type {Event} */ event) {
       let execution = new Function('event', 'item', `return ${expression};`);
       /** @type {Function|undefined} */
       let method;
@@ -26,7 +28,7 @@ const eventDirective = {
         );
       }
     };
-    targetNode.addEventListener(eventName, eventHandler)
+    targetNode.addEventListener(eventName, eventHandler);
     return {
       update: () => { }
     };

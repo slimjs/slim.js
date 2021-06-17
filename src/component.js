@@ -1,6 +1,7 @@
 import { processDOM } from './template.js';
 import { Registry, Phase } from './plugins.js';
 import { componentInternals as internals, creationBlock } from './internals.js';
+import { normalizeHTML } from './utils.js';
 
 const LC_Create = Symbol();
 const LC_Render = Symbol();
@@ -14,7 +15,9 @@ export function forceUpdate(target, ...keys) {
   const props = [...arguments].slice(1);
   const flush = flushMap.get(target);
   if (!flush) {
-    throw new Error('Error flushing component, Weakmap does not hold instance reference');
+    throw new Error(
+      'Error flushing component, Weakmap does not hold instance reference'
+    );
   }
   forceUpdateMap.add(target);
   if (props) {
@@ -50,7 +53,7 @@ function getRoot(target) {
 export class Slim extends HTMLElement {
   /** @private */
   [internals] = {
-    created: false
+    created: false,
   };
 
   constructor() {
@@ -103,20 +106,22 @@ export class Slim extends HTMLElement {
   /** @private */
   [LC_Render]() {
     // @ts-ignore
-    const template = this.constructor.template;
+    const template = normalizeHTML(this.constructor.template);
     if (template) {
-      let content = new DOMParser().parseFromString(`<wrapper>${template}</wrapper>`, 'text/html').body.children[0];
-      // const e = document.createElement('template');
-      // e.innerHTML = template;
-      // const content = e.content.cloneNode(true);
+      let frag = document.createDocumentFragment();
+      const body = new DOMParser().parseFromString(
+        `${template}`,
+        'text/html'
+      ).body;
+      frag.append(...body.children);
       requestAnimationFrame(() => {
-        const { flush } = processDOM(this, content);
+        const { flush } = processDOM(this, frag);
         flushMap.set(this, flush);
         Promise.resolve().then(this.onCreated.bind(this));
         flush();
         Promise.resolve().then(this.onRender.bind(this));
         Registry.execute(Phase.RENDER, this);
-        getRoot(this).appendChild(content);
+        getRoot(this).appendChild(frag);
       });
     }
   }

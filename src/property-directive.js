@@ -1,5 +1,7 @@
 import { Registry } from './directive.js';
 import { dashToCamel } from './utils.js';
+import { debug } from './internals.js';
+import { Slim } from './component.js';
 
 /**
  * @type {import('./directive.js').Directive}
@@ -12,6 +14,7 @@ const propertyDirective = {
       update: (/** @type {any} */ value) => {
         /** @type {any} **/ (targetNode)[propertyName] = value;
       },
+      removeAttribute: !Slim[debug]
     };
   },
 };
