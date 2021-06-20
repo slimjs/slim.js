@@ -2,6 +2,7 @@ import { Slim } from 'slim-js';
 import { tag, template, useShadow } from 'slim-js/decorators';
 import { createTaskList } from './task';
 import { ViewModelMixin } from './viewmodel-mixin';
+import 'slim-js/all.directives.js';
 
 /*
   <style>
@@ -21,7 +22,7 @@ import { ViewModelMixin } from './viewmodel-mixin';
 
 @tag('todo-app')
 @useShadow(true)
-  @template(/*html*/ `
+@template(/*html*/ `
   <todo-card
     *repeat="{{this.viewModel.todos}}"
     task-title="{{item.title}}"
@@ -30,7 +31,7 @@ import { ViewModelMixin } from './viewmodel-mixin';
     .on-delete="{{this.onDelete}}">
   </todo-card>
 `)
-export class App extends ViewModelMixin(Slim) {
+export class App extends ViewModelMixin(Slim.Component) {
   todos = createTaskList();
   newTodoMode = false;
 

@@ -1,4 +1,4 @@
-import { parse } from './expression.js';
+import { parse } from './expression';
 import assert from 'assert';
 
 describe('expression', () => {

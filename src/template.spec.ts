@@ -1,5 +1,5 @@
 import { strictEqual } from 'assert';
-import { processDOM } from './template';
+import { processDOM } from './template.ts';
 
 describe('template', () => {
   it('should update properties correctly', () => {

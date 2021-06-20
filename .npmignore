@@ -3,10 +3,9 @@ bin
 docs
 src/playground
 old-src
-tests
+*.spec.js
 README.md
 prepare-test.js
-build.js
 nightwatch.conf.js
 reports
 .babelrc

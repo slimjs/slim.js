@@ -1,4 +1,6 @@
-import { camelToDash } from './utils.js';
+import { Utils } from './utils.js';
+
+const camelToDash = Utils.camelToDash();
 
 /**
  * @decorator
@@ -44,7 +46,7 @@ export function attribute(attributeName = '') {
   return function (target, key, descriptor) {
     console.log(target, key);
     const clazz = target.constructor;
-    const dash = attributeName || camelToDash()(String(key));
+    const dash = attributeName || camelToDash(String(key));
     const { observedAttributes = [] } = clazz;
     Object.defineProperty(clazz, 'observedAttributes', {
       value: [...observedAttributes, dash],

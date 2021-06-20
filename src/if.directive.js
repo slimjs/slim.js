@@ -1,5 +1,3 @@
-import { Registry } from './directive.js';
-
 /**
  * @type {import('./directive.js').Directive}
  */
@@ -31,4 +29,5 @@ const ifDirective = {
   },
 };
 
-Registry.register(ifDirective);
+// @ts-expect-error
+Slim.directives.add(ifDirective);

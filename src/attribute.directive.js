@@ -1,13 +1,5 @@
-import { Registry } from './directive.js';
 
-/**
- *
- * @param {Attr} attr
- * @param {string} name
- * @param {string|null} value
- * @returns
- */
-function test(attr, name, value) {
+function attrTest(_, name, value) {
   return (
     !name.startsWith('@') &&
     !name.startsWith('.') &&
@@ -17,15 +9,12 @@ function test(attr, name, value) {
   );
 }
 
-/**
- * @type {import('./directive.js').Directive}
- */
 const attributeDirective = {
-  attribute: test,
+  attribute: attrTest,
   process: ({ attributeName: name, targetNode }) => {
     targetNode;
     return {
-      update: (/** @type {any} */ value) => {
+      update: (value) => {
         if (
           typeof value === 'boolean' ||
           value === null ||
@@ -43,4 +32,4 @@ const attributeDirective = {
   },
 };
 
-Registry.register(attributeDirective);
+Slim.directives.add(attributeDirective);

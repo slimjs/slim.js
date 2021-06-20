@@ -1,11 +1,8 @@
-import { Registry } from './directive.js';
-import { dashToCamel, syntaxMethod } from './utils.js';
-
 /**
  * @type {import('./directive.js').Directive}
  */
-const eventDirective = {
-  attribute: (attr) => attr.nodeName === '#ref',
+const refDirective = {
+  attribute: (_, nodeName) => nodeName === '#ref',
   process: ({ attribute, targetNode, scopeNode }) => {
     const propertyName = attribute.value;
     Object.defineProperty(scopeNode, propertyName, {
@@ -13,9 +10,11 @@ const eventDirective = {
       configurable: true
     });
     return {
-      update: () => { }
+      // @ts-expect-error
+      update: Slim.Utils.NOOP
     };
   }
 };
 
-Registry.register(eventDirective);
+// @ts-expect-error
+Slim.directives.add(refDirective);

@@ -1,4 +1,4 @@
-import { forceUpdate, Slim } from "slim-js";
+import { Slim } from "slim-js";
 
 const createViewModel = (target) => {
   const dataSource = {};
@@ -6,7 +6,7 @@ const createViewModel = (target) => {
     get: (t, key) => dataSource[key],
     set: (t, key, value) => {
       dataSource[key] = value;
-      forceUpdate(target, 'viewModel');
+      Slim.Utils.forceUpdate(target, 'viewModel');
       return true;
     }
   });

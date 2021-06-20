@@ -1,18 +1,19 @@
-import { Registry } from './directive.js';
-import { dashToCamel as d2c, syntaxMethod, memoize } from './utils.js';
+// @ts-ignore
+const { dashToCamel: d2c, syntaxMethod, memoize, createFunction, NOOP } = Slim.Utils;
 
 const dashToCamel = memoize(d2c)();
+const syntaxRegexp = syntaxMethod();
 
 /**
  * @type {import('./directive.js').Directive}
  */
 const eventDirective = {
-  attribute: (attr) => attr.nodeName.startsWith('@'),
+  attribute: (attr, nodeName) => nodeName.startsWith('@'),
   process: ({ attributeName, targetNode, scopeNode, expression, context }) => {
     const eventName = dashToCamel(attributeName.slice(1));
-    const isMethodExecute = syntaxMethod().exec(expression || '');
+    const isMethodExecute = syntaxRegexp.test(expression || '');
     const eventHandler = function (/** @type {Event} */ event) {
-      let execution = new Function('event', 'item', `return ${expression};`);
+      let execution = createFunction('event', 'item', `return ${expression};`);
       /** @type {Function|undefined} */
       let method;
       if (!isMethodExecute) {
@@ -30,10 +31,11 @@ const eventDirective = {
     };
     targetNode.addEventListener(eventName, eventHandler);
     return {
-      update: () => { }
+      update: NOOP
     };
   },
   noExecution: true,
 };
 
-Registry.register(eventDirective);
+// @ts-ignore
+Slim.directives.add(eventDirective);
