@@ -13,7 +13,7 @@
       "default": "./dist/decorators.js"
     },
     "./directives": {
-      "default": "./dist/all.directives.js"
+      "default": "./dist/directives/all.js"
     }
   },
   "scripts": {
@@ -26,7 +26,8 @@
     "prebuild": "rm -rf dist && npm run build:types",
     "build": "npm run build:module && npm run build:nomodule && npm run build:decorators && npm run build:directives && npm run build:alldirectives",
     "test": "jest --config ./jest.config.js",
-    "unittest": "mocha -r esm -r jsdom-global/register ./src/**/*.spec.js --recursive"
+    "unittest": "mocha -r esm -r jsdom-global/register ./src/**/*.spec.js --recursive",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
