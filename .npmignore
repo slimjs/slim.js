@@ -1,7 +1,7 @@
 *.log
 bin
 docs
-src/playground
+benchmarks
 old-src
 *.spec.js
 *.spec.ts
@@ -9,10 +9,6 @@ README.md
 prepare-test.js
 nightwatch.conf.js
 reports
-.babelrc
-.eslintrc.json
-.travis.yml
-_config.yml
 appveyor.yml
 CNAME
 CODE_OF_CONDUCT.md
