@@ -1,7 +1,7 @@
-import { Slim } from '../dist/index.js';
-import '../src/repeat.directive.js';
-import '../src/attribute.directive.js';
-import '../src/event.directive.js';
+import { Slim } from '../src/index.js';
+import '../src/directives/repeat.directive.js';
+import '../src/directives/attribute.directive.js';
+import '../src/directives/event.directive.js';
 
 function _random(max) {
   return Math.round(Math.random()*1000)%max;
@@ -137,7 +137,7 @@ const store = {
   },
 };
 
-class MainApp extends Slim.Component {
+class MainApp extends Slim {
   items = [];
   selected = null;
   test = [1, 2, 3, 4, 5];

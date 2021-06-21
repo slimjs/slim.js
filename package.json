@@ -20,13 +20,14 @@
     }
   },
   "scripts": {
-    "build:directives": "find src -name '*.directive.js' -exec 'esbuild {} --external:directive --external:template --external:internals --bundle --minify' \\;",
-    "build:module": "esbuild src/index.ts --bundle --outfile=dist/index.js --format=esm --minify --sourcemap",
-    "build:nomodule": "esbuild src/index.ts --bundle --outfile=dist/index.legacy.js --format=iife --minify --sourcemap",
+    "build:directives": "esbuild src/directives/*.directive.js --minify --outdir=dist/directives",
+    "build:alldirectives": "esbuild src/directives/all.directives.js --format=esm --bundle --external:../* --minify --outfile=dist/directives/all.js",
+    "build:module": "esbuild src/index.js --bundle --outfile=dist/index.js --format=esm --minify --sourcemap",
+    "build:nomodule": "esbuild src/index.js --bundle --outfile=dist/index.legacy.js --format=iife --minify --sourcemap",
     "build:decorators": "esbuild src/decorators.js --bundle --outfile=dist/decorators.js --format=esm --minify",
     "build:types": "tsc",
-    "prebuild": "npm run build:types",
-    "build": "npm run build:module && npm run build:nomodule && npm run build:decorators",
+    "prebuild": "rm -rf dist && npm run build:types",
+    "build": "npm run build:module && npm run build:nomodule && npm run build:decorators && npm run build:directives && npm run build:alldirectives",
     "test": "jest --config ./jest.config.js",
     "unittest": "mocha -r esm -r jsdom-global/register ./src/**/*.spec.js --recursive"
   },
@@ -77,37 +78,23 @@
       "Node"
     ]
   },
-  "xdeps": {
-    "babel-cli": "6.26.0",
-    "babel-plugin-transform-custom-element-classes": "0.1.0",
-    "babel-plugin-transform-es2015-classes": "6.24.1",
-    "babel-preset-env": "1.7.0",
-    "eslint": "5.5.0",
-    "eslint-config-standard": "12.0.0",
-    "eslint-plugin-import": "2.14.0",
-    "eslint-plugin-node": "7.0.1",
-    "eslint-plugin-promise": "4.0.1",
-    "eslint-plugin-standard": "4.0.0",
-    "mocha": "^5.2.0",
-    "puppeteer": "^1.11.0",
-    "static-server": "2.0.6",
-    "@types/mocha": "8.2.2",
-    "uglify-es": "3.1.5"
-  },
   "devDependencies": {
     "@babel/core": "7.14.5",
     "@babel/plugin-proposal-class-properties": "7.14.5",
     "@babel/plugin-proposal-decorators": "7.14.5",
     "@babel/preset-env": "7.14.5",
     "@babel/preset-typescript": "^7.14.5",
+    "@happy-dom/jest-environment": "^2.21.0",
     "@types/jest": "^26.0.23",
     "@types/node": "15.12.2",
-    "esm": "3.2.25",
+    "typescript": "4.3.4",
     "jest": "27.0.4",
+    "jsdom": "16.6.0",
     "jsdom-global": "3.0.2",
     "mocha": "9.0.0",
     "mocha-jsdom": "2.0.0",
-    "puppeteer": "^10.0.0"
+    "puppeteer": "^10.0.0",
+    "esbuild": "0.12.9"
   },
   "dependencies": {}
 }

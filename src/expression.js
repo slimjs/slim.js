@@ -1,17 +1,18 @@
-import { Utils } from './utils.js';
+import { memoize } from './utils.js';
 
 const stripCurlies = /(\{\{([^\{|^\}]+)\}\})/gi;
 const rx = /(this\.[\w+|\d*]*)+/gi;
 const ix = /(item\.[\w+|\d*]*)+/gi;
 
-type ParseResult = {
-  paths: string[];
-  expressions: string[];
-}
+/**
+ * @typedef ParseResult
+ * @property {string[]} paths
+ * @property {string[]} expressions
+ */
 
-function doParse(expression: string = '') {
-  const paths: string[] = [];
-  let match: RegExpExecArray | null = null;
+function doParse(expression = '') {
+  const paths = [];
+  let match = null;
   rx.lastIndex = ix.lastIndex = 0;
   while ((match = rx.exec(expression))) paths.push(match[1].split('.')[1]);
   while ((match = ix.exec(expression))) paths.push(match[1]);
@@ -21,4 +22,4 @@ function doParse(expression: string = '') {
   };
 }
 
-export const parse = Utils.memoize<ParseResult>(doParse);
+export const parse = memoize(doParse);

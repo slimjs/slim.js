@@ -1,27 +1,18 @@
-import { processDOM } from './template.js';
-import { Plugins } from './plugins.js';
-import { Internals } from './internals.js';
-import { Utils } from './utils.js';
-
-const { internals, block } = Internals;
-
-const { Registry, Phase } = Plugins;
+import { processDOM } from './dom.js';
+import { PluginRegistry } from './enhance.js';
+import { ADDED, CREATE, REMOVED, RENDER, block, internals } from './internals.js';
+import { markFlush, normalize } from './utils.js';
 
 const LC_Create = Symbol();
 const LC_Render = Symbol();
 
-/**
- * @param {Function | undefined} cb
- * @param {...any} args
- * @this {any}
- */
-function safeCall(this: Component, cb: Function, ...args: any[]) {
+function safeCall(cb, ...args) {
   cb ? cb.call(this, ...args) : void 0;
 }
 
 /**
  *
- * @param {HTMLElement|Slim} target
+ * @param {HTMLElement|Component} target
  */
 function getRoot(target) {
   return target.shadowRoot || target;
@@ -30,6 +21,16 @@ function getRoot(target) {
 export default class Component extends HTMLElement {
   static template = '';
   static useShadow = true;
+  /**
+   * 
+   * @param {string} tag Dashed string for element tagName
+   * @param {string} template HTML with Slim-annotations
+   * @param {typeof Component} base Class extending Slim Base Component
+   */
+  static element(tag, template, base) {
+    Object.defineProperty(base, 'template', { value: template });
+    customElements.define(tag, base);
+  }
 
   constructor() {
     super();
@@ -75,25 +76,25 @@ export default class Component extends HTMLElement {
       this.attachShadow({ mode: 'open' });
     }
     this[internals].created = true;
-    Registry.execute(Phase.CREATE, this);
+    PluginRegistry.exec(CREATE, this);
   }
 
   [LC_Render]() {
     // @ts-ignore
-    const template = Utils.normalizeHTML(this.constructor.template);
+    const template = normalize(this.constructor.template);
     if (template) {
       let frag = document.createDocumentFragment();
       const body = new DOMParser().parseFromString(template, 'text/html').body;
       frag.append(...body.children);
       requestAnimationFrame(() => {
         const { flush } = processDOM(this, frag);
-        Utils.markFlush(this, flush);
+        markFlush(this, flush);
         Promise.resolve()
           .then(this.onCreated.bind(this))
           .then(() => {
             flush();
             Promise.resolve().then(this.onRender.bind(this));
-            Registry.execute(Phase.RENDER, this);
+            PluginRegistry.exec(RENDER, this);
             getRoot(this).appendChild(frag);
           });
       });

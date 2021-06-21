@@ -1,4 +1,5 @@
-import { parse } from './expression';
+import { Slim } from '../dist/index';
+import { parse } from '../src/expression';
 import assert from 'assert';
 
 describe('expression', () => {

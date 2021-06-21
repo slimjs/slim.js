@@ -1,33 +1,21 @@
 import { parse } from './expression.js';
-import { Directives } from './directive.js';
-import { Utils } from './utils.js';
-import { Internals } from './internals.js';
-import { Slim } from './index.js';
-const { Registry } = Directives;
-const { debug, repeatCtx: repCtx, block, internals } = Internals;
-const { lazyQueue, createFunction, NOOP, contextLookup } = Utils;
+import { DirectiveRegistry } from './enhance.js';
+import { isForcedUpdate, lazyQueue, createFunction, NOOP, findCtx } from './utils.js';
+import { repeatCtx, block, internals, debug } from './internals.js';
+import Slim from './component.js';
 
 const walkerFilter = NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT;
 
-type FlushOptions = {
-  skip?: string[];
-  keys?: string[];
-};
-
-type Bindings<K> = Utils.Bindings<K>;
-type WithInternals<T, K> = Utils.WithInternals<T, K>;
-type BindTarget = WithInternals<Node, Set<Function>>;
-type BindSource = WithInternals<any, Set<BindTarget>>;
-const bindMap: WeakMap<BindSource, Bindings<BindTarget>> = new WeakMap();
+const bindMap = new WeakMap();
 
 export function createBind(
-  source: any,
-  target: BindTarget,
-  property: string,
-  execution: Function
+  source,
+  target,
+  property,
+  execution
 ) {
   let propToTarget = (bindMap.get(source) ||
-    bindMap.set(source, {}).get(source)) as Bindings<BindTarget>;
+    bindMap.set(source, {}).get(source));
   if (!propToTarget[property]) {
     const oSet = (Object.getOwnPropertyDescriptor(source, property) || {}).set;
     let value = source[property];
@@ -53,21 +41,17 @@ export function createBind(
 }
 
 function runBinding(
-  source: BindSource,
-  property: string,
-  value: any = source[property]
+  source,
+  property,
+  value
 ) {
-  function runOneBind(
-    meta: Bindings<BindTarget>,
-    property: string,
-    resolvedValue: any = value
-  ) {
+  function runOneBind(meta, property, resolvedValue = value) {
     (meta[property] || []).forEach((target) => {
-      target[internals][property].forEach((fn: Function) => fn(target[repCtx] || resolvedValue));
+      target[internals][property].forEach((fn) => fn(target[repeatCtx] || resolvedValue));
     });
   }
   let propToTarget = (bindMap.get(source) ||
-    bindMap.set(source, {}).get(source)) as Bindings<BindTarget>;
+    bindMap.set(source, {}).get(source));
   if (property !== '*') {
     runOneBind(propToTarget, property);
   } else {
@@ -77,11 +61,7 @@ function runBinding(
   }
 }
 
-export function removeBindings(
-  source: BindSource,
-  target: BindTarget,
-  property: string | '*'
-) {
+export function removeBindings(source, target, property = '*') {
   let propToTarget = bindMap.get(source) || {};
   if (property === '*') {
     Object.keys(propToTarget).forEach((key) =>
@@ -92,10 +72,11 @@ export function removeBindings(
   let meta = propToTarget[property];
   if (meta) {
     const localWalker = document.createTreeWalker(target, walkerFilter);
-    let node: null | BindTarget = localWalker.currentNode as BindTarget;
+    /** @type {Node|null} */
+    let node = localWalker.currentNode;
     while (node) {
       meta.delete(node);
-      node = localWalker.nextNode() as BindTarget | null;
+      node = localWalker.nextNode();
     }
   }
 }
@@ -107,31 +88,34 @@ export function removeBindings(
  *
  */
 export function processDOM(scope, dom) {
-  const forceUpdate = Utils.isForcedUpdate(scope);
+  const forceUpdate = isForcedUpdate(scope);
   const walker = document.createTreeWalker(dom, walkerFilter);
-  const unbinds = new Set<Function>();
-  const bounds = new Set<Function>();
-  let currentNode: BindTarget | null = (walker.currentNode ||
-    walker.nextNode()) as BindTarget | null;
-  /** @type {Set<Attr>} */
-  const pendingRemoval = new Set<Attr>();
-  const directives = Registry.getDirectives();
-  for (; currentNode; currentNode = walker.nextNode() as BindTarget | null) {
+  const unbinds = new Set();
+  const bounds = new Set();
+  /**
+   * @type {Node|null}
+   */
+  let currentNode = (walker.currentNode ||
+    walker.nextNode());
+  const pendingRemoval = new Set();
+  const directives = DirectiveRegistry.getAll();
+  for (; currentNode; currentNode = walker.nextNode()) {
     const currentNodeRef = currentNode;
-    const context = () => contextLookup(currentNodeRef);
+    const context = () => findCtx(currentNodeRef);
 
     if (currentNode.nodeType === Node.ELEMENT_NODE) {
+      const targetNode = /** @type {Element} */ (currentNode);
       if (
-        currentNode.nodeName.includes('-') &&
-        typeof currentNode[block] === 'undefined'
+        targetNode.nodeName.includes('-') &&
+        typeof targetNode[block] === 'undefined'
       ) {
-        currentNode[block] = true;
+        targetNode[block] = true;
       }
-      if (currentNode[block] === 'abort') {
+      if (targetNode[block] === 'abort') {
         continue;
       }
       const attributes = Array.from(
-        (currentNode as BindTarget & HTMLElement).attributes
+        targetNode.attributes
       );
       let i = 0,
         l = attributes.length;
@@ -163,7 +147,7 @@ export function processDOM(scope, dom) {
               expression: userCode,
               props: paths,
               scopeNode: scope,
-              targetNode: currentNode as BindTarget & Element,
+              targetNode: currentNode,
             });
             if (removeAttribute) {
               pendingRemoval.add(attr);
@@ -183,7 +167,7 @@ export function processDOM(scope, dom) {
               bounds.add(update);
               [...paths].forEach((path) => {
                 unbinds.add(
-                  createBind(scope, currentNode as BindTarget, path, update)
+                  createBind(scope, currentNode, path, update)
                 );
               });
             }
@@ -193,13 +177,14 @@ export function processDOM(scope, dom) {
     } else if (currentNode.nodeType === Node.TEXT_NODE) {
       const expression = currentNode.nodeValue || '';
       if (!expression.includes('{{')) continue;
-      let breakNode: Text | undefined = currentNode as unknown as Text;
+      /** @type {Text} */
+      let breakNode = (/** @type {Text} */ currentNode);
       while (breakNode) {
         let index = ('' + breakNode.nodeValue).indexOf('}}');
         if (index >= 0) {
           breakNode = breakNode.splitText(index + 2);
         } else {
-          breakNode = undefined;
+          break;
         }
       }
       const { paths, expressions } = parse(expression);
@@ -231,7 +216,7 @@ export function processDOM(scope, dom) {
       };
       bounds.add(update);
       paths.forEach((path) =>
-        unbinds.add(createBind(scope, currentNode as BindTarget, path, update))
+        unbinds.add(createBind(scope, currentNode, path, update))
       );
     }
   }

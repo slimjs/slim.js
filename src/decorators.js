@@ -1,6 +1,6 @@
-import { Utils } from './utils.js';
-
-const camelToDash = Utils.camelToDash();
+const d2c = /-[a-z]/g;
+const dashToCamel = (dash) =>
+  dash.indexOf('-') < 0 ? dash : dash.replace(d2c, (m) => m[1].toUpperCase());
 
 /**
  * @decorator
@@ -51,10 +51,10 @@ export function attribute(attributeName = '') {
     Object.defineProperty(clazz, 'observedAttributes', {
       value: [...observedAttributes, dash],
       configurable: true,
-      writable: true
+      writable: true,
     });
     // @ts-ignore
-    const { attributeChangedCallback : oAttrCb } = target;
+    const { attributeChangedCallback: oAttrCb } = target;
     function nAttrCb(name, oldVal, newVal) {
       oAttrCb ? oAttrCb(name, oldVal, newVal) : void 0;
       // @ts-expect-error
@@ -76,7 +76,11 @@ export function attribute(attributeName = '') {
       configurable: true,
       writable: true,
       initializer: function () {
-        const oSet = (Object.getOwnPropertyDescriptor(this, key) || Object.getOwnPropertyDescriptor(target, key)|| {}).set;
+        const oSet = (
+          Object.getOwnPropertyDescriptor(this, key) ||
+          Object.getOwnPropertyDescriptor(target, key) ||
+          {}
+        ).set;
         Object.defineProperty(this, key, {
           get: function () {
             return value;
@@ -94,10 +98,10 @@ export function attribute(attributeName = '') {
             } else {
               this.setAttribute(dash, String(v));
             }
-          }
+          },
         });
         this[key] = this[key];
-      }
+      },
     };
     Object.defineProperty(target, key, nDescriptor);
     descriptor.configurable = true;
