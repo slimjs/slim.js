@@ -1,6 +1,6 @@
 {
   "name": "slim-js",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "Superpower Web Components",
   "type": "module",
   "browser": "./dist/index.legacy.js",
