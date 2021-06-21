@@ -4,6 +4,7 @@ docs
 src/playground
 old-src
 *.spec.js
+*.spec.ts
 README.md
 prepare-test.js
 nightwatch.conf.js
