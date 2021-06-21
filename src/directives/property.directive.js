@@ -1,9 +1,7 @@
-import {Slim} from '../index.js';
+import { Utils, Internals, DirectiveRegistry } from '../index.js';
 
-// @ts-expect-error
-const dashToCamel = Slim.Utils.dashToCamel();
-// @ts-expect-error
-const { debug } = Slim.Internals;
+const { dashToCamel } = Utils;
+const { debug } = Internals;
 
 /**
  * @type {import('./directive.js').Directive}
@@ -16,8 +14,8 @@ const propertyDirective = {
       update: (/** @type {any} */ value) => {
         /** @type {any} **/ (targetNode)[propertyName] = value;
       },
-      removeAttribute: !Slim[debug]
+      removeAttribute: !Slim[debug],
     };
   },
 };
-Slim.directives.add(propertyDirective, true);
+DirectiveRegistry.add(propertyDirective);

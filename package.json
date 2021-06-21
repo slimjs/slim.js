@@ -4,16 +4,22 @@
   "description": "Superpower Web Components",
   "type": "module",
   "module": "./dist/index.js",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
   "exports": {
     ".": {
       "require": "./dist/index.legacy.js",
       "default": "./dist/index.js"
     },
     "./decorators": {
-      "default": "./dist/decorators.js"
+      "default": "./dist/decorators.js",
+      "require": "./dist/decorators.js"
     },
     "./directives": {
-      "default": "./dist/directives/all.js"
+      "default": "./dist/directives/all.js",
+      "require": "./dist/directives/all.js"
     }
   },
   "scripts": {

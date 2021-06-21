@@ -1,6 +1,12 @@
 import { parse } from './expression.js';
 import { DirectiveRegistry } from './enhance.js';
-import { isForcedUpdate, lazyQueue, createFunction, NOOP, findCtx } from './utils.js';
+import {
+  isForcedUpdate,
+  lazyQueue,
+  createFunction,
+  NOOP,
+  findCtx,
+} from './utils.js';
 import { repeatCtx, block, internals, debug } from './internals.js';
 import Slim from './component.js';
 
@@ -8,14 +14,8 @@ const walkerFilter = NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT;
 
 const bindMap = new WeakMap();
 
-export function createBind(
-  source,
-  target,
-  property,
-  execution
-) {
-  let propToTarget = (bindMap.get(source) ||
-    bindMap.set(source, {}).get(source));
+export function createBind(source, target, property, execution) {
+  let propToTarget = bindMap.get(source) || bindMap.set(source, {}).get(source);
   if (!propToTarget[property]) {
     const oSet = (Object.getOwnPropertyDescriptor(source, property) || {}).set;
     let value = source[property];
@@ -40,18 +40,15 @@ export function createBind(
   };
 }
 
-function runBinding(
-  source,
-  property,
-  value
-) {
+function runBinding(source, property, value) {
   function runOneBind(meta, property, resolvedValue = value) {
     (meta[property] || []).forEach((target) => {
-      target[internals][property].forEach((fn) => fn(target[repeatCtx] || resolvedValue));
+      target[internals][property].forEach((fn) =>
+        fn(target[repeatCtx] || resolvedValue)
+      );
     });
   }
-  let propToTarget = (bindMap.get(source) ||
-    bindMap.set(source, {}).get(source));
+  let propToTarget = bindMap.get(source) || bindMap.set(source, {}).get(source);
   if (property !== '*') {
     runOneBind(propToTarget, property);
   } else {
@@ -95,8 +92,7 @@ export function processDOM(scope, dom) {
   /**
    * @type {Node|null}
    */
-  let currentNode = (walker.currentNode ||
-    walker.nextNode());
+  let currentNode = walker.currentNode || walker.nextNode();
   const pendingRemoval = new Set();
   const directives = DirectiveRegistry.getAll();
   for (; currentNode; currentNode = walker.nextNode()) {
@@ -110,13 +106,12 @@ export function processDOM(scope, dom) {
         typeof targetNode[block] === 'undefined'
       ) {
         targetNode[block] = true;
+        requestAnimationFrame(() => (targetNode[block] = false));
       }
       if (targetNode[block] === 'abort') {
         continue;
       }
-      const attributes = Array.from(
-        targetNode.attributes
-      );
+      const attributes = Array.from(targetNode.attributes);
       let i = 0,
         l = attributes.length;
       a_l: for (i; i < l; i++) {
@@ -166,9 +161,7 @@ export function processDOM(scope, dom) {
               };
               bounds.add(update);
               [...paths].forEach((path) => {
-                unbinds.add(
-                  createBind(scope, currentNode, path, update)
-                );
+                unbinds.add(createBind(scope, currentNode, path, update));
               });
             }
           }
@@ -178,7 +171,7 @@ export function processDOM(scope, dom) {
       const expression = currentNode.nodeValue || '';
       if (!expression.includes('{{')) continue;
       /** @type {Text} */
-      let breakNode = (/** @type {Text} */ currentNode);
+      let breakNode = /** @type {Text} */ (currentNode);
       while (breakNode) {
         let index = ('' + breakNode.nodeValue).indexOf('}}');
         if (index >= 0) {

@@ -32,7 +32,8 @@ const eventDirective = {
     };
     targetNode.addEventListener(eventName, eventHandler);
     return {
-      update: NOOP
+      update: NOOP,
+      removeAttribute: true,
     };
   },
   noExecution: true,
