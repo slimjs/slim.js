@@ -195,7 +195,7 @@ export function processDOM(scope, dom) {
         try {
           const text = Object.keys(map).reduce((text, current) => {
             try {
-              const joinValue = map[current].call(scope, altContext);
+              const joinValue = map[current].call(scope, extract(altContext));
               let resolvedValue =
                 typeof joinValue === 'undefined' ? '' : joinValue;
               return text.replaceAll(current, resolvedValue);

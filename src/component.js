@@ -1,6 +1,13 @@
 import { processDOM } from './dom.js';
 import { PluginRegistry } from './enhance.js';
-import { ADDED, CREATE, REMOVED, RENDER, block, internals } from './internals.js';
+import {
+  ADDED,
+  CREATE,
+  REMOVED,
+  RENDER,
+  block,
+  internals,
+} from './internals.js';
 import { markFlush, normalize } from './utils.js';
 
 const LC_Create = Symbol();
@@ -22,19 +29,21 @@ export default class Component extends HTMLElement {
   static template = '';
   static useShadow = true;
   /**
-   * 
+   *
    * @param {string} tag Dashed string for element tagName
    * @param {string} template HTML with Slim-annotations
    * @param {typeof Component} base Class extending Slim Base Component
    */
-  static element(tag, template, base) {
+  // @ts-expect-error
+  static element(tag, template, base = class extends Slim {}) {
     Object.defineProperty(base, 'template', { value: template });
     customElements.define(tag, base);
   }
 
   constructor() {
     super();
-    this[internals] = { created: false };
+    this[internals] = this[internals] || {};
+    this[internals].created = true;
     this[LC_Create]();
     this[LC_Render]();
   }
