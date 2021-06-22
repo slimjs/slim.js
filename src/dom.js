@@ -85,7 +85,6 @@ export function removeBindings(source, target, property = '*') {
  *
  */
 export function processDOM(scope, dom) {
-  const forceUpdate = isForcedUpdate(scope);
   const walker = document.createTreeWalker(dom, walkerFilter);
   const unbinds = new Set();
   const bounds = new Set();
@@ -154,7 +153,7 @@ export function processDOM(scope, dom) {
               const update = (altContext = context) => {
                 try {
                   const value = fn.call(scope, altContext);
-                  invocation(value, forceUpdate);
+                  invocation(value, isForcedUpdate(scope));
                 } catch (err) {
                   console.warn(err);
                 }
