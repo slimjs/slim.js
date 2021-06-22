@@ -14,6 +14,8 @@ const walkerFilter = NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT;
 
 const bindMap = new WeakMap();
 
+const extract = (ctx) => (typeof ctx === 'function' ? ctx() : ctx);
+
 export function createBind(source, target, property, execution) {
   let propToTarget = bindMap.get(source) || bindMap.set(source, {}).get(source);
   if (!propToTarget[property]) {
@@ -150,9 +152,9 @@ export function processDOM(scope, dom) {
               const fn = directive.noExecution
                 ? NOOP
                 : createFunction('item', `return ${userCode}`);
-              const update = (altContext = context) => {
+              const update = (altContext = context()) => {
                 try {
-                  const value = fn.call(scope, altContext);
+                  const value = fn.call(scope, extract(altContext));
                   invocation(value, isForcedUpdate(scope));
                 } catch (err) {
                   console.warn(err);
