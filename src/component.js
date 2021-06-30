@@ -94,14 +94,14 @@ export default class Component extends HTMLElement {
     if (template) {
       let frag = document.createDocumentFragment();
       const body = new DOMParser().parseFromString(template, 'text/html').body;
+      const { flush } = processDOM(this, body);
       frag.append(...body.children);
       requestAnimationFrame(() => {
-        const { flush } = processDOM(this, frag);
+        flush();
         markFlush(this, flush);
         Promise.resolve()
           .then(this.onCreated.bind(this))
           .then(() => {
-            flush();
             Promise.resolve().then(this.onRender.bind(this));
             PluginRegistry.exec(RENDER, this);
             getRoot(this).appendChild(frag);

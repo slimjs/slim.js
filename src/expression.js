@@ -1,8 +1,10 @@
 import { memoize } from './utils.js';
 
+const ITEM = Symbol();
+
 const stripCurlies = /(\{\{([^\{|^\}]+)\}\})/gi;
 const rx = /(this\.[\w+|\d*]*)+/gi;
-const ix = /(item\.[\w+|\d*]*)+/gi;
+const ix = /item(\.[\w+|\d*]*)*/gi;
 
 /**
  * @typedef ParseResult
@@ -15,7 +17,7 @@ function doParse(expression = '') {
   let match = null;
   rx.lastIndex = ix.lastIndex = 0;
   while ((match = rx.exec(expression))) paths.push(match[1].split('.')[1]);
-  while ((match = ix.exec(expression))) paths.push(match[1]);
+  if (ix.test(expression)) paths.push(ITEM);
   return {
     paths,
     expressions: paths.length ? expression.match(stripCurlies) || [] : [],

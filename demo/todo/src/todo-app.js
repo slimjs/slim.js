@@ -1,8 +1,8 @@
-import { Slim } from 'slim-js';
+import { Slim, Internals } from 'slim-js';
 import { tag, template, useShadow } from 'slim-js/decorators';
 import { createTaskList } from './task';
 import { ViewModelMixin } from './viewmodel-mixin';
-import 'slim-js/all.directives.js';
+import 'slim-js/directives/all.directives.js';
 
 /*
   <style>
@@ -25,13 +25,13 @@ import 'slim-js/all.directives.js';
 @template(/*html*/ `
   <todo-card
     *repeat="{{this.viewModel.todos}}"
-    task-title="{{item.title}}"
-    task-id="{{item.id}}"
+    .task-title="{{item.title}}"
+    .task-id="{{item.id}}"
     class="{{item?.done ? 'done' : 'in-progress'}}"
     .on-delete="{{this.onDelete}}">
   </todo-card>
 `)
-export class App extends ViewModelMixin(Slim.Component) {
+export class App extends ViewModelMixin(Slim) {
   todos = createTaskList();
   newTodoMode = false;
 
@@ -51,7 +51,7 @@ export class App extends ViewModelMixin(Slim.Component) {
     this.newTaskForm = newTaskForm;
     this.todos.onChange = (info) => {
       console.log(info);
-      this.viewModel.todos = [...this.todos.getTasks()];
+      this.viewModel.todos = this.todos.getTasks();
     };
   }
 
@@ -93,5 +93,5 @@ customElements.define(
   },
   {
     extends: 'body',
-  }
+  },
 );

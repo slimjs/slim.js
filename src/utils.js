@@ -6,9 +6,9 @@ const flushMap = new WeakMap();
 export { requestIdleCallback };
 /**
  * @param {import('./component.js')} target
- * @param {...string[]} keys
+ * @param {...string} keys
  */
-export function forceUpdate (target, ...keys) {
+export function forceUpdate(target, ...keys) {
   const props = [...arguments].slice(1);
   const flush = flushMap.get(target);
   if (!flush) {
@@ -21,7 +21,7 @@ export function forceUpdate (target, ...keys) {
     flush();
   }
   requestAnimationFrame(() => forceUpdateMap.delete(target));
-};
+}
 
 /**
  * @param {Node|Element|null} t
@@ -47,6 +47,8 @@ export const dashToCamel = (dash) =>
 
 export const syntaxMethod = () => /(.+)(\((.*)\)){1}/;
 
+const dlPolyfill = { timeRemaining: () => true };
+
 /**
  * @param {Set<Function>|Array<Function>} queue
  * @param {number} [timeout] max milliseconds to wait
@@ -57,8 +59,8 @@ export const lazyQueue = (queue, timeout = 20) => {
   let task = iterator.next();
   const run = () => requestIdleCallback(execOne, opts);
 
-  function execOne(deadline) {
-    while (deadline?.timeRemaining?.() && !task.done) {
+  function execOne(deadline = dlPolyfill) {
+    while (deadline.timeRemaining() && !task.done) {
       task.value();
       task = iterator.next();
     }

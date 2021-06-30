@@ -1,4 +1,4 @@
-import { DirectiveRegistry } from "../index.js";
+import { DirectiveRegistry, Internals } from '../index.js';
 
 function attrTest(_, name, value) {
   return (
@@ -14,12 +14,15 @@ const attributeDirective = {
   attribute: attrTest,
   process: ({ attributeName: name, targetNode }) => {
     targetNode;
+    if (targetNode[Internals.block] === 'abort') return {};
     return {
       update: (value) => {
+        if (targetNode[Internals.block] === 'abort')
+          return targetNode.removeAttribute(name);
         if (
           typeof value === 'boolean' ||
-          value === null ||
-          value === undefined
+          typeof value === 'undefined' ||
+          value === null
         ) {
           value
             ? targetNode.setAttribute(name, '')
@@ -29,6 +32,7 @@ const attributeDirective = {
         }
       },
       removeNode: false,
+      removeAttribute: true,
     };
   },
 };
