@@ -18,8 +18,7 @@ import { ViewModelMixin } from './viewmodel-mixin';
     <h3>{{this.task.title}}</h3>
   </div>
 `)
-export class TodoCard extends ViewModelMixin(Slim.Component) {
-
+export class TodoCard extends ViewModelMixin(Slim) {
   todos = createTaskList();
   newTodoMode = false;
 
@@ -28,7 +27,6 @@ export class TodoCard extends ViewModelMixin(Slim.Component) {
 
   // @attribute()
   taskId = 0;
-
 
   /** @type {HTMLInputElement} */ newTaskInput;
   /** @type {HTMLFormElement} */ newTaskForm;

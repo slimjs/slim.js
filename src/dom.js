@@ -12,9 +12,11 @@ import Slim from './component.js';
 
 const walkerFilter = NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT;
 
+const type = (o, t) => typeof o === t;
+
 const bindMap = new WeakMap();
 
-const extract = (ctx) => (typeof ctx === 'function' ? ctx() : ctx);
+const extract = (ctx) => (type(ctx, 'function') ? ctx() : ctx);
 
 export function createBind(source, target, property, execution) {
   let propToTarget = bindMap.get(source) || bindMap.set(source, {}).get(source);
@@ -24,7 +26,7 @@ export function createBind(source, target, property, execution) {
     Object.defineProperty(source, property, {
       get: () => value,
       set: (v) => {
-        if (v !== value) {
+        if (type(v, 'object') || v !== value) {
           value = v;
           if (oSet) {
             oSet(v);
@@ -36,6 +38,7 @@ export function createBind(source, target, property, execution) {
   }
   (propToTarget[property] = propToTarget[property] || new Set()).add(target);
   let meta = (target[internals] = target[internals] || {});
+  if (type(property, 'symbol')) return NOOP;
   (meta[property] = meta[property] || new Set()).add(execution);
   return () => {
     meta[property].delete(execution);
@@ -46,7 +49,7 @@ function runBinding(source, property, value) {
   function runOneBind(meta, property, resolvedValue = value) {
     (meta[property] || []).forEach((target) => {
       target[internals][property].forEach((fn) =>
-        fn(target[repeatCtx] || resolvedValue)
+        fn(target[repeatCtx] || resolvedValue),
       );
     });
   }
@@ -55,7 +58,7 @@ function runBinding(source, property, value) {
     runOneBind(propToTarget, property);
   } else {
     Object.keys(propToTarget).forEach((key) =>
-      runOneBind(propToTarget, key, source[key])
+      runOneBind(propToTarget, key, source[key]),
     );
   }
 }
@@ -64,7 +67,7 @@ export function removeBindings(source, target, property = '*') {
   let propToTarget = bindMap.get(source) || {};
   if (property === '*') {
     Object.keys(propToTarget).forEach((key) =>
-      removeBindings(source, target, key)
+      removeBindings(source, target, key),
     );
     return;
   }
@@ -104,7 +107,7 @@ export function processDOM(scope, dom) {
       const targetNode = /** @type {Element} */ (currentNode);
       if (
         targetNode.nodeName.includes('-') &&
-        typeof targetNode[block] === 'undefined'
+        type(targetNode[block], 'undefined')
       ) {
         targetNode[block] = true;
         requestAnimationFrame(() => (targetNode[block] = false));
@@ -118,11 +121,11 @@ export function processDOM(scope, dom) {
       a_l: for (i; i < l; i++) {
         const attr = attributes[i];
         const attrName = attr.nodeName;
-        const attrValue = attr.nodeValue;
+        const attrValue = attr.nodeValue || '';
         if (currentNode[block] === 'abort') {
           break a_l;
         }
-        const expression = (attr.nodeValue || '').trim();
+        const expression = attrValue.trim();
         const userCode =
           expression.startsWith('{{') && expression.endsWith('}}')
             ? expression.slice(2, -2)
@@ -154,14 +157,17 @@ export function processDOM(scope, dom) {
                 : createFunction('item', `return ${userCode}`);
               const update = (altContext = context()) => {
                 try {
-                  const value = fn.call(scope, extract(altContext));
+                  const value =
+                    fn === NOOP
+                      ? undefined
+                      : fn.call(scope, extract(altContext));
                   invocation(value, isForcedUpdate(scope));
                 } catch (err) {
-                  console.warn(err);
+                  // console.warn(err);
                 }
               };
               bounds.add(update);
-              [...paths].forEach((path) => {
+              paths.forEach((path) => {
                 unbinds.add(createBind(scope, currentNode, path, update));
               });
             }
@@ -188,7 +194,7 @@ export function processDOM(scope, dom) {
           o[e] = createFunction('item', `return ${e.slice(2, -2)}`);
           return o;
         },
-        {}
+        {},
       );
       const targetNode /** @type {Text} */ = /** @type {unknown} */ currentNode;
       const update = (altContext = context()) => {
@@ -196,30 +202,27 @@ export function processDOM(scope, dom) {
           const text = Object.keys(map).reduce((text, current) => {
             try {
               const joinValue = map[current].call(scope, extract(altContext));
-              let resolvedValue =
-                typeof joinValue === 'undefined' ? '' : joinValue;
+              let resolvedValue = type(joinValue, 'undefined') ? '' : joinValue;
               return text.replaceAll(current, resolvedValue);
             } catch (err) {
-              return text.replaceAll(current, '');
+              return Slim[debug] || text.replaceAll(current, '');
             }
           }, oText);
           targetNode.nodeValue = text;
-        } catch (err) {
-          console.warn(err);
-        }
+        } catch (err) {}
       };
       bounds.add(update);
       paths.forEach((path) =>
-        unbinds.add(createBind(scope, currentNode, path, update))
+        unbinds.add(createBind(scope, currentNode, path, update)),
       );
     }
   }
   if (!Slim[debug]) {
-    Array.from(pendingRemoval).forEach(
-      (attr) =>
-        attr.ownerElement &&
-        /** @type {Element} */ attr.ownerElement.removeAttribute(attr.nodeName)
-    );
+    Array.from(pendingRemoval).forEach((attr) => {
+      try {
+        /** @type {Element} */ attr.ownerElement.removeAttribute(attr.nodeName);
+      } catch (e) {}
+    });
   }
   return {
     /**

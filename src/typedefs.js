@@ -12,9 +12,10 @@
 
 /**
  * @typedef NodeProcessResult
- * @property {(value: any) => any} update
+ * @property {(value: any) => any} [update]
  * @property {boolean} [removeAttribute]
  * @property {boolean} [removeNode]
+ * @property {boolean} [noInvocation]
  */
 
 /**
@@ -30,3 +31,5 @@
  * @property {AttributeTest} attribute
  * @property {NodeProcessor} process
  */
+
+export {};
