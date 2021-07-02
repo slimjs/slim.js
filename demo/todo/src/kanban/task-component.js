@@ -99,10 +99,14 @@ class TaskComponent extends depInj(Slim) {
   }
 
   editDescription() {
-    this.task.description = prompt(
+    const newDescription = prompt(
       'Description',
-      this.task.description || 'No Description',
+      this.task.description || 'No Description'
     );
+    if (newDescription !== null) {
+      this.task.description = newDescription;
+      this.task = this.task;
+    }
     // Utils.forceUpdate(this, 'task');
   }
 
@@ -118,12 +122,10 @@ class TaskComponent extends depInj(Slim) {
         await this.userService.getById(this.task.assignee)
       ).picture.thumbnail;
       this.task = this.task;
-      // Utils.forceUpdate(this);
     } else {
       if (this.task) {
         this.task.thumb = '';
       }
-      // Utils.forceUpdate(this);
     }
   }
 

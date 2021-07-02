@@ -1,4 +1,9 @@
-import { processDOM, removeBindings, Internals, DirectiveRegistry } from '../index.js';
+import {
+  processDOM,
+  removeBindings,
+  Internals,
+  DirectiveRegistry,
+} from '../index.js';
 const { block, internals, repeatCtx } = Internals;
 
 const lateClear = (queue = [], scope) => {
@@ -6,7 +11,7 @@ const lateClear = (queue = [], scope) => {
     removeBindings(scope, item, '*');
     item[internals].clear();
   });
-}
+};
 
 const raf = requestAnimationFrame;
 
@@ -36,6 +41,7 @@ const replicate = (n, text) => {
 };
 
 const nodePool = (template) => ({
+  tpl: document.createElement('template'),
   ptr: 0,
   /** @type {Element[]} */
   pool: [],
@@ -49,8 +55,9 @@ const nodePool = (template) => ({
       const html = isTablePart
         ? `<table><tbody>${replicate(diff, template)}</tbody></table>`
         : replicate(diff, template);
-      /** @type {Element|undefined} */
-      let content = new DOMParser().parseFromString(html, 'text/html').body;
+      this.tpl.innerHTML = html;
+      /** @type {Element|DocumentFragment} */
+      let content = this.tpl.content;
       if (isTablePart) {
         content = content.children[0].children[0];
       }
@@ -79,22 +86,20 @@ const nodePool = (template) => ({
   },
 });
 
-/**
- * @typedef RepeatMeta
- * @property {Function} clear
- * @property {Function[]} bounds
- * @property {any} data
- */
-
 const REPEAT = '*repeat';
 const REPEAT_CLEANUP = '*repeat-cleanup';
 
 /**
- * @type {import('./directive.js').Directive}
+ * @type {import('../typedefs.js').Directive}
  */
 const repeatDirective = {
   attribute: (_, nodeName) => nodeName === REPEAT,
-  process: ({ targetNode: tNode, scopeNode: scope, expression: ex }) => {
+  process: ({
+    targetNode: tNode,
+    scopeNode: scope,
+    expression: ex,
+    targetNodeName,
+  }) => {
     let repeatCleanup =
       parseInt(tNode.getAttribute(REPEAT_CLEANUP) || '5000') || 5000;
     let delRng = new Range();
@@ -107,22 +112,23 @@ const repeatDirective = {
     const parent =
       tNode.parentElement || tNode.parentNode || scope.shadowRoot || scope;
     const isTablePart =
-      ['', 'tr', 'td', 'thead', 'tbody'].indexOf(tNode.localName) > 0;
+      ['', 'tr', 'td', 'thead', 'tbody'].indexOf(targetNodeName) > 0;
     parent.insertBefore(hook, tNode);
-    raf(() => tNode.remove());
     let cleanupInterval;
     const frag = document.createDocumentFragment();
 
-    /** @type {(HTMLElement & {[internals]: RepeatMeta})[]} */
+    /** @type {HTMLElement[]} */
     let clones = [];
 
     let toRecycle = [];
+
+    let bounds, clear;
 
     function update(
       /** @type {any[]} */ dataSource = [],
       /** @type {boolean} */ forceUpdate = false
     ) {
-      let changeSet = new Set();
+      let changeSet = [];
       if (cleanupInterval) {
         clearTimeout(cleanupInterval);
       }
@@ -144,8 +150,7 @@ const repeatDirective = {
         if (forceUpdate || node[repeatCtx] !== item) {
           node[repeatCtx] = item;
           meta.data = item;
-          changeSet.add(meta.bounds);
-          // meta.bounds.forEach((f) => f(item));
+          changeSet.push(...meta.bounds);
         }
       }
 
@@ -165,7 +170,7 @@ const repeatDirective = {
           if (meta) {
             meta.bounds.forEach((f) => f(item));
           } else {
-            const { bounds, clear } = processDOM(scope, node);
+            ({ bounds, clear } = processDOM(scope, node));
             Object.assign(node[internals], {
               bounds,
               clear,
@@ -182,7 +187,8 @@ const repeatDirective = {
       raf(() => {
         delRng.deleteContents();
         delRng.detach();
-        changeSet.forEach((change) => change.forEach((f) => f()));
+        changeSet.forEach((f) => f());
+        // changeSet.forEach((change) => change.forEach((f) => f()));
       });
       cleanupInterval = setTimeout(() => {
         lateClear(pool.pool.slice(pool.ptr), scope);
@@ -190,7 +196,7 @@ const repeatDirective = {
       }, repeatCleanup);
     }
 
-    return { update, context: (node) => node[repeatCtx] };
+    return { update, removeNode: true };
   },
 };
 

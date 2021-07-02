@@ -24,4 +24,5 @@ function doParse(expression = '') {
   };
 }
 
+/** @type {(expression: string) => ReturnType<doParse>} */
 export const parse = memoize(doParse);

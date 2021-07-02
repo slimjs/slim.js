@@ -45,7 +45,6 @@ export default class Component extends HTMLElement {
     this[internals] = this[internals] || {};
     this[internals].created = true;
     this[LC_Create]();
-    this[LC_Render]();
   }
 
   /** @abstract */
@@ -67,11 +66,15 @@ export default class Component extends HTMLElement {
   connectedCallback() {
     // @ts-ignore
     safeCall.call(this, super.connectedCallback);
+    this.onAdded();
+    PluginRegistry.exec(ADDED, this);
   }
 
   disconnectedCallback() {
     // @ts-ignore
     safeCall.call(this, super.disconnectedCallback);
+    this.onRemoved();
+    PluginRegistry.exec(REMOVED, this);
   }
 
   [LC_Create]() {
@@ -86,26 +89,23 @@ export default class Component extends HTMLElement {
     }
     this[internals].created = true;
     PluginRegistry.exec(CREATE, this);
+    this[LC_Render]();
   }
 
   [LC_Render]() {
     // @ts-ignore
     const template = normalize(this.constructor.template);
     if (template) {
-      let frag = document.createDocumentFragment();
-      const body = new DOMParser().parseFromString(template, 'text/html').body;
-      const { flush } = processDOM(this, body);
-      frag.append(...body.children);
-      requestAnimationFrame(() => {
-        flush();
+      const tpl = document.createElement('template');
+      tpl.innerHTML = template;
+      Promise.resolve().then(() => {
+        const { flush } = processDOM(this, tpl.content);
         markFlush(this, flush);
-        Promise.resolve()
-          .then(this.onCreated.bind(this))
-          .then(() => {
-            Promise.resolve().then(this.onRender.bind(this));
-            PluginRegistry.exec(RENDER, this);
-            getRoot(this).appendChild(frag);
-          });
+        flush();
+        this.onCreated();
+        PluginRegistry.exec(RENDER, this);
+        getRoot(this).appendChild(tpl.content);
+        this.onRender();
       });
     }
   }

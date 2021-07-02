@@ -2,6 +2,7 @@
  * @typedef NodeProcessInfo
  * @property {any|Element} scopeNode
  * @property {Element} targetNode
+ * @property {string} targetNodeName
  * @property {Attr} attribute
  * @property {string} attributeName
  * @property {string|null} attributeValue
@@ -19,7 +20,7 @@
  */
 
 /**
- * @typedef {(attr: Attr, nodeName: string, nodeValue: string | null) => any} AttributeTest
+ * @typedef {(attr: Attr, nodeName: string, nodeValue: string) => any} AttributeTest
  */
 
 /**
@@ -27,9 +28,14 @@
  */
 
 /**
+ * @typedef {(phase: symbol, target: import('./index.js').Slim) => any} Plugin
+ */
+
+/**
  * @typedef Directive
  * @property {AttributeTest} attribute
  * @property {NodeProcessor} process
+ * @property {boolean} [noExecution]
  */
 
 export {};

@@ -1,21 +1,23 @@
 import { DirectiveRegistry, Internals } from '../index.js';
 
-function attrTest(_, name, value) {
-  return (
+/**
+ * @type {import('../typedefs.js').Directive}
+ */
+const attributeDirective = {
+  attribute: (_, name, value) =>
+    value &&
     !name.startsWith('@') &&
     !name.startsWith('.') &&
     !name.startsWith('*') &&
-    (value || '').startsWith('{{') &&
-    (value || '').endsWith('}}')
-  );
-}
-
-const attributeDirective = {
-  attribute: attrTest,
+    value.startsWith('{{') &&
+    value.endsWith('}}'),
   process: ({ attributeName: name, targetNode }) => {
     targetNode;
     if (targetNode[Internals.block] === 'abort') return {};
     return {
+      /**
+       * @param {any} value
+       */
       update: (value) => {
         if (targetNode[Internals.block] === 'abort')
           return targetNode.removeAttribute(name);

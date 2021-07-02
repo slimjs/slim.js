@@ -64,7 +64,7 @@ export const lazyQueue = (queue, timeout = 20) => {
       task.value();
       task = iterator.next();
     }
-    if (deadline?.didTimeout) {
+    if (deadline?.didTimeout && !task.done) {
       task.value();
       task = iterator.next();
     }
@@ -86,19 +86,22 @@ export const normalize = (html) =>
     .replace(/\>[\t ]+\</g, '><')
     .replace(/\>[\t ]+$/g, '>');
 
+const memoizeCache = {};
 /**
  * @param {Function} fn
- * @returns
  */
 export const memoize = (fn) => {
-  const cache = {};
-  return (str) => cache[str] || (cache[str] = fn(str));
+  return (str) => memoizeCache[str] || (memoizeCache[str] = fn(str));
 };
 
+const fnCache = {};
+/**
+ * @param  {...string} args
+ * @returns
+ */
 export const createFunction = (...args) => {
-  const cache = {};
   const key = args.join('$');
-  return cache[key] || (cache[key] = new Function(...args));
+  return fnCache[key] || (fnCache[key] = new Function(...args));
 };
 
 export const NOOP = () => void 0;

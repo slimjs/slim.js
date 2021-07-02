@@ -10,23 +10,32 @@ import {
 import { repeatCtx, block, internals, debug } from './internals.js';
 import Slim from './component.js';
 
+const ea = [];
+const eo = {};
+const ABORT = 'abort';
+
 const walkerFilter = NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT;
 
+/**
+ * @param {any} o
+ * @param {string} t
+ * @returns {boolean}
+ */
 const type = (o, t) => typeof o === t;
 
 const bindMap = new WeakMap();
 
 const extract = (ctx) => (type(ctx, 'function') ? ctx() : ctx);
 
-export function createBind(source, target, property, execution) {
+export const createBind = (source, target, property, execution) => {
   let propToTarget = bindMap.get(source) || bindMap.set(source, {}).get(source);
   if (!propToTarget[property]) {
-    const oSet = (Object.getOwnPropertyDescriptor(source, property) || {}).set;
+    const oSet = (Object.getOwnPropertyDescriptor(source, property) || eo).set;
     let value = source[property];
     Object.defineProperty(source, property, {
       get: () => value,
       set: (v) => {
-        if (type(v, 'object') || v !== value) {
+        if (v !== value || type(v, 'object')) {
           value = v;
           if (oSet) {
             oSet(v);
@@ -43,31 +52,32 @@ export function createBind(source, target, property, execution) {
   return () => {
     meta[property].delete(execution);
   };
-}
+};
 
-function runBinding(source, property, value) {
-  function runOneBind(meta, property, resolvedValue = value) {
-    (meta[property] || []).forEach((target) => {
-      target[internals][property].forEach((fn) =>
-        fn(target[repeatCtx] || resolvedValue),
-      );
-    });
-  }
+const runOneBind = (meta, property, resolvedValue) => {
+  (meta[property] || ea).forEach((target) => {
+    target[internals][property].forEach((fn) =>
+      fn(target[repeatCtx] || resolvedValue)
+    );
+  });
+};
+
+export const runBinding = (source, property, value) => {
   let propToTarget = bindMap.get(source) || bindMap.set(source, {}).get(source);
   if (property !== '*') {
-    runOneBind(propToTarget, property);
+    runOneBind(propToTarget, property, value);
   } else {
     Object.keys(propToTarget).forEach((key) =>
-      runOneBind(propToTarget, key, source[key]),
+      runOneBind(propToTarget, key, source[key])
     );
   }
-}
+};
 
 export function removeBindings(source, target, property = '*') {
-  let propToTarget = bindMap.get(source) || {};
+  let propToTarget = bindMap.get(source) || eo;
   if (property === '*') {
     Object.keys(propToTarget).forEach((key) =>
-      removeBindings(source, target, key),
+      removeBindings(source, target, key)
     );
     return;
   }
@@ -89,30 +99,37 @@ export function removeBindings(source, target, property = '*') {
  * @param {Node} dom
  *
  */
-export function processDOM(scope, dom) {
-  const walker = document.createTreeWalker(dom, walkerFilter);
+export const processDOM = (scope, dom) => {
+  /** @type Set<Function> */
   const unbinds = new Set();
+  /** @type Set<Function> */
   const bounds = new Set();
+  /** @type Set<Attr> */
+  const pendingAttributesToRemove = new Set();
+  /** @type Set<Element> */
+  const pendingNodesToRemove = new Set();
+  const directives = DirectiveRegistry.getAll();
+
+  const walker = document.createTreeWalker(dom, walkerFilter);
   /**
    * @type {Node|null}
    */
   let currentNode = walker.currentNode || walker.nextNode();
-  const pendingRemoval = new Set();
-  const directives = DirectiveRegistry.getAll();
   for (; currentNode; currentNode = walker.nextNode()) {
     const currentNodeRef = currentNode;
-    const context = () => findCtx(currentNodeRef);
+    currentNode.nodeType;
+    currentNode.nodeValue;
+    currentNode.addEventListener;
+    const nodeName = currentNode.nodeName;
+    const defaultContext = () => findCtx(currentNodeRef);
 
     if (currentNode.nodeType === Node.ELEMENT_NODE) {
       const targetNode = /** @type {Element} */ (currentNode);
-      if (
-        targetNode.nodeName.includes('-') &&
-        type(targetNode[block], 'undefined')
-      ) {
+      if (nodeName.includes('-') && type(targetNode[block], 'undefined')) {
         targetNode[block] = true;
         requestAnimationFrame(() => (targetNode[block] = false));
       }
-      if (targetNode[block] === 'abort') {
+      if (targetNode[block] === ABORT) {
         continue;
       }
       const attributes = Array.from(targetNode.attributes);
@@ -122,7 +139,7 @@ export function processDOM(scope, dom) {
         const attr = attributes[i];
         const attrName = attr.nodeName;
         const attrValue = attr.nodeValue || '';
-        if (currentNode[block] === 'abort') {
+        if (currentNode[block] === ABORT) {
           break a_l;
         }
         const expression = attrValue.trim();
@@ -130,32 +147,39 @@ export function processDOM(scope, dom) {
           expression.startsWith('{{') && expression.endsWith('}}')
             ? expression.slice(2, -2)
             : expression;
-        const { paths } = expression.includes('{{')
-          ? parse(userCode)
-          : { paths: [] };
+        /** @type {string[]} */
+        const paths = expression.includes('{{') ? parse(userCode).paths : ea;
         d_l: for (const directive of directives) {
-          if (currentNode[block] === 'abort') {
+          if (currentNode[block] === ABORT) {
             break d_l;
           }
           if (directive.attribute(attr, attrName, attrValue)) {
-            const { update: invocation, removeAttribute } = directive.process({
+            const {
+              update: invocation,
+              removeAttribute,
+              removeNode,
+            } = directive.process({
               attribute: attr,
               attributeName: attrName,
               attributeValue: attrValue,
-              context,
+              context: defaultContext,
               expression: userCode,
               props: paths,
               scopeNode: scope,
-              targetNode: currentNode,
+              targetNode,
+              targetNodeName: nodeName,
             });
             if (removeAttribute) {
-              pendingRemoval.add(attr);
+              pendingAttributesToRemove.add(attr);
+            }
+            if (removeNode) {
+              pendingNodesToRemove.add(targetNode);
             }
             if (invocation) {
               const fn = directive.noExecution
                 ? NOOP
                 : createFunction('item', `return ${userCode}`);
-              const update = (altContext = context()) => {
+              const update = (altContext = defaultContext()) => {
                 try {
                   const value =
                     fn === NOOP
@@ -175,7 +199,7 @@ export function processDOM(scope, dom) {
         }
       }
     } else if (currentNode.nodeType === Node.TEXT_NODE) {
-      const expression = currentNode.nodeValue || '';
+      const expression = /** @type string **/ (currentNode.nodeValue);
       if (!expression.includes('{{')) continue;
       /** @type {Text} */
       let breakNode = /** @type {Text} */ (currentNode);
@@ -194,31 +218,28 @@ export function processDOM(scope, dom) {
           o[e] = createFunction('item', `return ${e.slice(2, -2)}`);
           return o;
         },
-        {},
+        {}
       );
       const targetNode /** @type {Text} */ = /** @type {unknown} */ currentNode;
-      const update = (altContext = context()) => {
-        try {
-          const text = Object.keys(map).reduce((text, current) => {
-            try {
-              const joinValue = map[current].call(scope, extract(altContext));
-              let resolvedValue = type(joinValue, 'undefined') ? '' : joinValue;
-              return text.replaceAll(current, resolvedValue);
-            } catch (err) {
-              return Slim[debug] || text.replaceAll(current, '');
-            }
-          }, oText);
-          targetNode.nodeValue = text;
-        } catch (err) {}
+      const update = (altContext = defaultContext()) => {
+        const text = Object.keys(map).reduce((text, current) => {
+          const joinValue = map[current].call(scope, extract(altContext));
+          let resolvedValue = type(joinValue, 'undefined') ? '' : joinValue;
+          return text.replaceAll(current, resolvedValue);
+        }, oText);
+        targetNode.textContent = text;
+        // try {
+        // } catch (err) {}
       };
       bounds.add(update);
       paths.forEach((path) =>
-        unbinds.add(createBind(scope, currentNode, path, update)),
+        unbinds.add(createBind(scope, currentNode, path, update))
       );
     }
   }
+  pendingNodesToRemove.forEach((e) => e.remove());
   if (!Slim[debug]) {
-    Array.from(pendingRemoval).forEach((attr) => {
+    pendingAttributesToRemove.forEach((attr) => {
       try {
         /** @type {Element} */ attr.ownerElement.removeAttribute(attr.nodeName);
       } catch (e) {}
@@ -226,8 +247,7 @@ export function processDOM(scope, dom) {
   }
   return {
     /**
-     *
-     * @param {FlushOptions} [options]
+     * @param {...string} props
      */
     flush: function (...props) {
       if (arguments.length) {
@@ -239,4 +259,4 @@ export function processDOM(scope, dom) {
     clear: () => lazyQueue(unbinds),
     bounds,
   };
-}
+};

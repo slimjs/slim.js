@@ -4,7 +4,7 @@ import '../src/directives/attribute.directive.js';
 import '../src/directives/event.directive.js';
 
 function _random(max) {
-  return Math.round(Math.random()*1000)%max;
+  return Math.round(Math.random() * 1000) % max;
 }
 
 const store = {
@@ -166,36 +166,38 @@ class MainApp extends Slim {
     this.items = [...store.data];
     console.timeEnd('create1k');
   }
-  
+
   append1k() {
     console.time('append1k');
     store.add(1000);
     this.items = [...store.data];
     console.timeEnd('append1k');
   }
-  
+
   update10() {
     console.time('update10');
     store.update();
     this.items = [...store.data];
     console.timeEnd('update10');
   }
-  
+
   testClear() {
     console.time('clear');
     store.clear();
     this.items = [...store.data];
     console.timeEnd('clear');
   }
-  
+
   create10k() {
     performance.mark('create10kstart');
     store.runLots();
     this.items = [...store.data];
     performance.mark('create10kend');
-    console.log(performance.measure('create10k', 'create10kstart', 'create10kend'));
+    console.log(
+      performance.measure('create10k', 'create10kstart', 'create10kend')
+    );
   }
-  
+
   swap() {
     console.time('swap');
     store.swapRows();
@@ -219,22 +221,22 @@ Slim.element(
             <div class="col-md-6">
                 <div class="row">
                     <div class="col-sm-6 smallpad">
-                        <button @click="{{this.create1k()}}" type='button' class='btn btn-primary btn-block' id='run'>Create 1,000 rows</button>
+                        <button @click="this.create1k()" type='button' class='btn btn-primary btn-block' id='run'>Create 1,000 rows</button>
                     </div>
                     <div class="col-sm-6 smallpad">
-                        <button @click="{{this.create10k()}}" type='button' class='btn btn-primary btn-block' id='runlots'>Create 10,000 rows</button>
+                        <button @click="this.create10k()" type='button' class='btn btn-primary btn-block' id='runlots'>Create 10,000 rows</button>
                     </div>
                     <div class="col-sm-6 smallpad">
-                        <button @click="{{this.append1k()}}" type='button' class='btn btn-primary btn-block' id='add'>Append 1,000 rows</button>
+                        <button @click="this.append1k()" type='button' class='btn btn-primary btn-block' id='add'>Append 1,000 rows</button>
                     </div>
                     <div class="col-sm-6 smallpad">
-                        <button @click="{{this.update10()}}" type='button' class='btn btn-primary btn-block' id='update'>Update every 10th row</button>
+                        <button @click="this.update10()" type='button' class='btn btn-primary btn-block' id='update'>Update every 10th row</button>
                     </div>
                     <div class="col-sm-6 smallpad">
-                        <button @click="{{this.testClear()}}" type='button' class='btn btn-primary btn-block' id='clear'>Clear</button>
+                        <button @click="this.testClear()" type='button' class='btn btn-primary btn-block' id='clear'>Clear</button>
                     </div>
                     <div class="col-sm-6 smallpad">
-                        <button @click="{{this.swap()}}" type='button' class='btn btn-primary btn-block' id='swaprows'>Swap Rows</button>
+                        <button @click="this.swap()" type='button' class='btn btn-primary btn-block' id='swaprows'>Swap Rows</button>
                     </div>
                 </div>
             </div>
@@ -245,7 +247,7 @@ Slim.element(
             <tr *repeat="{{this.items}}" *repeat-cleanup="500" class="{{item === this.selected ? 'danger' : ''}}">
                 <td class="col-md-1">{{item.id}}</td>
                 <td class="col-md-4">
-                    <a role="select" @click="{{this.selectOne(item)}}">{{item.label}}</a>
+                    <a role="select" @click="this.selectOne(item)">{{item.label}}</a>
                 </td>
                 <td class="col-md-1">
                     <a>

@@ -1,6 +1,6 @@
 import { DirectiveRegistry, Utils } from '../index.js';
 
-const { dashToCamel: d2c, syntaxMethod, memoize, createFunction, NOOP } = Utils;
+const { dashToCamel: d2c, syntaxMethod, memoize, createFunction } = Utils;
 
 const dashToCamel = memoize(d2c);
 const syntaxRegexp = syntaxMethod();
@@ -27,20 +27,14 @@ const eventDirective = {
       if (method) {
         return method(event, context);
       } else {
-        return execution.call(
-          scopeNode,
-          event,
-          typeof context === 'function' ? context() : context,
-        );
+        return execution.call(scopeNode, event, context());
       }
     };
     targetNode.addEventListener(eventName, eventHandler);
     return {
-      update: undefined,
       removeAttribute: true,
     };
   },
-  // noExecution: true,
 };
 
 DirectiveRegistry.add(eventDirective);

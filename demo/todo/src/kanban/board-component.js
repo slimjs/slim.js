@@ -62,5 +62,5 @@ Slim.element(
         this.dependencies[TASK_SERVICE].addTask(title);
       }
     }
-  },
+  }
 );

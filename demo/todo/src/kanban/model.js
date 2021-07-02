@@ -13,6 +13,7 @@ const ITEM_STATUS = {
 
 const list = (title = 'New List') => ({
   title,
+  /** @type any[] */
   items: [],
 });
 
