@@ -6,14 +6,17 @@ import {
 } from '../index.js';
 const { block, internals, repeatCtx } = Internals;
 
-const lateClear = (queue = [], scope) => {
-  queue.forEach((item) => {
-    removeBindings(scope, item, '*');
-    item[internals].clear();
+const lateClear = (domCopies = [], scope) => {
+  domCopies.forEach((dom) => {
+    removeBindings(scope, dom, '*');
+    dom[internals].clear();
   });
 };
 
-const raf = requestAnimationFrame;
+/**
+ * @param {Function[]} arr
+ */
+const runAll = (arr) => arr.forEach((f) => f());
 
 /**
  *
@@ -23,15 +26,13 @@ const raf = requestAnimationFrame;
  */
 const replicate = (n, text) => {
   /*
-  This is probably the b\est high-numbers cloning of strings.
+  This is probably the best high-numbers cloning of strings.
   The idea is to replicate an HTML tag (i.e. <div class="something">{{item}}</div>)
-  by creating a big string containing all replicas, then using DOMParser to convert into real elements.
-  DOMParser that parses large chunks of HTML string is faster then cloning nodes in a loop, or even
-  creating an HTMLTemplateElement that contains the same inner HTML, then cloning (twice as fast).
+  by creating a big string containing all replicas, then using template element to convert into real elements.
+  this method is faster then cloning nodes in a loop, and faster than DOMParser
   */
   let temp = text;
   let result = '';
-  if (n < 1) return result;
   while (n > 1) {
     if (n & 1) result += temp;
     n >>= 1;
@@ -40,46 +41,44 @@ const replicate = (n, text) => {
   return result + temp;
 };
 
+/**
+ *
+ * @param {string} template HTML string
+ */
 const nodePool = (template) => ({
   tpl: document.createElement('template'),
   ptr: 0,
-  /** @type {Element[]} */
+  /** @type {HTMLElement[]} */
   pool: [],
   /**
-   *
    * @param {number} amount
    */
-  alloc(amount, isTablePart = false) {
+  alloc(amount) {
     const diff = amount - this.pool.length;
+    const { tpl } = this;
     if (diff > 0) {
-      const html = isTablePart
-        ? `<table><tbody>${replicate(diff, template)}</tbody></table>`
-        : replicate(diff, template);
-      this.tpl.innerHTML = html;
-      /** @type {Element|DocumentFragment} */
-      let content = this.tpl.content;
-      if (isTablePart) {
-        content = content.children[0].children[0];
-      }
-      this.pool = this.pool.concat(Array.from(content.children));
+      tpl.innerHTML = replicate(diff, template);
+      this.pool = this.pool.concat(
+        /** @type {HTMLElement[]} */ (Array.from(tpl.content.children))
+      );
     }
   },
   /**
    * @param {number} amount
+   * @returns {HTMLElement[]}
    */
-  get(amount, isTablePart = false) {
+  get(amount) {
     if (this.ptr + amount > this.pool.length) {
-      this.alloc(this.ptr + amount - this.pool.length, isTablePart);
+      this.alloc(this.ptr + amount - this.pool.length);
     }
-    const result = this.pool.slice(this.ptr, amount + this.ptr);
     this.ptr += amount;
-    return result;
+    return this.pool.slice(this.ptr - amount, this.ptr);
   },
 
   /**
    * @param {number} amount
    */
-  recycle(amount) {
+  dump(amount) {
     this.ptr -= amount;
     this.ptr < 0 ? (this.ptr = 0) : void 0;
     return this.pool.slice(this.ptr);
@@ -88,39 +87,30 @@ const nodePool = (template) => ({
 
 const REPEAT = '*repeat';
 const REPEAT_CLEANUP = '*repeat-cleanup';
+const delRng = new Range();
+let toRecycle = [];
 
 /**
  * @type {import('../typedefs.js').Directive}
  */
 const repeatDirective = {
   attribute: (_, nodeName) => nodeName === REPEAT,
-  process: ({
-    targetNode: tNode,
-    scopeNode: scope,
-    expression: ex,
-    targetNodeName,
-  }) => {
-    let repeatCleanup =
-      parseInt(tNode.getAttribute(REPEAT_CLEANUP) || '5000') || 5000;
-    let delRng = new Range();
+  process: ({ targetNode: tNode, scopeNode: scope, expression: ex }) => {
+    let repeatCleanup = parseInt(tNode.getAttribute(REPEAT_CLEANUP)) || 5000;
     tNode[block] = 'abort';
     tNode.removeAttribute(REPEAT);
     tNode.removeAttribute(REPEAT_CLEANUP);
     const template = /** @type {HTMLElement} */ (tNode).outerHTML;
-    const pool = nodePool(template);
     const hook = document.createComment(`*repeat ${ex}`);
     const parent =
       tNode.parentElement || tNode.parentNode || scope.shadowRoot || scope;
-    const isTablePart =
-      ['', 'tr', 'td', 'thead', 'tbody'].indexOf(targetNodeName) > 0;
+    const pool = nodePool(template);
     parent.insertBefore(hook, tNode);
     let cleanupInterval;
     const frag = document.createDocumentFragment();
 
     /** @type {HTMLElement[]} */
     let clones = [];
-
-    let toRecycle = [];
 
     let bounds, clear;
 
@@ -132,13 +122,15 @@ const repeatDirective = {
       if (cleanupInterval) {
         clearTimeout(cleanupInterval);
       }
-      pool.alloc(dataSource.length, isTablePart);
+      const diff = Math.abs(dataSource.length - clones.length);
+      pool.alloc(dataSource.length);
 
       if (dataSource.length < clones.length) {
-        const diff = clones.length - dataSource.length;
-        toRecycle = pool.recycle(diff);
+        toRecycle = pool.dump(diff);
         delRng.setStartBefore(toRecycle[0]);
         delRng.setEndAfter(toRecycle[diff - 1]);
+        delRng.deleteContents();
+        delRng.detach();
         toRecycle.length = 0; // free memory
         clones.length = dataSource.length;
       }
@@ -149,17 +141,12 @@ const repeatDirective = {
         const item = dataSource[i];
         if (forceUpdate || node[repeatCtx] !== item) {
           node[repeatCtx] = item;
-          meta.data = item;
-          changeSet.push(...meta.bounds);
+          runAll(meta.bounds);
         }
       }
 
       if (dataSource.length > clones.length) {
-        const newNodes = pool.get(
-          dataSource.length - clones.length,
-          isTablePart
-        );
-        frag.append(...newNodes);
+        const newNodes = pool.get(diff);
         const iterator = newNodes[Symbol.iterator]();
 
         for (let i = clones.length; i < dataSource.length; i++) {
@@ -167,29 +154,20 @@ const repeatDirective = {
           const item = dataSource[i];
           node[repeatCtx] = item;
           const meta = node[internals];
-          if (meta) {
-            meta.bounds.forEach((f) => f(item));
-          } else {
+          if (!meta) {
             ({ bounds, clear } = processDOM(scope, node));
             Object.assign(node[internals], {
               bounds,
               clear,
-              key: i,
-              data: item,
             });
-            bounds.forEach((f) => f());
           }
+          runAll(node[internals].bounds);
         }
-        // @ts-expect-error
         clones = clones.concat(newNodes);
+        frag.append(...newNodes);
         hook.parentNode?.insertBefore(frag, hook);
       }
-      raf(() => {
-        delRng.deleteContents();
-        delRng.detach();
-        changeSet.forEach((f) => f());
-        // changeSet.forEach((change) => change.forEach((f) => f()));
-      });
+      runAll(changeSet);
       cleanupInterval = setTimeout(() => {
         lateClear(pool.pool.slice(pool.ptr), scope);
         pool.pool = pool.pool.slice(0, pool.ptr);

@@ -45,21 +45,20 @@ const d2c = /-[a-z]/g;
 export const dashToCamel = (dash) =>
   dash.indexOf('-') < 0 ? dash : dash.replace(d2c, (m) => m[1].toUpperCase());
 
-export const syntaxMethod = () => /(.+)(\((.*)\)){1}/;
-
 const dlPolyfill = { timeRemaining: () => true };
 
 /**
  * @param {Set<Function>|Array<Function>} queue
  * @param {number} [timeout] max milliseconds to wait
+ * @param {Function} [onComplete]
  */
-export const lazyQueue = (queue, timeout = 20) => {
+export const lazyQueue = (queue, timeout = 20, onComplete = NOOP) => {
   const opts = { timeout };
   const iterator = queue[Symbol.iterator]();
   let task = iterator.next();
   const run = () => requestIdleCallback(execOne, opts);
 
-  function execOne(deadline = dlPolyfill) {
+  const execOne = (deadline = dlPolyfill) => {
     while (deadline.timeRemaining() && !task.done) {
       task.value();
       task = iterator.next();
@@ -70,8 +69,10 @@ export const lazyQueue = (queue, timeout = 20) => {
     }
     if (!task.done) {
       run();
+    } else {
+      onComplete();
     }
-  }
+  };
   run();
 };
 

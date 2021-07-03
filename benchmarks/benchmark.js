@@ -213,53 +213,53 @@ Slim.element(
   /*html*/ `
 <div id='main'>
 <div class="container">
-    <div class="jumbotron">
+  <div class="jumbotron">
+    <div class="row">
+      <div class="col-md-6">
+        <h1>Slim.js</h1>
+      </div>
+      <div class="col-md-6">
         <div class="row">
-            <div class="col-md-6">
-                <h1>Slim.js</h1>
-            </div>
-            <div class="col-md-6">
-                <div class="row">
-                    <div class="col-sm-6 smallpad">
-                        <button @click="this.create1k()" type='button' class='btn btn-primary btn-block' id='run'>Create 1,000 rows</button>
-                    </div>
-                    <div class="col-sm-6 smallpad">
-                        <button @click="this.create10k()" type='button' class='btn btn-primary btn-block' id='runlots'>Create 10,000 rows</button>
-                    </div>
-                    <div class="col-sm-6 smallpad">
-                        <button @click="this.append1k()" type='button' class='btn btn-primary btn-block' id='add'>Append 1,000 rows</button>
-                    </div>
-                    <div class="col-sm-6 smallpad">
-                        <button @click="this.update10()" type='button' class='btn btn-primary btn-block' id='update'>Update every 10th row</button>
-                    </div>
-                    <div class="col-sm-6 smallpad">
-                        <button @click="this.testClear()" type='button' class='btn btn-primary btn-block' id='clear'>Clear</button>
-                    </div>
-                    <div class="col-sm-6 smallpad">
-                        <button @click="this.swap()" type='button' class='btn btn-primary btn-block' id='swaprows'>Swap Rows</button>
-                    </div>
-                </div>
-            </div>
+          <div class="col-sm-6 smallpad">
+            <button @click="this.create1k()" type='button' class='btn btn-primary btn-block' id='run'>Create 1,000 rows</button>
+          </div>
+          <div class="col-sm-6 smallpad">
+            <button @click="this.create10k()" type='button' class='btn btn-primary btn-block' id='runlots'>Create 10,000 rows</button>
+          </div>
+          <div class="col-sm-6 smallpad">
+            <button @click="this.append1k()" type='button' class='btn btn-primary btn-block' id='add'>Append 1,000 rows</button>
+          </div>
+          <div class="col-sm-6 smallpad">
+            <button @click="this.update10()" type='button' class='btn btn-primary btn-block' id='update'>Update every 10th row</button>
+          </div>
+          <div class="col-sm-6 smallpad">
+            <button @click="this.testClear()" type='button' class='btn btn-primary btn-block' id='clear'>Clear</button>
+          </div>
+          <div class="col-sm-6 smallpad">
+            <button @click="this.swap()" type='button' class='btn btn-primary btn-block' id='swaprows'>Swap Rows</button>
+          </div>
         </div>
+      </div>
     </div>
-    <table class="table table-hover table-striped test-data">
-        <tbody id="tbody">
-            <tr *repeat="{{this.items}}" *repeat-cleanup="500" class="{{item === this.selected ? 'danger' : ''}}">
-                <td class="col-md-1">{{item.id}}</td>
-                <td class="col-md-4">
-                    <a role="select" @click="this.selectOne(item)">{{item.label}}</a>
-                </td>
-                <td class="col-md-1">
-                    <a>
-                        <span role="delete" @click="{{this.deleteOne(item)}}"class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                    </a>
-                </td>
-                <td class="col-md-6">
-                </td>
-            </tr>
-        </tbody>
-    </div>
-    <span class="preloadicon glyphicon glyphicon-remove" aria-hidden="true"></span>
+  </div>
+  <table class="table table-hover table-striped test-data">
+    <tbody id="tbody">
+      <tr *repeat="{{this.items}}" *repeat-cleanup="500" class="{{item === this.selected ? 'danger' : ''}}">
+        <td class="col-md-1">{{item.id}}</td>
+        <td class="col-md-4">
+          <a role="select" @click="this.selectOne(item)">{{item.label}}</a>
+        </td>
+        <td class="col-md-1">
+          <a>
+            <span role="delete" @click="this.deleteOne(item)"class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+          </a>
+        </td>
+        <td class="col-md-6">
+        </td>
+      </tr>
+    </tbody>
+  </div>
+  <span class="preloadicon glyphicon glyphicon-remove" aria-hidden="true"></span>
 </div>
 </div>`,
   MainApp

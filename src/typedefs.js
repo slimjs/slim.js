@@ -13,7 +13,7 @@
 
 /**
  * @typedef NodeProcessResult
- * @property {(value: any) => any} [update]
+ * @property {(value: any, forceUpdate: boolean) => any} [update]
  * @property {boolean} [removeAttribute]
  * @property {boolean} [removeNode]
  * @property {boolean} [noInvocation]

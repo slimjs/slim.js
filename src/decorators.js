@@ -1,6 +1,5 @@
-const d2c = /-[a-z]/g;
-const dashToCamel = (dash) =>
-  dash.indexOf('-') < 0 ? dash : dash.replace(d2c, (m) => m[1].toUpperCase());
+import { Utils } from './index.js';
+const c2d = (camel) => camel.replace(/([A-Z])/g, '-$1').toLowerCase();
 
 /**
  * @decorator
@@ -39,36 +38,40 @@ export function tag(selector) {
   };
 }
 
+const attrMap = new WeakMap();
+
+/** @this {any} */
+function relfectFromAttr(attr, val) {
+  const p = Utils.dashToCamel(attr);
+  this[p] = val;
+}
+
 /**
  * @type {(name: string) => any}
  */
 export function attribute(attributeName = '') {
   return function (target, key, descriptor) {
-    console.log(target, key);
     const clazz = target.constructor;
-    const dash = attributeName || camelToDash(String(key));
+    const dash = attributeName || c2d(String(key));
     const { observedAttributes = [] } = clazz;
     Object.defineProperty(clazz, 'observedAttributes', {
       value: [...observedAttributes, dash],
       configurable: true,
       writable: true,
     });
-    // @ts-ignore
-    const { attributeChangedCallback: oAttrCb } = target;
-    function nAttrCb(name, oldVal, newVal) {
-      oAttrCb ? oAttrCb(name, oldVal, newVal) : void 0;
-      // @ts-expect-error
-      if (newVal === null && !this.hasAttribute(dash)) {
-        return;
-      }
-      if (oldVal === newVal) return;
-      if (name === dash) {
-        // @ts-ignore
-        this[key] = newVal;
-      }
+    const meta = attrMap.get(target);
+    if (meta) {
+      (meta.attrs = meta.attrs || []).push(dash);
     }
+
+    const oAttrCb = target.attributeChangedCallback;
     Object.defineProperty(target, 'attributeChangedCallback', {
-      value: nAttrCb,
+      value: function (name, oldVal, newVal) {
+        oAttrCb && oAttrCb.call(this, name, oldVal, newVal);
+        if (~meta.attrs.indexOf(name)) {
+          relfectFromAttr.call(this, name, newVal);
+        }
+      },
       configurable: true,
     });
     let value;
@@ -95,6 +98,8 @@ export function attribute(attributeName = '') {
               if (v) {
                 this.setAttribute(dash, '');
               } else this.removeAttribute(dash);
+            } else if (v === null) {
+              this.removeAttribute(dash);
             } else {
               this.setAttribute(dash, String(v));
             }

@@ -1,4 +1,4 @@
-import { DirectiveRegistry, Utils } from '../index.js';
+import { DirectiveRegistry } from '../index.js';
 
 /** @type {import('../typedefs.js').Directive} */
 const refDirective = {

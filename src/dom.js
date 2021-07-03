@@ -10,8 +10,8 @@ import {
 import { repeatCtx, block, internals, debug } from './internals.js';
 import Slim from './component.js';
 
-const ea = [];
-const eo = {};
+const emptyArray = [];
+const emptyObject = {};
 const ABORT = 'abort';
 
 const walkerFilter = NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT;
@@ -30,7 +30,9 @@ const extract = (ctx) => (type(ctx, 'function') ? ctx() : ctx);
 export const createBind = (source, target, property, execution) => {
   let propToTarget = bindMap.get(source) || bindMap.set(source, {}).get(source);
   if (!propToTarget[property]) {
-    const oSet = (Object.getOwnPropertyDescriptor(source, property) || eo).set;
+    const oSet = (
+      Object.getOwnPropertyDescriptor(source, property) || emptyObject
+    ).set;
     let value = source[property];
     Object.defineProperty(source, property, {
       get: () => value,
@@ -55,7 +57,7 @@ export const createBind = (source, target, property, execution) => {
 };
 
 const runOneBind = (meta, property, resolvedValue) => {
-  (meta[property] || ea).forEach((target) => {
+  (meta[property] || emptyArray).forEach((target) => {
     target[internals][property].forEach((fn) =>
       fn(target[repeatCtx] || resolvedValue)
     );
@@ -73,8 +75,8 @@ export const runBinding = (source, property, value) => {
   }
 };
 
-export function removeBindings(source, target, property = '*') {
-  let propToTarget = bindMap.get(source) || eo;
+export const removeBindings = (source, target, property = '*') => {
+  let propToTarget = bindMap.get(source) || emptyObject;
   if (property === '*') {
     Object.keys(propToTarget).forEach((key) =>
       removeBindings(source, target, key)
@@ -91,7 +93,7 @@ export function removeBindings(source, target, property = '*') {
       node = localWalker.nextNode();
     }
   }
-}
+};
 
 /**
  *
@@ -144,11 +146,13 @@ export const processDOM = (scope, dom) => {
         }
         const expression = attrValue.trim();
         const userCode =
-          expression.startsWith('{{') && expression.endsWith('}}')
+          expression.slice(0, 2) === '{{' && expression.slice(-2) === '}}'
             ? expression.slice(2, -2)
             : expression;
         /** @type {string[]} */
-        const paths = expression.includes('{{') ? parse(userCode).paths : ea;
+        const paths = ~expression.indexOf('{{')
+          ? parse(userCode).paths
+          : emptyArray;
         d_l: for (const directive of directives) {
           if (currentNode[block] === ABORT) {
             break d_l;
@@ -199,8 +203,8 @@ export const processDOM = (scope, dom) => {
         }
       }
     } else if (currentNode.nodeType === Node.TEXT_NODE) {
-      const expression = /** @type string **/ (currentNode.nodeValue);
-      if (!expression.includes('{{')) continue;
+      const expression = /** @type string **/ (currentNode.textContent);
+      if (!~expression.indexOf('{{')) continue;
       /** @type {Text} */
       let breakNode = /** @type {Text} */ (currentNode);
       while (breakNode) {
@@ -241,7 +245,9 @@ export const processDOM = (scope, dom) => {
   if (!Slim[debug]) {
     pendingAttributesToRemove.forEach((attr) => {
       try {
-        /** @type {Element} */ attr.ownerElement.removeAttribute(attr.nodeName);
+        /** @type {Element} */ (attr.ownerElement).removeAttribute(
+          attr.nodeName
+        );
       } catch (e) {}
     });
   }
@@ -249,8 +255,8 @@ export const processDOM = (scope, dom) => {
     /**
      * @param {...string} props
      */
-    flush: function (...props) {
-      if (arguments.length) {
+    flush: (...props) => {
+      if (props.length) {
         props.forEach((key) => runBinding(scope, key));
       } else {
         runBinding(scope, '*');

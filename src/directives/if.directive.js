@@ -15,14 +15,16 @@ const createCopy = (src, scope) => {
   };
 };
 
+/**
+ * @type {import('../typedefs.js').Directive}
+ */
 const ifDirective = {
   attribute: (_, name) => name === '*if',
-  process: ({ scopeNode, targetNode, expression }) => {
-    const hook = document.createComment(`--- *if ${expression}`);
+  process: ({ scopeNode, targetNode, expression: ex }) => {
+    const hook = document.createComment(`*if ${ex}`);
     targetNode[block] = 'abort';
     targetNode.removeAttribute('*if');
     targetNode.parentNode?.insertBefore(hook, targetNode);
-    /** @type {HTMLElement|undefined} */
     let copy, flush, clear;
     const update = (/** @type {any} */ value) => {
       if (!!value) {
@@ -32,7 +34,7 @@ const ifDirective = {
       } else if (copy) {
         copy.remove();
         clear();
-        copy = undefined;
+        copy = flush = clear = undefined;
       }
     };
     return {
@@ -41,6 +43,6 @@ const ifDirective = {
       removeAttribute: true,
     };
   },
-  noExecution: true,
+  noExecution: false,
 };
 DirectiveRegistry.add(ifDirective);

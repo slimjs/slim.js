@@ -1,9 +1,9 @@
 import { DirectiveRegistry, Utils } from '../index.js';
 
-const { dashToCamel: d2c, syntaxMethod, memoize, createFunction } = Utils;
+const { dashToCamel: d2c, memoize, createFunction } = Utils;
 
 const dashToCamel = memoize(d2c);
-const syntaxRegexp = syntaxMethod();
+const syntaxRegexp = /(.+)(\((.*)\)){1}/;
 
 /** @type {import('../typedefs').Directive} */
 const eventDirective = {
