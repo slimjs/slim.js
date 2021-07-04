@@ -2,6 +2,8 @@
 
 /** @typedef {import("./typedefs.js").Directive} Directive */
 
+const addons = Symbol();
+
 /**
  * @template T
  * @property {T[]} addons
@@ -9,7 +11,7 @@
 class Registry {
   constructor() {
     /** @type {T[]} */
-    this.addons = [];
+    this[addons] = [];
   }
 
   /**
@@ -17,11 +19,11 @@ class Registry {
    * @param {boolean} priority
    */
   add(addon, priority = false) {
-    priority ? this.addons.unshift(addon) : this.addons.push(addon);
+    priority ? this[addons].unshift(addon) : this[addons].push(addon);
   }
 
   getAll() {
-    return [...this.addons];
+    return [...this[addons]];
   }
 }
 
@@ -30,8 +32,12 @@ class Registry {
  * @extends Registry<Plugin>
  */
 class PluginRegistryClass extends Registry {
+  /**
+   * @param {symbol} phase
+   * @param {import("./index.js").Slim} target
+   */
   exec(phase, target) {
-    this.addons.forEach((addon) => addon(phase, target));
+    this[addons].forEach((addon) => addon(phase, target));
   }
 }
 
@@ -39,4 +45,5 @@ class PluginRegistryClass extends Registry {
  * @type Registry<Directive>
  */
 export const DirectiveRegistry = new Registry();
+
 export const PluginRegistry = new PluginRegistryClass();

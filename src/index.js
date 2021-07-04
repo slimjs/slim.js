@@ -9,19 +9,12 @@ import {
   repeatCtx,
   requestIdleCallback,
 } from './internals.js';
-import { DirectiveRegistry, PluginRegistry } from './enhance.js';
-import { processDOM, removeBindings, createBind } from './dom.js';
+export { DirectiveRegistry, PluginRegistry } from './enhance.js';
+export { processDOM, removeBindings, createBind } from './dom.js';
 export * as Utils from './utils.js';
 
 export { Component as Slim };
-export {
-  Component,
-  DirectiveRegistry,
-  PluginRegistry,
-  processDOM,
-  removeBindings,
-  createBind,
-};
+export { Component };
 export const Phase = {
   ADDED,
   CREATE,

@@ -13,6 +13,9 @@ const lateClear = (domCopies = [], scope) => {
   });
 };
 
+const BOUNDS = Symbol();
+const CLEAR = Symbol();
+
 /**
  * @param {Function[]} arr
  */
@@ -130,8 +133,7 @@ const repeatDirective = {
         delRng.setStartBefore(toRecycle[0]);
         delRng.setEndAfter(toRecycle[diff - 1]);
         delRng.deleteContents();
-        delRng.detach();
-        toRecycle.length = 0; // free memory
+        // toRecycle.length = 0; // free memory
         clones.length = dataSource.length;
       }
 
@@ -165,12 +167,13 @@ const repeatDirective = {
         }
         clones = clones.concat(newNodes);
         frag.append(...newNodes);
-        hook.parentNode?.insertBefore(frag, hook);
+        parent.insertBefore(frag, hook);
       }
       runAll(changeSet);
       cleanupInterval = setTimeout(() => {
-        lateClear(pool.pool.slice(pool.ptr), scope);
+        lateClear(toRecycle.concat(), scope);
         pool.pool = pool.pool.slice(0, pool.ptr);
+        toRecycle.length = 0;
       }, repeatCleanup);
     }
 

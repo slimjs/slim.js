@@ -1,7 +1,11 @@
 import { Slim } from '../src/index.js';
+import { debug } from '../src/internals.js';
 import '../src/directives/repeat.directive.js';
+// import '../src/directives/foreach.directive.js';
 import '../src/directives/attribute.directive.js';
 import '../src/directives/event.directive.js';
+
+Slim[debug] = true;
 
 function _random(max) {
   return Math.round(Math.random() * 1000) % max;
@@ -245,7 +249,7 @@ Slim.element(
   <table class="table table-hover table-striped test-data">
     <tbody id="tbody">
       <tr *repeat="{{this.items}}" *repeat-cleanup="500" class="{{item === this.selected ? 'danger' : ''}}">
-        <td class="col-md-1">{{item.id}}</td>
+        <td class="col-md-1">{{itemx.id}}</td>
         <td class="col-md-4">
           <a role="select" @click="this.selectOne(item)">{{item.label}}</a>
         </td>

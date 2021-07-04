@@ -27,6 +27,10 @@
       "default": "./dist/directives/repeat.directive.js",
       "require": "./dist/directives/repeat.directive.js"
     },
+    "./foreach-directive": {
+      "default": "./dist/directives/foreach.directive.js",
+      "require": "./dist/directives/foreach.directive.js"
+    },
     "./attribute-directive": {
       "default": "./dist/directives/attribute.directive.js",
       "require": "./dist/directives/attribute.directive.js"

@@ -4,13 +4,17 @@ import { DirectiveRegistry, Internals } from '../index.js';
  * @type {import('../typedefs.js').Directive}
  */
 const attributeDirective = {
-  attribute: (_, name, value) =>
-    value &&
-    !name.startsWith('@') &&
-    !name.startsWith('.') &&
-    !name.startsWith('*') &&
-    value.startsWith('{{') &&
-    value.endsWith('}}'),
+  attribute: (_, name, value = '') => {
+    const first = name[0];
+    return (
+      value &&
+      first !== '@' &&
+      first !== '.' &&
+      first !== '*' &&
+      value.slice(0, 2) === '{{' &&
+      value.slice(-2) === '}}'
+    );
+  },
   process: ({ attributeName: name, targetNode }) => {
     targetNode;
     if (targetNode[Internals.block] === 'abort') return {};

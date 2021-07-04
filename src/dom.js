@@ -6,6 +6,7 @@ import {
   createFunction,
   NOOP,
   findCtx,
+  memoize,
 } from './utils.js';
 import { repeatCtx, block, internals, debug } from './internals.js';
 import Slim from './component.js';
@@ -13,8 +14,16 @@ import Slim from './component.js';
 const emptyArray = [];
 const emptyObject = {};
 const ABORT = 'abort';
-
+const cons = console;
+const logError = (title, message, ...info) =>
+  Slim[debug] &&
+  (cons.group(title), cons.error(message), cons.info(...info), cons.groupEnd());
+const expressionToJS = memoize(
+  (str) => '`' + str.replaceAll('{{', '${').replaceAll('}}', '}') + '`'
+);
 const walkerFilter = NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT;
+const createWalker = (target) =>
+  document.createTreeWalker(target, walkerFilter);
 
 /**
  * @param {any} o
@@ -58,9 +67,8 @@ export const createBind = (source, target, property, execution) => {
 
 const runOneBind = (meta, property, resolvedValue) => {
   (meta[property] || emptyArray).forEach((target) => {
-    target[internals][property].forEach((fn) =>
-      fn(target[repeatCtx] || resolvedValue)
-    );
+    const value = target[repeatCtx] || resolvedValue;
+    target[internals][property].forEach((fn) => fn(value));
   });
 };
 
@@ -85,7 +93,7 @@ export const removeBindings = (source, target, property = '*') => {
   }
   let meta = propToTarget[property];
   if (meta) {
-    const localWalker = document.createTreeWalker(target, walkerFilter);
+    const localWalker = createWalker(target);
     /** @type {Node|null} */
     let node = localWalker.currentNode;
     while (node) {
@@ -112,7 +120,7 @@ export const processDOM = (scope, dom) => {
   const pendingNodesToRemove = new Set();
   const directives = DirectiveRegistry.getAll();
 
-  const walker = document.createTreeWalker(dom, walkerFilter);
+  const walker = createWalker(dom);
   /**
    * @type {Node|null}
    */
@@ -191,7 +199,13 @@ export const processDOM = (scope, dom) => {
                       : fn.call(scope, extract(altContext));
                   invocation(value, isForcedUpdate(scope));
                 } catch (err) {
-                  // console.warn(err);
+                  logError(
+                    `Directive Error ${attrName}`,
+                    err.message,
+                    `Expression: ${userCode}`,
+                    'Node',
+                    targetNode
+                  );
                 }
               };
               bounds.add(update);
@@ -205,39 +219,26 @@ export const processDOM = (scope, dom) => {
     } else if (currentNode.nodeType === Node.TEXT_NODE) {
       const expression = /** @type string **/ (currentNode.textContent);
       if (!~expression.indexOf('{{')) continue;
-      /** @type {Text} */
-      let breakNode = /** @type {Text} */ (currentNode);
-      while (breakNode) {
-        let index = ('' + breakNode.nodeValue).indexOf('}}');
-        if (index >= 0) {
-          breakNode = breakNode.splitText(index + 2);
-        } else {
-          break;
-        }
-      }
-      const { paths, expressions } = parse(expression);
-      const oText = expression;
-      const map = [...expressions, '{{item}}'].reduce(
-        (/** @type {any} */ o, e) => {
-          o[e] = createFunction('item', `return ${e.slice(2, -2)}`);
-          return o;
-        },
-        {}
-      );
       const targetNode /** @type {Text} */ = /** @type {unknown} */ currentNode;
-      const update = (altContext = defaultContext()) => {
-        const text = Object.keys(map).reduce((text, current) => {
-          const joinValue = map[current].call(scope, extract(altContext));
-          let resolvedValue = type(joinValue, 'undefined') ? '' : joinValue;
-          return text.replaceAll(current, resolvedValue);
-        }, oText);
-        targetNode.textContent = text;
-        // try {
-        // } catch (err) {}
+      const { paths: oPaths } = parse(expression);
+      const raw = expressionToJS(expression);
+      const fn = createFunction('item', `return ${raw}`);
+      const oUpdate = (altContext = defaultContext()) => {
+        try {
+          targetNode.nodeValue = fn.call(scope, altContext);
+        } catch (err) {
+          logError(
+            `Expression error: ${expression}`,
+            err.message,
+            'Node',
+            targetNode.parentElement
+          );
+          throw err;
+        }
       };
-      bounds.add(update);
-      paths.forEach((path) =>
-        unbinds.add(createBind(scope, currentNode, path, update))
+      bounds.add(oUpdate);
+      oPaths.forEach((path) =>
+        unbinds.add(createBind(scope, currentNode, path, oUpdate))
       );
     }
   }

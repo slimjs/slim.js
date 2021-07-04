@@ -87,11 +87,11 @@ export const normalize = (html) =>
     .replace(/\>[\t ]+\</g, '><')
     .replace(/\>[\t ]+$/g, '>');
 
-const memoizeCache = {};
 /**
  * @param {Function} fn
  */
 export const memoize = (fn) => {
+  const memoizeCache = {};
   return (str) => memoizeCache[str] || (memoizeCache[str] = fn(str));
 };
 

@@ -12,7 +12,11 @@ const ix = /item(\.[\w+|\d*]*)*/gi;
  * @property {string[]} expressions
  */
 
-function doParse(expression = '') {
+/**
+ * @param {string} expression
+ * @returns ParseResult
+ */
+const doParse = (expression = '') => {
   const paths = [];
   let match = null;
   rx.lastIndex = ix.lastIndex = 0;
@@ -22,7 +26,7 @@ function doParse(expression = '') {
     paths,
     expressions: paths.length ? expression.match(stripCurlies) || [] : [],
   };
-}
+};
 
-/** @type {(expression: string) => ReturnType<doParse>} */
+/** @type {(expression: string) => ParseResult} */
 export const parse = memoize(doParse);

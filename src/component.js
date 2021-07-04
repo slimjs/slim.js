@@ -1,29 +1,10 @@
 import { processDOM } from './dom.js';
 import { PluginRegistry } from './enhance.js';
-import {
-  ADDED,
-  CREATE,
-  REMOVED,
-  RENDER,
-  block,
-  internals,
-} from './internals.js';
+import { ADDED, CREATE, REMOVED, RENDER, block } from './internals.js';
 import { markFlush, normalize } from './utils.js';
-
-const LC_Create = Symbol();
-const LC_Render = Symbol();
-
-function safeCall(cb, ...args) {
-  cb ? cb.call(this, ...args) : void 0;
-}
-
-/**
- *
- * @param {HTMLElement|Component} target
- */
-function getRoot(target) {
-  return target.shadowRoot || target;
-}
+const S = Symbol;
+const LIFECYCLE_CREATE = S();
+const LIFECYCLE_RENDER = S();
 
 export default class Component extends HTMLElement {
   static template = '';
@@ -32,19 +13,17 @@ export default class Component extends HTMLElement {
    *
    * @param {string} tag Dashed string for element tagName
    * @param {string} template HTML with Slim-annotations
-   * @param {typeof Component} base Class extending Slim Base Component
+   * @param {typeof Component} [base] Class extending Slim Base Component
    */
   // @ts-expect-error
   static element(tag, template, base = class extends Slim {}) {
-    Object.defineProperty(base, 'template', { value: template });
+    base.template = template;
     customElements.define(tag, base);
   }
 
   constructor() {
     super();
-    this[internals] = this[internals] || {};
-    this[internals].created = true;
-    this[LC_Create]();
+    this[LIFECYCLE_CREATE]();
   }
 
   /** @abstract */
@@ -64,35 +43,30 @@ export default class Component extends HTMLElement {
 
   /** @protected */
   connectedCallback() {
-    // @ts-ignore
-    safeCall.call(this, super.connectedCallback);
     this.onAdded();
     PluginRegistry.exec(ADDED, this);
   }
 
   disconnectedCallback() {
-    // @ts-ignore
-    safeCall.call(this, super.disconnectedCallback);
     this.onRemoved();
     PluginRegistry.exec(REMOVED, this);
   }
 
-  [LC_Create]() {
+  [LIFECYCLE_CREATE]() {
     if (this[block] === 'abort') return;
     if (this[block]) {
-      return requestAnimationFrame(() => this[LC_Create]());
+      return requestAnimationFrame(() => this[LIFECYCLE_CREATE]());
     }
     this.onBeforeCreated();
     // @ts-ignore
     if (this.constructor.useShadow && !this.shadowRoot) {
       this.attachShadow({ mode: 'open' });
     }
-    this[internals].created = true;
     PluginRegistry.exec(CREATE, this);
-    this[LC_Render]();
+    this[LIFECYCLE_RENDER]();
   }
 
-  [LC_Render]() {
+  [LIFECYCLE_RENDER]() {
     // @ts-ignore
     const template = normalize(this.constructor.template);
     if (template) {
@@ -104,7 +78,7 @@ export default class Component extends HTMLElement {
         flush();
         this.onCreated();
         PluginRegistry.exec(RENDER, this);
-        getRoot(this).appendChild(tpl.content);
+        (this.shadowRoot || this).appendChild(tpl.content);
         this.onRender();
       });
     }

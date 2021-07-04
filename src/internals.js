@@ -1,10 +1,13 @@
-export const block = Symbol('block');
-export const repeatCtx = Symbol('repeat');
+const S = Symbol;
+
+export const block = S('block');
+export const repeatCtx = S('repeat');
 export const requestIdleCallback =
-  window['requestIdleCallback'] || ((cb, ...args) => setTimeout(cb));
-export const internals = Symbol('internals');
-export const CREATE = Symbol();
-export const RENDER = Symbol();
-export const ADDED = Symbol();
-export const REMOVED = Symbol();
-export const debug = Symbol();
+  // @ts-ignore
+  window.requestIdleCallback || ((cb, ...args) => setTimeout(cb));
+export const internals = S('internals');
+export const CREATE = S();
+export const RENDER = S();
+export const ADDED = S();
+export const REMOVED = S();
+export const debug = S();
