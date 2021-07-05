@@ -162,7 +162,7 @@ const repeatDirective = {
               [CLEAR]: clear,
             });
           }
-          runAll(bounds);
+          runAll(node[internals][BOUNDS]);
         }
         clones = clones.concat(newNodes);
         frag.append(...newNodes);
