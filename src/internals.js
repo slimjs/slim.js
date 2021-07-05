@@ -11,3 +11,4 @@ export const RENDER = S();
 export const ADDED = S();
 export const REMOVED = S();
 export const debug = S();
+export const index = S();

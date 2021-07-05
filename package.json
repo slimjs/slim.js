@@ -61,8 +61,7 @@
     "build:types": "tsc",
     "prebuild": "rm -rf dist && npm run build:types",
     "build": "npm run build:module && npm run build:nomodule && npm run build:decorators && npm run build:directives && npm run build:alldirectives",
-    "test": "jest --config ./jest.config.js",
-    "unittest": "mocha -r esm -r jsdom-global/register ./src/**/*.spec.js --recursive",
+    "test:wip": "jest --config ./jest.config.js",
     "prepublishOnly": "npm run build"
   },
   "repository": {

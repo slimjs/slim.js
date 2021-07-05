@@ -1,11 +1,11 @@
-import { Slim, Utils } from '../../../../src/index.js';
+import { Slim } from '../../../../src/index.js';
 import { depInj } from './modules/depinj.js';
 import TASK_SERVICE from './task-service.js';
 
 const tpl = /*html*/ `
 <header>{{this.list.title}}</header>
 <main @drop="{{this.handleDrop(event)}}" @dragover="{{this.handleDragOver(event)}}">
-  <task-component *repeat="{{this.list.items}}"
+  <task-component *foreach="{{this.list.items}}"
     @dragstart="{{this.handleDragStart(event, item)}}" draggable="true" class="task" .task="{{item}}">
   </task-component>
 </main>
@@ -40,9 +40,17 @@ Slim.element(
       super();
       this.dependencies[TASK_SERVICE].on('TASK MOVED', (data) => {
         this.list = this.list;
+        this.superlist = this.list.items.map((item) => ({
+          ...item,
+          title: item.title.split('').reverse().join(''),
+        }));
       });
       this.dependencies[TASK_SERVICE].on('NEW TASK', (data) => {
         this.list = this.list;
+        this.superlist = this.list.items.map((item) => ({
+          ...item,
+          title: item.title.split('').reverse().join(''),
+        }));
       });
     }
 
@@ -53,7 +61,7 @@ Slim.element(
         JSON.stringify({
           item,
           list: this.list.title,
-        }),
+        })
       );
     }
 
@@ -64,11 +72,11 @@ Slim.element(
 
     handleDrop(event) {
       const { item, list } = JSON.parse(
-        event.dataTransfer.getData('text/plain'),
+        event.dataTransfer.getData('text/plain')
       );
       const service = this.dependencies[TASK_SERVICE];
       const fromList = service.findList(list);
       service.moveTask(item.id, fromList, this.list);
     }
-  },
+  }
 );

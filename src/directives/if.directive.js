@@ -2,15 +2,15 @@ import { DirectiveRegistry, Internals, processDOM } from '../index.js';
 const { block } = Internals;
 
 /**
- * @param {HTMLElement} src
+ * @param {Element} src
  * @param {any} scope
  */
 const createCopy = (src, scope) => {
   const copy = /** @type {HTMLElement} */ (src.cloneNode(true));
-  const { clear, flush } = processDOM(scope, copy);
+  const { clear, bounds } = processDOM(scope, copy);
   return {
     clear,
-    flush,
+    bounds,
     copy,
   };
 };
@@ -21,20 +21,20 @@ const createCopy = (src, scope) => {
 const ifDirective = {
   attribute: (_, name) => name === '*if',
   process: ({ scopeNode, targetNode, expression: ex }) => {
-    const hook = document.createComment(`*if ${ex}`);
+    const hook = document.createComment(`*if`);
     targetNode[block] = 'abort';
     targetNode.removeAttribute('*if');
     targetNode.parentNode?.insertBefore(hook, targetNode);
-    let copy, flush, clear;
+    let copy, bounds, clear;
     const update = (/** @type {any} */ value) => {
       if (!!value) {
-        !copy && ({ copy, flush, clear } = createCopy(targetNode, scopeNode));
-        flush();
+        !copy && ({ copy, bounds, clear } = createCopy(targetNode, scopeNode));
+        bounds.forEach((f) => f());
         hook.parentNode?.insertBefore(copy, hook);
       } else if (copy) {
         copy.remove();
         clear();
-        copy = flush = clear = undefined;
+        copy = bounds = clear = undefined;
       }
     };
     return {

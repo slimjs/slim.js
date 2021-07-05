@@ -24,7 +24,7 @@ import 'slim-js/directives/all.directives.js';
 @useShadow(true)
 @template(/*html*/ `
   <todo-card
-    *repeat="{{this.viewModel.todos}}"
+    *foreach="{{this.viewModel.todos}}"
     .task-title="{{item.title}}"
     .task-id="{{item.id}}"
     class="{{item?.done ? 'done' : 'in-progress'}}"
@@ -93,5 +93,5 @@ customElements.define(
   },
   {
     extends: 'body',
-  },
+  }
 );

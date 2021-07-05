@@ -8,6 +8,7 @@ import {
   internals,
   repeatCtx,
   requestIdleCallback,
+  index,
 } from './internals.js';
 export { DirectiveRegistry, PluginRegistry } from './enhance.js';
 export { processDOM, removeBindings, createBind } from './dom.js';
@@ -26,6 +27,7 @@ export const Internals = {
   repeatCtx,
   internals,
   block,
+  index,
   requestIdleCallback,
 };
 

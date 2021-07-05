@@ -8,8 +8,8 @@ const { block, internals, repeatCtx } = Internals;
 
 const lateClear = (domCopies = [], scope) => {
   domCopies.forEach((dom) => {
-    removeBindings(scope, dom, '*');
-    dom[internals].clear();
+    removeBindings(scope, dom);
+    dom[internals][CLEAR]();
   });
 };
 
@@ -104,7 +104,7 @@ const repeatDirective = {
     tNode.removeAttribute(REPEAT);
     tNode.removeAttribute(REPEAT_CLEANUP);
     const template = /** @type {HTMLElement} */ (tNode).outerHTML;
-    const hook = document.createComment(`*repeat ${ex}`);
+    const hook = document.createComment(`*repeat`);
     const parent =
       tNode.parentElement || tNode.parentNode || scope.shadowRoot || scope;
     const pool = nodePool(template);
@@ -121,7 +121,6 @@ const repeatDirective = {
       /** @type {any[]} */ dataSource = [],
       /** @type {boolean} */ forceUpdate = false
     ) {
-      let changeSet = [];
       if (cleanupInterval) {
         clearTimeout(cleanupInterval);
       }
@@ -143,7 +142,7 @@ const repeatDirective = {
         const item = dataSource[i];
         if (forceUpdate || node[repeatCtx] !== item) {
           node[repeatCtx] = item;
-          runAll(meta.bounds);
+          runAll(meta[BOUNDS]);
         }
       }
 
@@ -159,17 +158,16 @@ const repeatDirective = {
           if (!meta) {
             ({ bounds, clear } = processDOM(scope, node));
             Object.assign(node[internals], {
-              bounds,
-              clear,
+              [BOUNDS]: bounds,
+              [CLEAR]: clear,
             });
           }
-          runAll(node[internals].bounds);
+          runAll(bounds);
         }
         clones = clones.concat(newNodes);
         frag.append(...newNodes);
         parent.insertBefore(frag, hook);
       }
-      runAll(changeSet);
       cleanupInterval = setTimeout(() => {
         lateClear(toRecycle.concat(), scope);
         pool.pool = pool.pool.slice(0, pool.ptr);

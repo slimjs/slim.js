@@ -233,7 +233,6 @@ export const processDOM = (scope, dom) => {
             'Node',
             targetNode.parentElement
           );
-          throw err;
         }
       };
       bounds.add(oUpdate);

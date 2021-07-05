@@ -7,7 +7,7 @@ const tpl = /*html*/ `
   <button @click="this.createNewTask()">+ Create New</button>
 </div>
 <ul id="board">
-  <li *repeat="{{this.taskLists}}" repeat-as="{{item.title}}" class="list">
+  <li *foreach="{{this.taskLists}}" class="list">
     <list-component .list={{item}}></list-component>
   </li>
 </ul>

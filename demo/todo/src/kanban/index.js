@@ -12,9 +12,11 @@ import './board-component.js';
 import './list-component.js';
 import './task-component.js';
 
+import { debug } from '../../../../src/internals.js';
+
 import { on } from './model.js';
 
-Slim[Internals.debug] = true;
+Slim[debug] = true;
 
 on('theme', () => {
   alert('theme changed');

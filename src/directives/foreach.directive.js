@@ -4,7 +4,7 @@ import {
   Internals,
   DirectiveRegistry,
 } from '../index.js';
-const { block, repeatCtx, internals } = Internals;
+const { block, repeatCtx, internals, index } = Internals;
 
 const REPEAT = '*foreach';
 const FOREACH = Symbol();
@@ -20,7 +20,7 @@ const forEachDirective = {
     tNode[block] = 'abort';
     tNode.removeAttribute(REPEAT);
     const template = /** @type {HTMLElement} */ (tNode).outerHTML;
-    const hook = document.createComment(`*foreach ${ex}`);
+    const hook = document.createComment(`*foreach`);
     const parent =
       tNode.parentElement || tNode.parentNode || scope.shadowRoot || scope;
     parent.insertBefore(hook, tNode);
@@ -37,7 +37,7 @@ const forEachDirective = {
         delRng.setEndAfter(last);
         delRng.deleteContents();
         clones.slice(dl).forEach((clone) => {
-          clone[internals].$FOREACH.clear();
+          clone[internals][FOREACH].clear();
           removeBindings(scope, clone);
         });
         clones.length = dl;
@@ -46,17 +46,18 @@ const forEachDirective = {
       tplElement.innerHTML = template.repeat(Math.max(0, dl - cl));
       delRng.selectNodeContents(tplElement.content);
       const frag = delRng.extractContents();
-      const newNodes = Array.from(frag.children);
+      const newNodes = /** @type {HTMLElement[]} */ (Array.from(frag.children));
       newNodes.forEach((clone, idx) => {
         clone[repeatCtx] = dataSource[clones.length + idx];
         const { bounds, clear } = processDOM(scope, clone);
-        clone[internals].$FOREACH = { bounds, clear };
+        clone[internals] = clone[internals] || {};
+        clone[internals][FOREACH] = { bounds, clear };
         bounds.forEach((f) => f());
       });
       parent.insertBefore(frag, hook);
       clones.forEach((clone, idx) => {
         clone[repeatCtx] = dataSource[idx];
-        clone[internals].$FOREACH.bounds.forEach((f) => f());
+        clone[internals][FOREACH].bounds.forEach((f) => f());
       });
       clones.push(...newNodes);
     }
