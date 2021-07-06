@@ -1,0 +1,13 @@
+<ul>
+  <side-menu-item
+    .on-selected='{{this.selectItem}}'
+    *foreach='{{this.items}}'
+    .item='{{item}}'
+  ></side-menu-item>
+</ul>
+<style>
+  @import url('./index.css'); :host { display: inline-flex; width: 20rem;
+  border-right: 1px solid #888888; } @media (min-width: 850px) { :host { width:
+  24rem; } } @media (max-width: 480px) { :host { width: 11em; } } ul {
+  list-style: none; padding: 0; }
+</style>

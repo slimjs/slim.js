@@ -1,0 +1,24 @@
+<li
+  *if='{{this.item}}'
+  with-children='{{this.item.children.length}}'
+  @click='this.onSelected(this.item)'
+>{{this.item.label}}</li>
+<side-menu-item
+  padded
+  .on-selected='{{this.onSelected}}'
+  *foreach='{{this.item?.children}}'
+  .item='{{item}}'
+></side-menu-item>
+<style>
+  @import url('./index.css'); :host { user-select: none; cursor: pointer;
+  transition: all; display: inline-flex; width: 100%; flex-direction: column; }
+  li { transition: all 0.2s; display: inline-flex; align-items: center; padding:
+  0.5rem; padding-left: 1.5rem; } :host(:hover) { background-color:
+  rgba(255,110,64, 0.1); } :host([selected]) > li { background-color:
+  rgb(255,110,64); padding-left: 1.8rem; box-shadow: 0 3px 4px 0
+  rgba(0,0,0,.14), 0 3px 3px -2px rgba(0,0,0,.2), 0 1px 8px 0 rgba(0,0,0,.12); }
+  :host([padded]) > li { padding-left: 3rem; } :host([padded][selected]) > li {
+  padding-left: 3.2rem; } @media (max-width: 480px) { li { padding-left: 1rem; }
+  :host([padded]) > li { padding-left: 1.5rem; } :host([padded][selected]) > li
+  { padding-left: 1.5rem; } }
+</style>

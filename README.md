@@ -61,7 +61,17 @@ Directives are middlewares that executes code on your template whenever you have
 </ul>
 ```
 
-All the directives are **optional** - each is a standalone module. Choose the directives you use, or write your own.
+slim.js provides the following out-of-the-box directives:
+
+- custom-code (default)`<form disabled="{{this.isFormReady(this.data)}}">...</form>` or `<div style="{{this.getStyleFor(this.user)}}">Welcome, {{this.user.name}}!</div>`
+- property `<img .src="{{this.imageSource}}">`
+- events `<input @change="this.handleInputChange(event)">`
+- if `<div *if="{{!this.isLoaded}}" class="spinner">Loading...</div>`
+- foreach `<li *foreach="{{this.someArray}}">{{item.value}}</li>`
+- reference `<form #ref="myForm">...</form>` will create a property targeting the DOM element
+- repeat (optional, faster, with lazy memory release) `<li *repeat>`
+
+All the directives (excluding custom-code) are **optional** - each is a standalone module. Choose the directives you use, or write your own!
 
 ## What about plugins?
 

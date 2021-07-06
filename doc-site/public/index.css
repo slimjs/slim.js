@@ -1,0 +1,89 @@
+* {
+  box-sizing: border-box;
+}
+
+h1 {
+  font-family: 'Darker Grotesque', sans-serif;
+  padding: 0;
+  margin: 0;
+  font-weight: 400;
+  font-size: 6em;
+  line-height: 1.5em;
+}
+
+h2 {
+  margin: 0;
+  line-height: 1.2em;
+  font-family: 'Darker Grotesque', sans-serif;
+  font-size: 3em;
+  margin-top: -0.5em;
+}
+
+h3 {
+  font-size: 2.2em;
+  font-family: 'Darker Grotesque', sans-serif;
+  font-weight: 400;
+  font-style: oblique;
+  line-height: 1em;
+}
+h4 {
+  font-size: 1.6em;
+  line-height: 1em;
+}
+
+h5 {
+  font-size: 1.4em;
+  line-height: 1em;
+}
+
+h6 {
+  font-size: 1.1em;
+  line-height: 1em;
+}
+
+html {
+  margin: 0;
+}
+
+pre {
+  font-family: 'Fira Code', monospace;
+}
+
+h4,
+h5,
+h6 {
+  font-family: 'Noto Serif JP', serif;
+}
+
+body {
+  margin: 0;
+  letter-spacing: 0;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.8em;
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+@media (max-width: 1100px) {
+  body {
+    font-size: 12px;
+    line-height: 1.4em;
+  }
+}
+
+@media (max-width: 850px) {
+  body {
+    font-size: 10px;
+    line-height: 1.2em;
+  }
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 4em;
+  }
+}
+/* 
+font-family: 'Darker Grotesque', sans-serif; */

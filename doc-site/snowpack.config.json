@@ -1,0 +1,37 @@
+{
+  "mount": {
+    "public": {
+      "url": "/",
+      "static": true,
+      "resolve": false
+    },
+    "src": "/src"
+  },
+  "buildOptions": {
+    "sourcemap": true
+  },
+  "alias": {
+    "slim-js": "../src"
+  },
+  "workspaceRoot": "../",
+  "plugins": [
+    [
+      "snowpack-plugin-raw-file-loader",
+      {
+        "exts": [".hbs", ".md"]
+      }
+    ],
+    [
+      "@snowpack/plugin-babel",
+      {
+        "input": [".js"],
+        "transformOptions": {
+          "plugins": [
+            ["@babel/plugin-proposal-decorators", { "legacy": true }],
+            ["@babel/plugin-proposal-class-properties", { "loose": true }]
+          ]
+        }
+      }
+    ]
+  ]
+}
