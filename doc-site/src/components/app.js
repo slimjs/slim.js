@@ -23,13 +23,12 @@ class App extends Slim {
       label: 'API',
       target: '',
       children: [
-        { label: 'Slim', target: 'API-Slim' },
+        { label: 'Slim Class', target: 'API-Slim' },
         { label: 'Decorators', target: 'decorators' },
-        { label: 'Creating Directives', target: 'creating-directives' },
+        { label: 'Directive', target: 'creating-directives' },
+        { label: 'Plugin', target: 'plugins' },
       ],
     },
-    { label: 'Plugins', target: 'plugins' },
-    { label: 'Extending Slim & Directives', target: 'extending-slim' },
     { label: 'Playground', target: 'playground' },
   ];
 

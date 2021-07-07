@@ -98,3 +98,40 @@ Example:
   </li>
 </ul>
 ```
+
+## Additional Directives
+
+### Repeat Directive
+
+slim.js comes an optional repeat-directive, which works similar to the foreach-directive. The difference is that the repeat directive recycles duplicated nodes, and releases them late. It means faster performance for very large lists, more memory consumption and late release of objects. The time to wait before releasing unused objects is configurable, defaults to 5 seconds.
+
+Example:
+
+```html
+<ul>
+  <li *repeat="{{this.groceryList}}">
+    *repeat-cleanup="15000"> {{item.amount}} - {{item.title}} - {{item.price}}
+    USD
+  </li>
+</ul>
+```
+
+In this example, in case of a list with plenty of items that rapidly changes in size, the unused objects, DOM nodes and bindings will be held in memory for up to 15 seconds, then slowly and progressively be released using the `requestIdleCallback` API in order to keep the user interface responsive. When you list could have thousands of items with complex DOM tree for each one, it is advised to favour the **repeat-directive** over the **for-each** directive.
+
+### Ref directive
+
+Enables direct access to child elements, starting from the onCreated() lifecycle hook.
+
+```javascript
+import 'slim-js/directives/ref.directive.js';
+
+Slim.element(
+  'my-component',
+  '<button #ref="myButton">Click me</button>',
+  class extends Slim {
+    someMethod() {
+      this.myButton instanceof HTMLButtonElement; // true
+    }
+  }
+);
+```

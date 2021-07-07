@@ -3,6 +3,7 @@ bin
 docs
 benchmarks
 old-src
+doc-site
 *.spec.js
 *.spec.ts
 README.md
