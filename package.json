@@ -50,6 +50,10 @@
     "./ref-directive": {
       "default": "./dist/directives/ref.directive.js",
       "require": "./dist/directives/ref.directive.js"
+    },
+    "./non-minified": {
+      "default": "./dist/index.nonminified.js",
+      "require": "./dist/index.nonminified.js"
     }
   },
   "scripts": {
@@ -58,9 +62,10 @@
     "build:module": "esbuild src/index.js --bundle --outfile=dist/index.js --format=esm --minify --sourcemap",
     "build:nomodule": "esbuild src/index.js --bundle --outfile=dist/index.legacy.js --format=iife --minify --sourcemap",
     "build:decorators": "esbuild src/decorators.js --bundle --outfile=dist/decorators.js --format=esm --minify",
+    "build:nominify": "esbuild src/index.js --bundle --outfile=dist/index.nonminified.js --format=esm",
     "build:types": "tsc",
     "prebuild": "rm -rf dist && npm run build:types",
-    "build": "npm run build:module && npm run build:nomodule && npm run build:decorators && npm run build:directives && npm run build:alldirectives",
+    "build": "npm run build:module && npm run build:nomodule && npm run build:decorators && npm run build:directives && npm run build:alldirectives && npm run build:nominify",
     "test:wip": "jest --config ./jest.config.js",
     "prepublishOnly": "npm run build"
   },

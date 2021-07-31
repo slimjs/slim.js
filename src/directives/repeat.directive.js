@@ -62,7 +62,7 @@ const nodePool = (template) => ({
     if (diff > 0) {
       tpl.innerHTML = replicate(diff, template);
       this.pool = this.pool.concat(
-        /** @type {HTMLElement[]} */ (Array.from(tpl.content.children))
+        /** @type {HTMLElement[]} */ (Array.from(tpl.content.children)),
       );
     }
   },
@@ -119,7 +119,7 @@ const repeatDirective = {
 
     function update(
       /** @type {any[]} */ dataSource = [],
-      /** @type {boolean} */ forceUpdate = false
+      /** @type {boolean} */ forceUpdate = false,
     ) {
       if (cleanupInterval) {
         clearTimeout(cleanupInterval);
@@ -138,11 +138,10 @@ const repeatDirective = {
 
       for (let i = 0; i < clones.length; i++) {
         const node = clones[i];
-        const meta = node[internals];
         const item = dataSource[i];
         if (forceUpdate || node[repeatCtx] !== item) {
           node[repeatCtx] = item;
-          runAll(meta[BOUNDS]);
+          runAll(node[internals][BOUNDS]);
         }
       }
 
