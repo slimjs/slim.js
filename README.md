@@ -137,7 +137,7 @@ import { Slim } from 'slim-js';
 
 Access a global `Slim` object.
 
-## HTML + Moudles
+## HTML + Modules
 
 ```html
 <script type="module" src="slim-js/dist/index.js"></script>
