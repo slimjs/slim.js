@@ -10,7 +10,7 @@ import { DirectiveRegistry } from 'slim-js';
 DirectiveRegistry.add(myCustomDirective);
 ```
 
-## DirectiveRegsitry
+## DirectiveRegistry
 
 ### DirectiveRegistry.add(directive: Directive, priority?: boolean)
 
