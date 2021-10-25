@@ -11,10 +11,6 @@
   ],
   "esnext": "",
   "exports": {
-    ".": {
-      "require": "./dist/index.legacy.js",
-      "default": "./dist/index.js"
-    },
     "./decorators": {
       "default": "./dist/decorators.js",
       "require": "./dist/decorators.js"
@@ -54,6 +50,10 @@
     "./non-minified": {
       "default": "./dist/index.nonminified.js",
       "require": "./dist/index.nonminified.js"
+    },
+    ".": {
+      "require": "./dist/index.legacy.js",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
