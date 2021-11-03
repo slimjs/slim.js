@@ -165,7 +165,7 @@ export default class DocsRouter extends Slim {
   }
 
   generateMarkdown(content) {
-    const converter = marked(content); // new showdown.Converter()
+    const converter = marked.marked(content); // new showdown.Converter()
     this.doc.innerHTML = converter; //converter.makeHtml(content)
     Array.from(this.doc.querySelectorAll('pre')).forEach((e) => {
       hljs.highlightBlock(e);
