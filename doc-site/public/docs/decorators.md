@@ -25,7 +25,7 @@ class extends Slim {
 
 `ClassDecorator<any extends Slim> template(string html)`
 
-Defines the HTML makrup for the Slim component by creating value for the class' static property `template`.
+Defines the HTML markup for the Slim component by creating value for the class' static property `template`.
 
 ```javascript
 import { Slim } from 'slim-js';
