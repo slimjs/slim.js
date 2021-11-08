@@ -12,44 +12,44 @@
   "esnext": "",
   "exports": {
     "./decorators": {
-      "default": "./dist/decorators.js",
-      "require": "./dist/decorators.js"
+      "require": "./dist/decorators.js",
+      "default": "./dist/decorators.js"
     },
     "./directives": {
-      "default": "./dist/directives/all.js",
-      "require": "./dist/directives/all.js"
+      "require": "./dist/directives/all.js",
+      "default": "./dist/directives/all.js"
     },
     "./repeat-directive": {
-      "default": "./dist/directives/repeat.directive.js",
-      "require": "./dist/directives/repeat.directive.js"
+      "require": "./dist/directives/repeat.directive.js",
+      "default": "./dist/directives/repeat.directive.js"
     },
     "./foreach-directive": {
-      "default": "./dist/directives/foreach.directive.js",
-      "require": "./dist/directives/foreach.directive.js"
+      "require": "./dist/directives/foreach.directive.js",
+      "default": "./dist/directives/foreach.directive.js"
     },
     "./attribute-directive": {
-      "default": "./dist/directives/attribute.directive.js",
-      "require": "./dist/directives/attribute.directive.js"
+      "require": "./dist/directives/attribute.directive.js",
+      "default": "./dist/directives/attribute.directive.js"
     },
     "./event-directive": {
-      "require": "./dist/directives/event.directive.js",
-      "default": "./dist/directives/event.directive.js"
+      "default": "./dist/directives/event.directive.js",
+      "require": "./dist/directives/event.directive.js"
     },
     "./if-directive": {
-      "default": "./dist/directives/if.directive.js",
-      "require": "./dist/directives/if.directive.js"
+      "require": "./dist/directives/if.directive.js",
+      "default": "./dist/directives/if.directive.js"
     },
     "./property-directive": {
-      "default": "./dist/directives/property.directive.js",
-      "require": "./dist/directives/property.directive.js"
+      "require": "./dist/directives/property.directive.js",
+      "default": "./dist/directives/property.directive.js"
     },
     "./ref-directive": {
-      "default": "./dist/directives/ref.directive.js",
-      "require": "./dist/directives/ref.directive.js"
+      "require": "./dist/directives/ref.directive.js",
+      "default": "./dist/directives/ref.directive.js"
     },
     "./non-minified": {
-      "default": "./dist/index.nonminified.js",
-      "require": "./dist/index.nonminified.js"
+      "require": "./dist/index.nonminified.js",
+      "default": "./dist/index.nonminified.js"
     },
     ".": {
       "require": "./dist/index.legacy.js",
