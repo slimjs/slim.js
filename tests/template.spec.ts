@@ -1,7 +1,7 @@
 import { Slim } from '../dist/index';
-import '../src/all.directives';
+import '../src/directives/all.directives.js';
 import { strictEqual } from 'assert';
-import { processDOM } from '../src/template';
+import { processDOM } from '../src/dom.js';
 
 describe('template', () => {
   it('should update properties correctly', () => {
