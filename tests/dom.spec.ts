@@ -3,7 +3,7 @@ import '../src/directives/all.directives.js';
 import { strictEqual } from 'assert';
 import { processDOM } from '../src/dom.js';
 
-describe('template', () => {
+describe('dom', () => {
   it('should update properties correctly', () => {
     const div = document.createElement('div');
     const model = {
