@@ -1,0 +1,18 @@
+name: slim.js ci
+on: [push]
+jobs:
+  run-ci-steps:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v2
+    - name: Setup nodejs 16.13
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16.13
+    - name: Install all dependencies
+      run: npm ci
+    - name: Build the package
+      run: npm run build
+    - name: Run the tests
+      run: npm run test:wip
