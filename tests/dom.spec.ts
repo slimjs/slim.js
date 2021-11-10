@@ -41,8 +41,17 @@ describe('dom', () => {
         stub.value.name
       )}</div><span>My mame is <span>${stub.value.name}</span></span>`
     );
+    stub.value.name = "slim-js"
+    flush();
+    strictEqual(
+      div.innerHTML,
+      `<div>Hello ${stub.reverse(
+        stub.value.name
+      )}</div><span>My mame is <span>${stub.value.name}</span></span>`
+    );
     // @ts-expect-error
     stub.value = undefined;
+    flush();
     strictEqual(
       div.innerHTML,
       `<div>Hello </div><span>My mame is <span></span></span>`
