@@ -4,7 +4,7 @@ import { strictEqual } from 'assert';
 import { processDOM } from '../src/dom.js';
 
 describe('dom', () => {
-  it('should update properties correctly', () => {
+  it('should update attributes correctly', () => {
     const div = document.createElement('div');
     const model = {
       myColor: 'red',
