@@ -1,10 +1,10 @@
 import { Slim } from '../dist/index';
-import '../src/all.directives';
+import '../src/directives/all.directives.js';
 import { strictEqual } from 'assert';
-import { processDOM } from '../src/template';
+import { processDOM } from '../src/dom.js';
 
-describe('template', () => {
-  it('should update properties correctly', () => {
+describe('dom', () => {
+  it('should update attributes correctly', () => {
     const div = document.createElement('div');
     const model = {
       myColor: 'red',
@@ -41,8 +41,17 @@ describe('template', () => {
         stub.value.name
       )}</div><span>My mame is <span>${stub.value.name}</span></span>`
     );
+    stub.value.name = "slim-js"
+    flush();
+    strictEqual(
+      div.innerHTML,
+      `<div>Hello ${stub.reverse(
+        stub.value.name
+      )}</div><span>My mame is <span>${stub.value.name}</span></span>`
+    );
     // @ts-expect-error
     stub.value = undefined;
+    flush();
     strictEqual(
       div.innerHTML,
       `<div>Hello </div><span>My mame is <span></span></span>`
