@@ -8,7 +8,7 @@ The class `Slim` extends `HTMLElement` therefor has the native custom-elements A
 - PHASE:CREATE Plugins are notified
 - **onCreated()** The template is ready and all directives were executed. The component's HTML content is still empty at this point.
 - PHASE:RENDER Plugins are notified
-- **onRender()** The componet has rendered for the first time
+- **onRender()** The component has rendered for the first time
 
 ### Additional lifecycle callbacks
 
