@@ -30,7 +30,7 @@ Slim is an ultra fast, native and elegant library for [Web Components](https://w
 
 ## It's fast. Very fast.
 
-Super fast. It leverages the native browser's API to manipulate DOM using templates, with custom directives. Imagine vue or angular's strctured tempaltes combined with react's ease of use - combined, faster and lighter.
+Super fast. It leverages the native browser's API to manipulate DOM using templates, with custom directives. Imagine vue or angular's strctured templates combined with react's ease of use - combined, faster and lighter.
 
 ## What's the difference? Why slim.js?
 
