@@ -6,7 +6,7 @@ import assert from 'assert';
 
 
 class MyAwesomeComponent extends Slim {
-  myName: string
+  myName: string;
 
   constructor() {
     super();
@@ -21,7 +21,7 @@ describe('directives', () => {
     Slim.element('my-awesome-component', template, MyAwesomeComponent);
 
     const div = document.createElement('div');
-    div.innerHTML = `<my-awesome-component .my-name="{{this.myName}}"></my-awesome-component>`;
+    div.innerHTML = `<my-awesome-component .name="{{this.myName}}"></my-awesome-component>`;
 
     const model = {
       myName: "SlimJS"
