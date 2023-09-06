@@ -32,8 +32,8 @@
       "default": "./dist/directives/attribute.directive.js"
     },
     "./event-directive": {
-      "default": "./dist/directives/event.directive.js",
-      "require": "./dist/directives/event.directive.js"
+      "require": "./dist/directives/event.directive.js",
+      "default": "./dist/directives/event.directive.js"
     },
     "./if-directive": {
       "require": "./dist/directives/if.directive.js",
